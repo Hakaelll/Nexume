@@ -1,0 +1,30 @@
+[
+  {
+    "count": 10,
+    "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "metrics": "66.7 ms · 20 draws · 19 textures · 10 cases · 24.5 MB textures (est.) · 21 MB heap",
+    "meanFrameMs": 16.68727272727273,
+    "p95FrameMs": 16.800000000000182
+  },
+  {
+    "count": 100,
+    "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "metrics": "16.6 ms · 30 draws · 19 textures · 21 cases · 11.0 MB textures (est.) · 25 MB heap",
+    "meanFrameMs": 16.683636363636364,
+    "p95FrameMs": 16.90000000000009
+  },
+  {
+    "count": 500,
+    "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "metrics": "16.7 ms · 30 draws · 18 textures · 21 cases · 5.5 MB textures (est.) · 29 MB heap",
+    "meanFrameMs": 16.681818181818187,
+    "p95FrameMs": 16.800000000000182
+  },
+  {
+    "count": 1000,
+    "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "metrics": "16.7 ms · 30 draws · 17 textures · 21 cases · 5.0 MB textures (est.) · 31 MB heap",
+    "meanFrameMs": 16.685454545454544,
+    "p95FrameMs": 16.899999999999636
+  }
+]

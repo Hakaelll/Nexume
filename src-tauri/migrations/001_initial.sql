@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS anime_metadata (anilist_id INTEGER PRIMARY KEY CHECK(anilist_id > 0), data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE TABLE IF NOT EXISTS library_entries (id TEXT PRIMARY KEY, anilist_id INTEGER NOT NULL UNIQUE REFERENCES anime_metadata(anilist_id), status TEXT NOT NULL CHECK(status IN ('Planning','Watching','Completed','Paused','Dropped','Rewatching')), watched INTEGER NOT NULL CHECK(watched >= 0), total INTEGER CHECK(total IS NULL OR total >= watched), data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE TABLE IF NOT EXISTS ratings (entry_id TEXT PRIMARY KEY REFERENCES library_entries(id) ON DELETE CASCADE, value INTEGER NOT NULL CHECK(value BETWEEN 1 AND 10));
+CREATE TABLE IF NOT EXISTS reviews (entry_id TEXT PRIMARY KEY REFERENCES library_entries(id) ON DELETE CASCADE, body TEXT NOT NULL, spoiler INTEGER NOT NULL CHECK(spoiler IN (0,1)), privacy TEXT NOT NULL CHECK(privacy IN ('Private','Unlisted','Public')));
+CREATE TABLE IF NOT EXISTS watch_history (id TEXT PRIMARY KEY, entry_id TEXT NOT NULL REFERENCES library_entries(id) ON DELETE CASCADE, at TEXT NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE INDEX IF NOT EXISTS watch_history_at ON watch_history(at DESC);
+CREATE TABLE IF NOT EXISTS custom_lists (id TEXT PRIMARY KEY, public_id TEXT UNIQUE NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE TABLE IF NOT EXISTS custom_list_entries (list_id TEXT NOT NULL REFERENCES custom_lists(id) ON DELETE CASCADE, entry_id TEXT NOT NULL REFERENCES library_entries(id) ON DELETE CASCADE, position INTEGER NOT NULL CHECK(position >= 0), PRIMARY KEY(list_id, entry_id), UNIQUE(list_id, position));
+CREATE TABLE IF NOT EXISTS profile (id TEXT PRIMARY KEY, data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY, data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE TABLE IF NOT EXISTS sync_queue (id TEXT PRIMARY KEY, public_id TEXT NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));
+CREATE TABLE IF NOT EXISTS search_history (id INTEGER PRIMARY KEY, data TEXT NOT NULL CHECK(json_valid(data)));

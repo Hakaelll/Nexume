@@ -1,0 +1,54 @@
+fix: refine discovery, live search and desktop navigation
+
+Fix the Library list header overlapping nearby controls during scrolling.
+Remove the gap above the sticky header, isolate the results stacking context,
+and use separate table borders with an opaque header surface. Refine row
+spacing and poster thumbnails while preserving sorting and scroll position.
+
+Replace the passive header search field with an accessible live typeahead:
+- Match partial titles and aliases from the local library immediately.
+- Debounce AniList requests by 300 ms and abort superseded requests.
+- Ignore late responses so older queries cannot overwrite current results.
+- Display up to six deduplicated suggestions with covers and metadata.
+- Support arrow-key navigation, Enter to open, Escape to dismiss, and a
+  full-results action for the existing search dialog.
+- Keep local matches available when the remote catalog is unavailable.
+
+Refine Discover with visible, untruncated titles, rounded poster cards,
+segmented category controls, and consistently aligned Watchlist actions.
+Use extra-large artwork when the regular cover URL is missing. Recover
+from unavailable native cached assets by trying remote and alternate cover
+URLs, with bounded attempts to avoid retry loops. Guard discovery and dialog
+search results against stale requests and show an explicit empty-filter state.
+Replace remaining search/discovery slogans with concise functional titles.
+
+Add content-only view transitions for navigation and anime details. Keep the
+navigation chrome still, cancel superseded animations, and provide a smooth
+CSS entry animation when the browser does not support view transitions.
+Respect both the application preference and system reduced-motion setting.
+
+Bump the desktop application to 0.2.1 and package Windows x64 builds.
+
+Validation:
+- TypeScript typecheck and ESLint pass without errors or warnings.
+- All 33 unit/integration tests pass, including PostgreSQL ownership checks.
+- All 12 Playwright tests pass, including new partial-query keyboard flows,
+  stale-result clearing, every Discover cover/title, and scrolled list-header
+  containment. Existing backup, Watchlist, recommendation, and graphics
+  resource checks remain green.
+- Visually inspect screenshots of Discover, the scrolled list, and typeahead.
+- Build the Windows installer successfully and launch the native application;
+  verify its existing 14 entries and one list remain, and partial-title
+  suggestions appear directly in the native header.
+
+Live-service verification:
+The external Node probe received HTTP 403, but the packaged native WebView
+successfully retrieved additional online partial-query results with covers
+and displayed the live Trending catalog in Discover.
+Record this environment difference rather than claiming a universal outage.
+
+Additional native validation:
+- Export an actual JSON backup through the Windows Save As dialog.
+- Reopen it through the native file picker and verify the restore preview
+  reports 14 anime, one list and nine diary events.
+- Cancel the preview without altering existing records.

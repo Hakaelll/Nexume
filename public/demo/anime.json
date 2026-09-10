@@ -1,0 +1,636 @@
+[
+  {
+    "id": 1,
+    "title": {
+      "romaji": "Cowboy Bebop",
+      "english": "Cowboy Bebop",
+      "native": "カウボーイビバップ"
+    },
+    "synonyms": [],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/4/19644l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/4/19644l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Crime is timeless. By the year 2071, humanity has expanded across the galaxy, filling the surface of other planets with settlements like those on Earth. These new societies are plagued by murder, drug use, and theft, and intergalactic outlaws are hunted by a growing number of tough bounty hunters.\n\nSpike Spiegel and Jet Black pursue criminals throughout space to make a humble living. Beneath his goofy and aloof demeanor, Spike is haunted by the weight of his violent past. Meanwhile, Jet manages his own troubled memories while taking care of Spike and the Bebop, their ship. The duo is joined by the beautiful con artist Faye Valentine, odd child Edward Wong Hau Pepelu Tivrusky IV, and Ein, a bioengineered Welsh corgi.\n\nWhile developing bonds and working to catch a colorful cast of criminals, the Bebop crew's lives are disrupted by a menace from Spike's past. As a rival's maniacal plot continues to unravel, Spike must choose between life with his newfound family or revenge for his old wounds.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 26,
+    "duration": 24,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "SPRING",
+    "seasonYear": 1998,
+    "startDate": {
+      "day": 3,
+      "month": 4,
+      "year": 1998
+    },
+    "endDate": {
+      "day": 24,
+      "month": 4,
+      "year": 1999
+    },
+    "genres": [
+      "Action",
+      "Award Winning",
+      "Sci-Fi"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Sunrise"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 30,
+    "title": {
+      "romaji": "Shinseiki Evangelion",
+      "english": "Neon Genesis Evangelion",
+      "native": "新世紀エヴァンゲリオン"
+    },
+    "synonyms": [
+      "NGE",
+      "Evangelion (1995)"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1314/108941l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1314/108941l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Fifteen years after a cataclysmic event known as the Second Impact, the world faces a new threat: monstrous celestial beings called Angels invade Tokyo-3 one by one. Mankind is unable to defend themselves against the Angels despite utilizing their most advanced munitions and military tactics. The only hope for human salvation rests in the hands of NERV, a mysterious organization led by the cold Gendou Ikari. NERV operates giant humanoid robots dubbed \"Evangelions\" to combat the Angels with state-of-the-art advanced weaponry and protective barriers known as Absolute Terror Fields.\n\nYears after being abandoned by his father, Shinji Ikari, Gendou's 14-year-old son, returns to Tokyo-3. Shinji undergoes a perpetual internal battle against the deeply buried trauma caused by the loss of his mother and the emotional neglect he suffered at the hands of his father. Terrified to open himself up to another, Shinji's life is forever changed upon meeting 29-year-old Misato Katsuragi, a high-ranking NERV officer who shows him a free-spirited maternal kindness he has never experienced.\n\nA devastating Angel attack forces Shinji into action as Gendou reveals his true motive for inviting his son back to Tokyo-3: Shinji is the only child capable of efficiently piloting Evangelion Unit-01, a new robot that synchronizes with his biometrics. Despite the brutal psychological trauma brought about by piloting an Evangelion, Shinji defends Tokyo-3 against the angelic threat, oblivious to his father's dark machinations.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 26,
+    "duration": 24,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "FALL",
+    "seasonYear": 1995,
+    "startDate": {
+      "day": 4,
+      "month": 10,
+      "year": 1995
+    },
+    "endDate": {
+      "day": 27,
+      "month": 3,
+      "year": 1996
+    },
+    "genres": [
+      "Avant Garde",
+      "Award Winning",
+      "Drama",
+      "Sci-Fi",
+      "Suspense"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Gainax"
+        },
+        {
+          "name": "Tatsunoko Production"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 19,
+    "title": {
+      "romaji": "Monster",
+      "english": "Monster",
+      "native": "モンスター"
+    },
+    "synonyms": [],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/10/18793l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/10/18793l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Dr. Kenzou Tenma, an elite neurosurgeon recently engaged to his hospital director's daughter, is well on his way to ascending the hospital hierarchy. That is until one night, a seemingly small event changes Dr. Tenma's life forever. While preparing to perform surgery on someone, he gets a call from the hospital director telling him to switch patients and instead perform life-saving brain surgery on a famous performer. His fellow doctors, fiancée, and the hospital director applaud his accomplishment; but because of the switch, a poor immigrant worker is dead, causing Dr. Tenma to have a crisis of conscience.\n\nSo when a similar situation arises, Dr. Tenma stands his ground and chooses to perform surgery on the young boy Johan Liebert instead of the town's mayor. Unfortunately, this choice leads to serious ramifications for Dr. Tenma—losing his social standing being one of them. However, with the mysterious death of the director and two other doctors, Dr. Tenma's position is restored. With no evidence to convict him, he is released and goes on to attain the position of hospital director. \n\nNine years later when Dr. Tenma saves the life of a criminal, his past comes back to haunt him—once again, he comes face to face with the monster he operated on. He must now embark on a quest of pursuit to make amends for the havoc spread by the one he saved.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 74,
+    "duration": 24,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "SPRING",
+    "seasonYear": 2004,
+    "startDate": {
+      "day": 7,
+      "month": 4,
+      "year": 2004
+    },
+    "endDate": {
+      "day": 28,
+      "month": 9,
+      "year": 2005
+    },
+    "genres": [
+      "Drama",
+      "Mystery",
+      "Suspense"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Madhouse"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 16498,
+    "title": {
+      "romaji": "Shingeki no Kyojin",
+      "english": "Attack on Titan",
+      "native": "進撃の巨人"
+    },
+    "synonyms": [
+      "AoT",
+      "SnK"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/10/47347l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/10/47347l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Centuries ago, mankind was slaughtered to near extinction by monstrous humanoid creatures called Titans, forcing humans to hide in fear behind enormous concentric walls. What makes these giants truly terrifying is that their taste for human flesh is not born out of hunger but what appears to be out of pleasure. To ensure their survival, the remnants of humanity began living within defensive barriers, resulting in one hundred years without a single titan encounter. However, that fragile calm is soon shattered when a colossal Titan manages to breach the supposedly impregnable outer wall, reigniting the fight for survival against the man-eating abominations.\n\nAfter witnessing a horrific personal loss at the hands of the invading creatures, Eren Yeager dedicates his life to their eradication by enlisting into the Survey Corps, an elite military unit that combats the merciless humanoids outside the protection of the walls. Eren, his adopted sister Mikasa Ackerman, and his childhood friend Armin Arlert join the brutal war against the Titans and race to discover a way of defeating them before the last walls are breached.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 25,
+    "duration": 24,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "SPRING",
+    "seasonYear": 2013,
+    "startDate": {
+      "day": 7,
+      "month": 4,
+      "year": 2013
+    },
+    "endDate": {
+      "day": 29,
+      "month": 9,
+      "year": 2013
+    },
+    "genres": [
+      "Action",
+      "Award Winning",
+      "Drama",
+      "Suspense"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Wit Studio"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 101922,
+    "title": {
+      "romaji": "Kimetsu no Yaiba",
+      "english": "Demon Slayer: Kimetsu no Yaiba",
+      "native": "鬼滅の刃"
+    },
+    "synonyms": [
+      "Blade of Demon Destruction"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Ever since the death of his father, the burden of supporting the family has fallen upon Tanjirou Kamado's shoulders. Though living impoverished on a remote mountain, the Kamado family are able to enjoy a relatively peaceful and happy life. One day, Tanjirou decides to go down to the local village to make a little money selling charcoal. On his way back, night falls, forcing Tanjirou to take shelter in the house of a strange man, who warns him of the existence of flesh-eating demons that lurk in the woods at night.\n\nWhen he finally arrives back home the next day, he is met with a horrifying sight—his whole family has been slaughtered. Worse still, the sole survivor is his sister Nezuko, who has been turned into a bloodthirsty demon. Consumed by rage and hatred, Tanjirou swears to avenge his family and stay by his only remaining sibling. Alongside the mysterious group calling themselves the Demon Slayer Corps, Tanjirou will do whatever it takes to slay the demons and protect the remnants of his beloved sister's humanity.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 26,
+    "duration": 23,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "SPRING",
+    "seasonYear": 2019,
+    "startDate": {
+      "day": 6,
+      "month": 4,
+      "year": 2019
+    },
+    "endDate": {
+      "day": 28,
+      "month": 9,
+      "year": 2019
+    },
+    "genres": [
+      "Action",
+      "Award Winning",
+      "Supernatural"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "ufotable"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 154587,
+    "title": {
+      "romaji": "Sousou no Frieren",
+      "english": "Frieren: Beyond Journey's End",
+      "native": "葬送のフリーレン"
+    },
+    "synonyms": [
+      "Frieren at the Funeral",
+      "Frieren The Slayer"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1015/138006l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1015/138006l.jpg"
+    },
+    "bannerImage": null,
+    "description": "During their decade-long quest to defeat the Demon King, the members of the hero's party—Himmel himself, the priest Heiter, the dwarf warrior Eisen, and the elven mage Frieren—forge bonds through adventures and battles, creating unforgettable precious memories for most of them.\n\nHowever, the time that Frieren spends with her comrades is equivalent to merely a fraction of her life, which has lasted over a thousand years. When the party disbands after their victory, Frieren casually returns to her \"usual\" routine of collecting spells across the continent. Due to her different sense of time, she seemingly holds no strong feelings toward the experiences she went through.\n\nAs the years pass, Frieren gradually realizes how her days in the hero's party truly impacted her. Witnessing the deaths of two of her former companions, Frieren begins to regret having taken their presence for granted; she vows to better understand humans and create real personal connections. Although the story of that once memorable journey has long ended, a new tale is about to begin.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 28,
+    "duration": 24,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "FALL",
+    "seasonYear": 2023,
+    "startDate": {
+      "day": 29,
+      "month": 9,
+      "year": 2023
+    },
+    "endDate": {
+      "day": 22,
+      "month": 3,
+      "year": 2024
+    },
+    "genres": [
+      "Adventure",
+      "Award Winning",
+      "Drama",
+      "Fantasy"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Madhouse"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 20,
+    "title": {
+      "romaji": "Naruto",
+      "english": "Naruto",
+      "native": "ナルト"
+    },
+    "synonyms": [
+      "NARUTO"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1141/142503l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1141/142503l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Twelve years ago, a colossal demon fox terrorized the world. During the monster's attack on the Hidden Leaf Village, the Hokage—the village's leader and most powerful ninja—sacrifices himself to seal the beast inside a newborn, relieving civilization from destruction while dooming the baby to a lonely life.\n\nNow, after years of being shunned and bullied, Naruto Uzumaki pesters the village with elaborate pranks and vandalism. Despite these antics, he works hard to achieve his dream: to become the Hokage and earn the acknowledgement of those who have mistreated him for his entire life. Naruto joins Team 7, a ninja squad made up of two of his peers—prodigy Sasuke Uchiha and clever Sakura Haruno.\n\nUnder the aloof Kakashi Hatake's leadership, Team 7 takes on a series of difficult missions, forcing its members to grow in strength and comradery despite their many differences. Naruto strives to stand out in his rivalry with Sasuke and earn the romantic affection of Sakura. But as the trio brush against danger and death, their tragic pasts threaten to tear them apart.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 220,
+    "duration": 23,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "FALL",
+    "seasonYear": 2002,
+    "startDate": {
+      "day": 3,
+      "month": 10,
+      "year": 2002
+    },
+    "endDate": {
+      "day": 8,
+      "month": 2,
+      "year": 2007
+    },
+    "genres": [
+      "Action",
+      "Adventure",
+      "Fantasy"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Studio Pierrot"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 1535,
+    "title": {
+      "romaji": "Death Note",
+      "english": "Death Note",
+      "native": "デスノート"
+    },
+    "synonyms": [
+      "DN"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1079/138100l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1079/138100l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Brutal murders, petty thefts, and senseless violence pollute the human world. In contrast, the realm of death gods is a humdrum, unchanging gambling den. The ingenious 17-year-old Japanese student Light Yagami and sadistic god of death Ryuk share one belief: their worlds are rotten.\n\nFor his own amusement, Ryuk drops his Death Note into the human world. Light stumbles upon it, deeming the first of its rules ridiculous: the human whose name is written in this note shall die. However, the temptation is too great, and Light experiments by writing a felon's name, which disturbingly enacts his first murder.\n\nAware of the terrifying godlike power that has fallen into his hands, Light—under the alias Kira—follows his wicked sense of justice with the ultimate goal of cleansing the world of all evil-doers. The meticulous mastermind detective L is already on his trail, but as Light's brilliance rivals L's, the grand chase for Kira turns into an intense battle of wits that can only end when one of them is dead.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 37,
+    "duration": 23,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "FALL",
+    "seasonYear": 2006,
+    "startDate": {
+      "day": 4,
+      "month": 10,
+      "year": 2006
+    },
+    "endDate": {
+      "day": 27,
+      "month": 6,
+      "year": 2007
+    },
+    "genres": [
+      "Supernatural",
+      "Suspense"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Madhouse"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 110277,
+    "title": {
+      "romaji": "Shingeki no Kyojin: The Final Season",
+      "english": "Attack on Titan: Final Season",
+      "native": "進撃の巨人 The Final Season"
+    },
+    "synonyms": [
+      "Shingeki no Kyojin Season 4",
+      "Attack on Titan Season 4"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1000/110531l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1000/110531l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Gabi Braun and Falco Grice have been training their entire lives to inherit one of the seven Titans under Marley's control and aid their nation in eradicating the Eldians on Paradis. However, just as all seems well for the two cadets, their peace is suddenly shaken by the arrival of Eren Yeager and the remaining members of the Survey Corps.\n\nHaving finally reached the Yeager family basement and learned about the dark history surrounding the Titans, the Survey Corps has at long last found the answer they so desperately fought to uncover. With the truth now in their hands, the group set out for the world beyond the walls.\n\nIn Shingeki no Kyojin: The Final Season, two utterly different worlds collide as each party pursues its own agenda in the long-awaited conclusion to Paradis' fight for freedom.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 16,
+    "duration": 23,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "WINTER",
+    "seasonYear": 2021,
+    "startDate": {
+      "day": 7,
+      "month": 12,
+      "year": 2020
+    },
+    "endDate": {
+      "day": 29,
+      "month": 3,
+      "year": 2021
+    },
+    "genres": [
+      "Action",
+      "Drama",
+      "Suspense"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "MAPPA"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 20954,
+    "title": {
+      "romaji": "Koe no Katachi",
+      "english": "A Silent Voice",
+      "native": "聲の形"
+    },
+    "synonyms": [
+      "The Shape of Voice"
+    ],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1122/96435l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1122/96435l.jpg"
+    },
+    "bannerImage": null,
+    "description": "As a wild youth, elementary school student Shouya Ishida sought to beat boredom in the cruelest ways. When the deaf Shouko Nishimiya transfers into his class, Shouya and the rest of his class thoughtlessly bully her for fun. However, when her mother notifies the school, he is singled out and blamed for everything done to her. With Shouko transferring out of the school, Shouya is left at the mercy of his classmates. He is heartlessly ostracized all throughout elementary and middle school, while teachers turn a blind eye.\n\nNow in his third year of high school, Shouya is still plagued by his wrongdoings as a young boy. Sincerely regretting his past actions, he sets out on a journey of redemption: to meet Shouko once more and make amends.\n\nKoe no Katachi tells the heartwarming tale of Shouya's reunion with Shouko and his honest attempts to redeem himself, all while being continually haunted by the shadows of his past.\n \n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 1,
+    "duration": 2,
+    "format": "MOVIE",
+    "status": "FINISHED",
+    "seasonYear": null,
+    "startDate": {
+      "day": 17,
+      "month": 9,
+      "year": 2016
+    },
+    "endDate": {
+      "day": null,
+      "month": null,
+      "year": null
+    },
+    "genres": [
+      "Award Winning",
+      "Drama"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "Kyoto Animation"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 9253,
+    "title": {
+      "romaji": "Steins;Gate",
+      "english": "Steins;Gate",
+      "native": "STEINS;GATE"
+    },
+    "synonyms": [],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/1935/127974l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/1935/127974l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Eccentric scientist Rintarou Okabe has a never-ending thirst for scientific exploration. Together with his ditzy but well-meaning friend Mayuri Shiina and his roommate Itaru Hashida, Okabe founds the Future Gadget Laboratory in the hopes of creating technological innovations that baffle the human psyche. Despite claims of grandeur, the only notable \"gadget\" the trio have created is a microwave that has the mystifying power to turn bananas into green goo.\n\nHowever, when Okabe attends a conference on time travel, he experiences a series of strange events that lead him to believe that there is more to the \"Phone Microwave\" gadget than meets the eye. Apparently able to send text messages into the past using the microwave, Okabe dabbles further with the \"time machine,\" attracting the ire and attention of the mysterious organization SERN.\n\nDue to the novel discovery, Okabe and his friends find themselves in an ever-present danger. As he works to mitigate the damage his invention has caused to the timeline, Okabe fights a battle to not only save his loved ones but also to preserve his degrading sanity.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 24,
+    "duration": 24,
+    "format": "TV",
+    "status": "FINISHED",
+    "season": "SPRING",
+    "seasonYear": 2011,
+    "startDate": {
+      "day": 6,
+      "month": 4,
+      "year": 2011
+    },
+    "endDate": {
+      "day": 14,
+      "month": 9,
+      "year": 2011
+    },
+    "genres": [
+      "Drama",
+      "Sci-Fi",
+      "Suspense"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "White Fox"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  },
+  {
+    "id": 21519,
+    "title": {
+      "romaji": "Kimi no Na wa.",
+      "english": "Your Name.",
+      "native": "君の名は。"
+    },
+    "synonyms": [],
+    "coverImage": {
+      "large": "https://cdn.myanimelist.net/images/anime/5/87048l.jpg",
+      "extraLarge": "https://cdn.myanimelist.net/images/anime/5/87048l.jpg"
+    },
+    "bannerImage": null,
+    "description": "Mitsuha Miyamizu, a high school girl, yearns to live the life of a boy in the bustling city of Tokyo—a dream that stands in stark contrast to her present life in the countryside. Meanwhile in the city, Taki Tachibana lives a busy life as a high school student while juggling his part-time job and hopes for a future in architecture.\n\nOne day, Mitsuha awakens in a room that is not her own and suddenly finds herself living the dream life in Tokyo—but in Taki's body! Elsewhere, Taki finds himself living Mitsuha's life in the humble countryside. In pursuit of an answer to this strange phenomenon, they begin to search for one another.\n\nKimi no Na wa. revolves around Mitsuha and Taki's actions, which begin to have a dramatic impact on each other's lives, weaving them into a fabric held together by fate and circumstance.\n\n[Written by MAL Rewrite]",
+    "averageScore": null,
+    "popularity": null,
+    "favourites": null,
+    "episodes": 1,
+    "duration": 1,
+    "format": "MOVIE",
+    "status": "FINISHED",
+    "seasonYear": null,
+    "startDate": {
+      "day": 26,
+      "month": 8,
+      "year": 2016
+    },
+    "endDate": {
+      "day": null,
+      "month": null,
+      "year": null
+    },
+    "genres": [
+      "Award Winning",
+      "Drama"
+    ],
+    "tags": [],
+    "studios": {
+      "nodes": [
+        {
+          "name": "CoMix Wave Films"
+        }
+      ]
+    },
+    "countryOfOrigin": "JP",
+    "trailer": null,
+    "nextAiringEpisode": null,
+    "isAdult": false
+  }
+]

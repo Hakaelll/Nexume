@@ -1,0 +1,87 @@
+feat: build Nexume with spatial library, watchlist and filtered recommendations
+
+Create a Tauri 2 desktop application with a Rust native layer, React,
+TypeScript, Vite, Zustand and SQLite persistence. Use the supplied Nexume
+emblem and translate the Active Theory reference into a restrained black
+interface with geometric UI typography and editorial review text. Refine
+the interface with concise labels, violet accents and artwork-led empty
+states; remove repeated slogans, decorative kickers and filler copy.
+
+Add the 0.2.0 discovery and interface refinements:
+- Compact the header to 54px and replace the search link with a searchable field.
+- Add a dedicated Watchlist backed by Planning entries, with genre/search/
+  priority controls and a Start watching action without duplicate records.
+- Add random recommendations from Watchlist, Library, AniList popular results
+  or an explicitly labeled offline sample catalog.
+- Combine genre, format, release-year and episode-count filters; handle empty
+  pools and avoid repeating the previous result when alternatives exist.
+- Animate the recommendation reveal, cancel stale requests/timers and
+  respect system/application reduced-motion preferences.
+- Replace text-heavy statistics with accessible SVG/CSS status, activity,
+  rating, genre, studio, decade and season charts.
+- Add short route-entry transitions while keeping navigation/header stable.
+
+Implement the personal library and viewing workflows:
+- Add nullable AniList DTO mapping and a cancellable GraphQL client with
+  page caching, request pacing, timeouts, Retry-After and bounded retries.
+- Provide Collection, Grid and configurable sortable List views, status
+  filters, local search, metadata filters and restored view preferences.
+- Track episode progress, deliberate completion, rewatches and diary events.
+- Support half-star ratings, independent likes/favorites, quick thoughts,
+  full reviews, spoiler flags, private notes and personal dates/tags.
+- Add Home, discovery, a weekly airing calendar, statistics, curated lists
+  and a local profile with six manually selected favorites.
+
+Build the spatial collection as a real Three.js scene:
+- Render shallow cases with artwork textures, controlled perspective,
+  restrained lighting and deterministic spatial selection.
+- Support mouse picking, double click, wheel, keyboard navigation and
+  context actions with DOM-based alternatives.
+- Bound visible objects and cached textures, preload nearby covers,
+  dispose resources and expose optional performance diagnostics.
+- Respect reduced motion and visibility, and recover to Grid on WebGL loss.
+
+Keep personal data durable and portable:
+- Register versioned SQLite migrations and enforce relational constraints.
+- Apply personal changes in native transactions and serialize mutations.
+- Persist view preferences separately so navigation does not rewrite the
+  entire library; guard rapid episode increments against stale UI values.
+- Add bounded native artwork caching, versioned JSON backups, explicit
+  merge/replace restore, pre-restore backups and formula-safe CSV export.
+- Preserve native Windows decorations/window state and focus an existing
+  instance instead of opening a competing database writer.
+
+Add optional, deliberately scoped social publishing:
+- Separate the local profile from online identity and keep cloud optional.
+- Implement Supabase account/publishing adapters and an owner-bound durable
+  queue for opted-in list, profile and review snapshots.
+- Serialize public fields explicitly; exclude private notes, internal IDs,
+  local paths, viewing history and authentication sessions from publication.
+- Use ID-only public lookup, owner RLS and revision-aware tombstones to
+  prevent unlisted enumeration, cross-account writes and stale resurrection.
+- Provide a static public viewer isolated from desktop storage/native APIs.
+
+Include opt-in offline sample records, architectural/design/database/3D/
+social/mobile-port documentation, concrete roadmap items, automated tests
+and Windows NSIS packaging configuration.
+
+Validation observed during implementation:
+- TypeScript and ESLint checks passed.
+- 33 domain/API/privacy/PostgreSQL/recommendation tests passed.
+- Rust clippy and three native persistence/schema tests passed.
+- Browser workflows passed for personal records, lists/profile, offline
+  navigation, backup/restore, desktop viewport sizes and WebGL recovery.
+- Controlled GraphQL search/add/outage handling passed in the browser.
+- The original eight-test browser suite passed, including actual artwork loading
+  and 10/100/500/1000-title resource/frame measurements on Intel Iris Xe.
+- The final 10-test browser suite passed in 52 seconds, including filtered
+  recommendations, Watchlist persistence and populated chart values.
+- Windows 0.2.0 packaging is recorded in docs/VERIFICATION.md.
+- Native startup, sample persistence and textured Collection were observed.
+
+Verification limits are documented in docs/VERIFICATION.md. AniList's live
+endpoint reported a temporary API shutdown. Hosted Supabase end-to-end
+verification requires user configuration. Physical multi-monitor restoration and sustained GPU stress remain
+manual follow-ups; the short browser frame samples are not a universal
+performance guarantee. See the verification record for native dialog
+results and the exact packaged build.

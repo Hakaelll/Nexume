@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Local Nexume application capabilities",
+  "windows": ["main"],
+  "permissions": ["core:default", "sql:default", "window-state:default"]
+}
