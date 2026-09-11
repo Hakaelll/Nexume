@@ -9,3 +9,8 @@
 - Anime poster artwork and descriptions belong to their respective rights holders. They identify the titles in the optional personal-use sample library. `scripts/fetch-sample.mjs` documents source retrieval; passing `--fixture-from-jikan` is an explicit build-time choice. No paid asset service is required.
 
 Sample progress, ratings, likes and thoughts are illustrative, not the user's viewing history. The app asks before adding them and tags them `sample`.
+
+
+## Playful typography (0.5.0)
+
+Inter is bundled locally through @fontsource/inter under the SIL Open Font License, including 400/500/600 normal and 700/900 italic. No Fraunces, Antonio or commercial fonts are included in the current desktop bundle. Space Grotesk remains available to the existing public viewer and legacy structural styles. Anime artwork is displayed in color.

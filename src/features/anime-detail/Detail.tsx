@@ -1,3 +1,4 @@
+import { animeCover } from "../../domain/artwork";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -44,6 +45,8 @@ export default function Detail({
   const [visibility, setVisibility] = useState(
     entry?.reviewPrivacy ?? "Private",
   );
+  const banner = entry?.bannerImage || m.bannerImage;
+  const cover = animeCover(m, entry?.coverImage);
   const title = entry?.preferredTitle ?? m.english ?? m.romaji;
   const refresh = async () => {
     setBusy(true);
@@ -77,148 +80,160 @@ export default function Detail({
   };
   return (
     <div className={`detail-page ${quick ? "quick-detail" : ""}`}>
-      {m.bannerImage && (
-        <Artwork className="detail-banner" src={m.bannerImage} title="" eager />
-      )}
       <div className="detail-body">
-        <button className="back-button" onClick={onBack}>
-          <ArrowLeft size={16} />
-          Back to collection
-        </button>
-        <div className="detail-heading">
-          <div className="detail-cover">
-            <Artwork
-              src={entry?.coverImage ?? m.coverLarge}
-              title={title}
-              eager
-            />
-            {entry ? (
-              <>
-                <Progress entry={entry} />
+        <div
+          className={`detail-hero ${banner ? "has-banner" : "poster-backdrop"}`}
+        >
+          <Artwork
+            className="detail-banner"
+            src={banner || cover}
+            title=""
+            eager
+          />
+          <button className="back-button" onClick={onBack}>
+            <ArrowLeft size={16} />
+            Back to collection
+          </button>
+          <div className="detail-heading">
+            <div className="detail-cover">
+              <Artwork
+                src={cover}
+                fallbackSrc={entry?.coverImage || m.coverImage}
+                title={title}
+                eager
+              />
+              {entry ? (
+                <>
+                  <Progress entry={entry} />
+                  <button
+                    className="button full"
+                    onClick={() => void store.rewatch(entry.localId)}
+                  >
+                    <RefreshCw size={14} />
+                    Start a rewatch
+                  </button>
+                </>
+              ) : (
                 <button
-                  className="button full"
-                  onClick={() => void store.rewatch(entry.localId)}
+                  className="button primary full"
+                  onClick={() => void store.add(m)}
                 >
-                  <RefreshCw size={14} />
-                  Start a rewatch
+                  <Plus size={16} />
+                  Add to Watchlist
                 </button>
-              </>
-            ) : (
-              <button
-                className="button primary full"
-                onClick={() => void store.add(m)}
-              >
-                <Plus size={16} />
-                Add to Watchlist
-              </button>
-            )}
-          </div>
-          <div className="detail-info">
-            <p className="eyebrow">
-              {m.format?.replaceAll("_", " ") ?? "ANIME"}{" "}
-              <span className="dot">·</span> {m.year ?? "TBA"}{" "}
-              <span className="dot">·</span> {m.episodes ?? "?"} EPISODES
-            </p>
-            <h1>{title}</h1>
-            <p className="native-title">{m.native ?? m.romaji}</p>
-            <div className="detail-meta">
-              <span>{m.studios.join(" / ") || "Studio unknown"}</span>
-              <span>{m.genres.join(" · ")}</span>
+              )}
             </div>
-            <div className="detail-ratings">
-              <div>
-                <span className="eyebrow">YOU</span>
-                <Stars
-                  value={entry?.personalRating ?? null}
-                  onChange={
-                    entry
-                      ? (v) =>
-                          void store.edit(entry.localId, { personalRating: v })
-                      : undefined
-                  }
-                />
+            <div className="detail-info">
+              <p className="eyebrow">
+                {m.format?.replaceAll("_", " ") ?? "ANIME"}{" "}
+                <span className="dot">·</span> {m.year ?? "TBA"}{" "}
+                <span className="dot">·</span> {m.episodes ?? "?"} EPISODES
+              </p>
+              <h1>{title}</h1>
+              <p className="native-title">{m.native ?? m.romaji}</p>
+              <div className="detail-meta">
+                <span>{m.studios.join(" / ") || "Studio unknown"}</span>
+                <span>{m.genres.join(" · ")}</span>
               </div>
-              <div className="community">
-                <span className="eyebrow">ANILIST COMMUNITY</span>
-                <strong>
-                  {m.averageScore ?? "—"}
-                  <small>/ 100</small>
-                </strong>
+              <div className="detail-ratings">
+                <div>
+                  <span className="eyebrow">YOU</span>
+                  <Stars
+                    value={entry?.personalRating ?? null}
+                    onChange={
+                      entry
+                        ? (v) =>
+                            void store.edit(entry.localId, {
+                              personalRating: v,
+                            })
+                        : undefined
+                    }
+                  />
+                </div>
+                <div className="community">
+                  <span className="eyebrow">ANILIST COMMUNITY</span>
+                  <strong>
+                    {m.averageScore ?? "—"}
+                    <small>/ 100</small>
+                  </strong>
+                </div>
+                {entry && (
+                  <>
+                    <button
+                      className={`icon-button love ${entry.liked ? "selected" : ""}`}
+                      aria-pressed={entry.liked}
+                      aria-label="Like anime"
+                      onClick={() =>
+                        void store.edit(entry.localId, { liked: !entry.liked })
+                      }
+                    >
+                      <Heart
+                        fill={entry.liked ? "currentColor" : "none"}
+                        size={20}
+                      />
+                    </button>
+                    <button
+                      className={`icon-button ${entry.favorite ? "selected" : ""}`}
+                      aria-pressed={entry.favorite}
+                      aria-label="Favorite anime"
+                      onClick={() =>
+                        void store.edit(entry.localId, {
+                          favorite: !entry.favorite,
+                        })
+                      }
+                    >
+                      <Star
+                        fill={entry.favorite ? "currentColor" : "none"}
+                        size={20}
+                      />
+                    </button>
+                  </>
+                )}
               </div>
               {entry && (
-                <>
-                  <button
-                    className={`icon-button love ${entry.liked ? "selected" : ""}`}
-                    aria-pressed={entry.liked}
-                    aria-label="Like anime"
-                    onClick={() =>
-                      void store.edit(entry.localId, { liked: !entry.liked })
-                    }
-                  >
-                    <Heart
-                      fill={entry.liked ? "currentColor" : "none"}
-                      size={20}
-                    />
-                  </button>
-                  <button
-                    className={`icon-button ${entry.favorite ? "selected" : ""}`}
-                    aria-pressed={entry.favorite}
-                    aria-label="Favorite anime"
-                    onClick={() =>
+                <div className="detail-actions">
+                  <select
+                    aria-label="Personal status"
+                    value={entry.personalStatus}
+                    onChange={(e) =>
                       void store.edit(entry.localId, {
-                        favorite: !entry.favorite,
+                        personalStatus: e.target
+                          .value as typeof entry.personalStatus,
                       })
                     }
                   >
-                    <Star
-                      fill={entry.favorite ? "currentColor" : "none"}
-                      size={20}
-                    />
+                    {statuses.map((s) => (
+                      <option key={s}>{s}</option>
+                    ))}
+                  </select>
+                  <button className="button" onClick={editReview}>
+                    <Edit3 size={14} />
+                    Write a thought
                   </button>
-                </>
+                  <button
+                    className="icon-button"
+                    aria-label="Refresh metadata"
+                    disabled={busy || !navigator.onLine}
+                    onClick={() => void refresh()}
+                  >
+                    <RefreshCw size={15} className={busy ? "spin" : ""} />
+                  </button>
+                </div>
+              )}
+              {entry?.shortOpinion && (
+                <blockquote className="detail-thought">
+                  “{entry.shortOpinion}”
+                </blockquote>
+              )}
+              {m.nextAiringEpisode && (
+                <p className="next-airing">
+                  Next: episode {m.nextAiringEpisode.episode} ·{" "}
+                  {new Date(
+                    m.nextAiringEpisode.airingAt * 1000,
+                  ).toLocaleString()}
+                </p>
               )}
             </div>
-            {entry && (
-              <div className="detail-actions">
-                <select
-                  aria-label="Personal status"
-                  value={entry.personalStatus}
-                  onChange={(e) =>
-                    void store.edit(entry.localId, {
-                      personalStatus: e.target
-                        .value as typeof entry.personalStatus,
-                    })
-                  }
-                >
-                  {statuses.map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-                <button className="button" onClick={editReview}>
-                  <Edit3 size={14} />
-                  Write a thought
-                </button>
-                <button
-                  className="icon-button"
-                  aria-label="Refresh metadata"
-                  disabled={busy || !navigator.onLine}
-                  onClick={() => void refresh()}
-                >
-                  <RefreshCw size={15} className={busy ? "spin" : ""} />
-                </button>
-              </div>
-            )}
-            {entry?.shortOpinion && (
-              <blockquote className="detail-thought">
-                “{entry.shortOpinion}”
-              </blockquote>
-            )}
-            {m.nextAiringEpisode && (
-              <p className="next-airing">
-                Next: episode {m.nextAiringEpisode.episode} ·{" "}
-                {new Date(m.nextAiringEpisode.airingAt * 1000).toLocaleString()}
-              </p>
-            )}
           </div>
         </div>
         <div className="detail-editorial">

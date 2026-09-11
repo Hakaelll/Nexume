@@ -1,3 +1,4 @@
+import { animeCover } from "../../domain/artwork";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shuffle, BookmarkPlus, ArrowUpRight, RotateCcw } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -46,16 +47,21 @@ export default function Recommend({
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const [winner, setWinner] = useState<Anime | null>(null);
-  const [rolling, setRolling] = useState<Anime | null>(null);
+  const [reel, setReel] = useState<Anime[]>([]);
   const [spinning, setSpinning] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const generation = useRef(0);
+  const drawController = useRef<AbortController | null>(null);
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
     setError("");
     setCatalog([]);
-    if (source === "Library" || source === "Watchlist") {
+    if (
+      source === "Library" ||
+      source === "Watchlist" ||
+      source === "AniList"
+    ) {
       setLoading(false);
       return;
     }
@@ -127,48 +133,88 @@ export default function Recommend({
   );
   useEffect(() => {
     generation.current++;
+    drawController.current?.abort();
     if (timer.current) clearTimeout(timer.current);
     setSpinning(false);
     setWinner(null);
-    setRolling(null);
+    setReel([]);
     return () => {
       // This ref is a cancellation counter, not a DOM node.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       generation.current++;
+      drawController.current?.abort();
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [source, genre, format, minYear, maxEpisodes]);
-  const spin = () => {
-    const chosen = pickRecommendation(pool, winner?.anilistId);
-    if (!chosen) return;
+  }, [
+    source,
+    genre,
+    format,
+    minYear,
+    maxEpisodes,
+    store.data.preferences.adultContent,
+  ]);
+  const spin = async () => {
     const token = ++generation.current;
+    setError("");
+    setSpinning(true);
+    setWinner(null);
+    let candidates = pool;
+    if (source === "AniList") {
+      drawController.current?.abort();
+      const controller = new AbortController();
+      drawController.current = controller;
+      try {
+        candidates = await anilist.randomCatalog(
+          {
+            genre,
+            format,
+            minYear: Number(minYear),
+            maxEpisodes: Number(maxEpisodes),
+            adult: store.data.preferences.adultContent,
+          },
+          controller.signal,
+        );
+      } catch (e) {
+        if (token === generation.current) {
+          setError(e instanceof Error ? e.message : String(e));
+          setSpinning(false);
+        }
+        return;
+      }
+      if (token !== generation.current) return;
+    }
+    const chosen = pickRecommendation(candidates, winner?.anilistId);
+    if (!chosen) {
+      setSpinning(false);
+      return;
+    }
     const reduced =
       store.data.preferences.reducedMotion ||
       matchMedia("(prefers-reduced-motion: reduce)").matches;
     setSpinning(true);
     setWinner(null);
-    let step = 0;
-    const frames = reduced ? 1 : 14;
-    const tick = () => {
-      if (token !== generation.current) return;
-      if (step >= frames) {
+    const cards = Array.from(
+      { length: 26 },
+      () => candidates[Math.floor(Math.random() * candidates.length)],
+    );
+    cards[22] = chosen;
+    setReel(reduced ? [] : cards);
+    timer.current = setTimeout(
+      () => {
+        if (token !== generation.current) return;
         setWinner(chosen);
-        setRolling(null);
+        setReel([]);
         setSpinning(false);
-        return;
-      }
-      setRolling(pool[step % pool.length]);
-      step++;
-      timer.current = setTimeout(tick, reduced ? 80 : 55 + step * 12);
-    };
-    tick();
+      },
+      reduced ? 80 : 3700,
+    );
   };
-  const shown = rolling ?? winner;
+  const shown = winner;
   const existing =
     shown && store.data.entries.find((e) => e.anilistId === shown.anilistId);
   return (
     <div className="page recommendation-page">
-      <PageTitle title="What to watch" />
+      <PageTitle title="Recommend" />
       <div className="recommendation-layout">
         <aside className="recommendation-filters">
           <label className="field">
@@ -176,7 +222,9 @@ export default function Recommend({
             <select value={source} onChange={(e) => setSource(e.target.value)}>
               {["Watchlist", "Library", "AniList", "Sample catalog"].map(
                 (s) => (
-                  <option key={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s === "AniList" ? "All anime · AniList" : s}
+                  </option>
                 ),
               )}
             </select>
@@ -236,15 +284,21 @@ export default function Recommend({
             Reset filters
           </button>
           <p className="muted candidate-count">
-            {loading ? "Loading…" : `${pool.length} matching anime`}
-            {source === "AniList" ? " · popular results" : ""}
+            {source === "AniList"
+              ? "AniList · Online"
+              : loading
+                ? "Loading…"
+                : `${pool.length} matching anime`}
           </p>
           {error && (
             <div role="alert" className="error-inline">
               {error}
               <button
                 className="text-button"
-                onClick={() => setRetry((n) => n + 1)}
+                onClick={() =>
+                  source === "AniList" ? void spin() : setRetry((n) => n + 1)
+                }
+                disabled={spinning}
               >
                 Retry
               </button>
@@ -255,14 +309,55 @@ export default function Recommend({
           className={`recommendation-stage ${spinning ? "is-spinning" : ""}`}
           aria-busy={spinning}
         >
-          <div className="recommendation-orbit" aria-hidden="true" />
-          {shown ? (
+          {spinning ? (
+            <div
+              className="recommendation-roulette"
+              role="status"
+              aria-label="Drawing an anime"
+            >
+              <div className="roulette-pointer" aria-hidden="true" />
+              <div className="roulette-window" aria-hidden="true">
+                <div
+                  className={`roulette-track ${reel.length ? "is-running" : "is-loading"}`}
+                >
+                  {reel.length
+                    ? reel.map((anime, index) => (
+                        <div
+                          className="roulette-card"
+                          key={index}
+                          data-anime-id={anime.anilistId}
+                        >
+                          <Artwork
+                            src={animeCover(anime)}
+                            title={anime.english ?? anime.romaji}
+                            eager
+                          />
+                          <span>{anime.english ?? anime.romaji}</span>
+                        </div>
+                      ))
+                    : Array.from({ length: 7 }, (_, index) => (
+                        <div
+                          className="roulette-card roulette-placeholder"
+                          key={index}
+                        >
+                          <Shuffle size={32} />
+                        </div>
+                      ))}
+                </div>
+              </div>
+              <p className="roulette-caption">
+                {reel.length
+                  ? "Finding your next watch"
+                  : "Exploring the catalog"}
+              </p>
+            </div>
+          ) : shown ? (
             <div
               className={`recommendation-result ${winner ? "is-revealed" : ""}`}
               key={shown.anilistId}
             >
               <Artwork
-                src={shown.coverImage}
+                src={animeCover(shown)}
                 title={shown.english ?? shown.romaji}
                 eager
               />
@@ -270,7 +365,9 @@ export default function Recommend({
                 className="recommendation-copy"
                 aria-live={spinning ? "off" : "polite"}
               >
-                <h2>{shown.english ?? shown.romaji}</h2>
+                <h2>
+                  {spinning ? "Choosing…" : (shown.english ?? shown.romaji)}
+                </h2>
                 <p>
                   {shown.year ?? "—"} · {shown.format ?? "Anime"} ·{" "}
                   {shown.episodes ?? "?"} episodes
@@ -288,7 +385,7 @@ export default function Recommend({
                         <ArrowUpRight size={14} />
                       </button>
                       <button
-                        className="button primary"
+                        className="button"
                         disabled={!!existing}
                         onClick={() => void store.add(shown)}
                       >
@@ -302,27 +399,45 @@ export default function Recommend({
             </div>
           ) : (
             <div className="recommendation-empty">
-              <div className="shuffle-emblem">
-                <Shuffle size={42} strokeWidth={1} />
-              </div>
               <h2>
-                {pool.length
-                  ? "Let chance choose."
-                  : loading
-                    ? "Finding anime…"
-                    : "No matching anime"}
+                {spinning ? (
+                  "Exploring the catalog…"
+                ) : pool.length || source === "AniList" ? (
+                  <>
+                    What to
+                    <br />
+                    <em>watch?</em>
+                  </>
+                ) : loading ? (
+                  "Finding anime…"
+                ) : (
+                  "No matching anime"
+                )}
               </h2>
-              <p>
-                {pool.length
-                  ? "Pick one from your selection."
-                  : "Try different filters or another source."}
-              </p>
+              {!spinning && pool.length > 0 && (
+                <div className="recommendation-fan" aria-hidden="true">
+                  {pool.slice(0, 5).map((anime) => (
+                    <div key={anime.anilistId}>
+                      <Artwork
+                        src={animeCover(anime)}
+                        title={anime.english ?? anime.romaji}
+                        eager
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!pool.length && source !== "AniList" && !loading && (
+                <p>Try different filters or another source.</p>
+              )}
             </div>
           )}
           <button
             className="button primary recommendation-spin"
-            onClick={spin}
-            disabled={loading || spinning || !pool.length}
+            onClick={() => void spin()}
+            disabled={
+              loading || spinning || (source !== "AniList" && !pool.length)
+            }
           >
             <Shuffle size={17} />
             {spinning ? "Choosing…" : winner ? "Pick another" : "Pick an anime"}

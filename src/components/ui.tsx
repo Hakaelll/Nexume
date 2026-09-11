@@ -1,5 +1,16 @@
+import { animeCover } from "../domain/artwork";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowUpRight, Heart, Minus, Plus, X, Check } from "lucide-react";
+import {
+  ArrowUpRight,
+  Heart,
+  Minus,
+  Plus,
+  X,
+  Check,
+  Bookmark,
+  Star,
+  Eye,
+} from "lucide-react";
 import { cachedImage } from "../core/platform";
 import { type Entry, type Anime } from "../domain/model";
 import { useApp } from "../app/store";
@@ -204,7 +215,7 @@ export function PageTitle({
   );
 }
 export function AnimeCard({
-  entry,
+  entry: suppliedEntry,
   anime,
   onOpen,
   onContext,
@@ -216,8 +227,28 @@ export function AnimeCard({
   onContext?: (e: React.MouseEvent) => void;
   tracking?: boolean;
 }) {
+  const store = useApp();
+  const entry =
+    store.data.entries.find(
+      (e) => e.anilistId === (suppliedEntry?.anilistId ?? anime?.anilistId),
+    ) ?? suppliedEntry;
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const m = entry?.cachedMetadata ?? anime!;
   const title = entry?.preferredTitle ?? m.english ?? m.romaji;
+  const act = async (patch?: Partial<Entry>) => {
+    setBusy(true);
+    try {
+      if (!entry) await store.add(m);
+      if (useApp.getState().error) return;
+      const saved = useApp
+        .getState()
+        .data.entries.find((e) => e.anilistId === m.anilistId);
+      if (saved && patch) await store.edit(saved.localId, patch);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <article
       className={`anime-card ${tracking ? "tracking" : ""}`}
@@ -230,8 +261,8 @@ export function AnimeCard({
         aria-label={`Open ${title}`}
       >
         <Artwork
-          src={entry?.coverImage || m.coverImage}
-          fallbackSrc={m.coverLarge}
+          src={animeCover(m, entry?.coverImage)}
+          fallbackSrc={entry?.coverImage || m.coverImage}
           title={title}
         />
         <span className="cover-open">
@@ -244,6 +275,60 @@ export function AnimeCard({
         )}
         {entry && <span className="cover-status">{entry.personalStatus}</span>}
       </button>
+      <div className="card-actions" aria-label={`Quick actions for ${title}`}>
+        <button
+          className="icon-button"
+          disabled={busy || !!entry}
+          aria-label={
+            entry ? `${title} is in your library` : `Add ${title} to Watchlist`
+          }
+          title={entry ? "In your library" : "Add to Watchlist"}
+          onClick={() => void act()}
+        >
+          <Bookmark size={15} fill={entry ? "currentColor" : "none"} />
+        </button>
+        <button
+          className="icon-button"
+          disabled={busy}
+          aria-label={`Like ${title}`}
+          aria-pressed={entry?.liked ?? false}
+          title="Like"
+          onClick={() => void act({ liked: !entry?.liked })}
+        >
+          <Heart size={15} fill={entry?.liked ? "currentColor" : "none"} />
+        </button>
+        <button
+          className="icon-button"
+          aria-label={`Rate ${title}`}
+          title="Rate"
+          onClick={() => setRatingOpen(true)}
+        >
+          <Star
+            size={15}
+            fill={entry?.personalRating ? "currentColor" : "none"}
+          />
+        </button>
+        <button
+          className="icon-button"
+          disabled={busy || entry?.personalStatus === "Completed"}
+          aria-label={`Mark ${title} as watched`}
+          title="Mark as watched"
+          onClick={() => void act({ personalStatus: "Completed" })}
+        >
+          <Eye size={15} />
+        </button>
+      </div>
+      {ratingOpen && (
+        <Modal title={`Rate ${title}`} onClose={() => setRatingOpen(false)}>
+          <p className="muted">Your rating · saved to your collection</p>
+          <fieldset className="quick-rating" disabled={busy}>
+            <Stars
+              value={entry?.personalRating ?? null}
+              onChange={(value) => void act({ personalRating: value })}
+            />
+          </fieldset>
+        </Modal>
+      )}
       {entry && !tracking && (
         <div className="grid-quick-actions">
           <button
@@ -258,18 +343,6 @@ export function AnimeCard({
             }
           >
             <Plus size={15} />
-          </button>
-          <button
-            className="icon-button"
-            aria-label={`Like ${title}`}
-            aria-pressed={entry.liked}
-            onClick={() =>
-              void useApp
-                .getState()
-                .edit(entry.localId, { liked: !entry.liked })
-            }
-          >
-            <Heart size={15} fill={entry.liked ? "currentColor" : "none"} />
           </button>
         </div>
       )}

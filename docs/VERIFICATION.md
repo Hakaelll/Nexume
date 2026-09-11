@@ -1,3 +1,68 @@
+# Verification · 0.5.2 artwork quality
+
+September 11, 2026.
+
+- Final Tauri/NSIS build succeeded after the additional background integration. Windows 0.5.2 executable, installer and SHA-256 hashes are in `release/`.
+
+- TypeScript and ESLint passed. Vitest: **37/37 passed**, including new tests for original-resolution artwork, old saved metadata, custom/local cover preservation and missing extraLarge fallback.
+- Six production browser regression tests passed for library/detail workflows, quick actions, recommendations, profile persistence and desktop collection sizing. The detail test also verifies 24-pixel stars and a working 3.5-star click.
+- The four affected browser tests passed again after the final CSS adjustments (32.4 seconds).
+- Final portrait fallback integration uses a progressive horizontal mask and lower fade, removing the visible image edge without adding blur. Four affected browser tests passed again (29.6 seconds).
+- A final visual pass refined the contained poster's edge mask and reduced rating-row spacing after reviewing screenshots at 960 and 1440 pixels.
+- Remote artwork files are not modified or regenerated. Source detail remains limited by the images available from the provider; local demo covers are preserved for offline use.
+- Database contents are unchanged. Image selection is applied at render time for existing entries and at mapping time for newly fetched metadata.
+- No interactive native WebView2 smoke test or installation over the user's app was performed.
+
+---
+
+# Verification · 0.5.1 refinements
+
+September 11, 2026.
+
+- Tauri Windows x64 and NSIS packaging succeeded. Release artifacts: `release/Nexume-0.5.1-windows-x64.exe`, `release/Nexume-0.5.1-windows-x64-setup.exe` and `release/SHA256SUMS-0.5.1.txt`.
+
+- TypeScript and ESLint passed; Vitest: **35/35 passed**.
+- Final production browser suite: **17/17 passed** in 1.6 minutes.
+- Added coverage for catalog relevance despite a saved title alias, SEARCH_MATCH variables, collection control insets, banner visibility, roulette outcome consistency and a profile-photo upload that survives reload.
+- Existing tests still cover ratings, likes, episode tracking, reviews, lists, backups, filter-change cancellation, reduced motion, keyboard search, all 11 sections at 960×640 and 1440×1000, and bounded WebGL resources through 1,000 entries.
+- The online roulette test now allows ten seconds for both the provider's rate-limited requests and the 3.4-second animation; the initial five-second expectation expired before the reveal.
+- Reviewed screenshots of the paper collection, roulette, detail headers and colored statistics. Detail selectors and episode controls were adjusted for contrast on the image background, then the production browser suite was rerun.
+- AniList test responses are controlled fixtures. Live provider availability is not assumed. SEARCH_MATCH is documented at https://docs.anilist.co/reference/enum/mediasort.
+- Profile photos accept JPG, PNG and WebP up to 10 MB, decode locally, center-crop to 256×256 and persist as a JPEG data URL. Remote cover validation remains unchanged. No database migration is required.
+- No native interactive WebView2 smoke test, installation over the user's app, commit, push or GitHub Release publication was performed.
+
+---
+
+# Verification · 0.5.0 Playful
+
+September 11, 2026. Current source and packages use Playful; Henry was superseded before delivery. Earlier entries below are historical.
+
+- TypeScript and ESLint passed; Vitest **34/34 passed**.
+- Complete Playwright suite against the production frontend: **16/16 passed**, 1.5 minutes. Coverage includes existing personal-data flows, card actions and ratings after reload, search, backups, lists, profile, reduced motion, catalog/local recommendation, desktop sizing and bounded WebGL resources.
+- The layout checks visit all 11 sections at **960×640 and 1440×1000**. They check horizontal overflow, navigation boundaries, heading containment, the profile photo, modal bounds and recommendation cover/text separation.
+- Reviewed screenshots of Discover, Recommend, detail, settings and compact layouts. README screenshots are in `docs/images/` and use sample data.
+- A development startup stalled while Vite scanned the local package store. Restricted optimizeDeps to index.html/viewer.html and excluded .pnpm-store from watching. The development module returned HTTP 200, and the quick-action/persistence browser smoke test passed after the fix. Production tests ran on a separate preview server.
+- Tauri Windows x64 and NSIS build succeeded. Executable and installer are copied to `release/Nexume-0.5.0-windows-x64.exe` and `release/Nexume-0.5.0-windows-x64-setup.exe`. Hashes: `release/SHA256SUMS-0.5.0.txt`.
+- The packaged UI is the same production frontend tested above. The later Vite edit only changes dependency scanning and file watching during development.
+- The installer was not installed over the user's application and no native interactive WebView2 smoke test was performed for 0.5.0. No database migration, commit or GitHub publication was performed.
+- Remote catalog tests use controlled AniList responses. No claim of live AniList availability is made for this release; local library/watchlist/sample functionality is independent of it.
+
+---
+# Verification · 0.3.0 gallery revamp
+
+September 10, 2026. This section describes the current 0.3.0 source; older records below are historical.
+
+- TypeScript (`tsc --noEmit`) and ESLint passed.
+- Vitest: **34/34 passed**, including catalog ID bounds, server filter variables and candidate pagination.
+- Playwright: **14/14 passed** in 1.3 minutes. Includes quick-action persistence after reload, catalog-wide fresh draws, local filters, reduced motion, existing reviews/lists/profile workflows, backup restore, header keyboard search, desktop sizes and WebGL fallback/performance cases.
+- An old image assertion assumed every card was initially on screen. The labeled sidebar adds a grid row; the test now scrolls through and verifies every lazily loaded cover before continuing. All original personal-data flows then passed.
+- Visual inspection: recommendation scene and Discover quick actions, with screenshots in `docs/images/`. Sample fixtures are used in those screenshots.
+- Production frontend and Tauri Windows x64 release/NSIS build passed. Package names: `release/Nexume-0.3.0-windows-x64.exe` and `release/Nexume-0.3.0-windows-x64-setup.exe`; SHA-256 hashes in `release/SHA256SUMS-0.3.0.txt`.
+- The packaged source is the current working-tree implementation. No subsequent application-source edits were made after its build. No commit or GitHub release was created.
+- The 0.3.0 installer has not been installed or interactively exercised through native WebView2 in this session. Browser coverage does not replace that native smoke test.
+- Live external Node query to AniList returned HTTP 403 with its temporary API disablement message. Catalog behavior is verified with controlled responses, not a successful live draw. Local sources are independent of this service.
+
+---
 # Verification record
 
 Observed on September 9, 2026. A build or an automated test is not proof of every manual/hardware scenario.
@@ -81,3 +146,8 @@ Observed UX follow-up: the first Save As dialog inherited the launcher working
 directory (Program Files/WindowsApps). A sensible initial user-document folder
 should be selected by the native export adapter. The next Open dialog correctly
 remembered the folder used for export.
+
+Final background integration: the portrait fallback now fills only the right
+portion of the header, with a progressive horizontal mask and a lower fade.
+This removes the hard edge of the contained image without adding blur.
+The four affected production browser tests passed again after this final pass.

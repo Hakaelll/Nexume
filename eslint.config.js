@@ -8,6 +8,7 @@ export default ts.config(
       "dist/**",
       ".tools/**",
       "node_modules/**",
+      ".pnpm-store/**",
       "src-tauri/**",
       "release/**",
       "test-results/**",

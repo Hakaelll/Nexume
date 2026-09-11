@@ -15,7 +15,6 @@ import {
   BookOpen,
   CalendarDays,
   Layers,
-  UserRound,
   ChartNoAxesCombined,
   Settings as SettingsIcon,
   WifiOff,
@@ -38,7 +37,7 @@ import {
   type Preferences,
   statuses,
 } from "../domain/model";
-import { Modal, Stars } from "../components/ui";
+import { Artwork, Modal, Stars } from "../components/ui";
 import { HeaderSearch } from "../features/search/HeaderSearch";
 import { SearchDialog, Discover } from "../features/search/Search";
 import { Home, Diary, Calendar, Stats } from "../features/personal/Personal";
@@ -61,7 +60,6 @@ const sections = [
   ["Diary", BookOpen],
   ["Calendar", CalendarDays],
   ["Lists", Layers],
-  ["Profile", UserRound],
   ["Stats", ChartNoAxesCombined],
   ["Settings", SettingsIcon],
 ] as const;
@@ -256,6 +254,7 @@ export default function App() {
           onClick={() => go("Home")}
         >
           <img src="/brand/logo.png" alt="" />
+          <span className="rail-wordmark">Nexume</span>
         </button>
         <nav aria-label="Main navigation">
           {sections.map(([name, Icon]) => (
@@ -268,15 +267,29 @@ export default function App() {
             >
               <Icon size={20} strokeWidth={1.3} />
               <span className="nav-tooltip">{name}</span>
+              {name === "Library" && (
+                <small className="nav-count">{store.data.entries.length}</small>
+              )}
             </button>
           ))}
         </nav>
         <button
           className="rail-profile"
           aria-label="Your profile"
+          aria-current={section === "Profile" && !detail ? "page" : undefined}
           onClick={() => go("Profile")}
         >
-          {store.data.profile.username.slice(0, 1).toUpperCase()}
+          {store.data.profile.avatar ? (
+            <Artwork
+              src={store.data.profile.avatar}
+              title={
+                store.data.profile.displayName || store.data.profile.username
+              }
+              eager
+            />
+          ) : (
+            <span>{store.data.profile.username.slice(0, 1).toUpperCase()}</span>
+          )}
         </button>
       </aside>
       <div
@@ -284,9 +297,6 @@ export default function App() {
         data-reduced-motion={store.data.preferences.reducedMotion}
       >
         <header className="topbar">
-          <button className="wordmark" onClick={() => go("Home")}>
-            NEXUME
-          </button>
           <div className="topbar-right">
             {offline ? (
               <span className="connection">

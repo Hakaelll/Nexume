@@ -74,7 +74,7 @@ export class CollectionRenderer {
       alpha: false,
       powerPreference: "high-performance",
     });
-    this.renderer.setClearColor(0x08090e);
+    this.renderer.setClearColor(0xf6f2ee);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, budgets[config.quality].pixelRatio),

@@ -1,101 +1,122 @@
 # Nexume
 
-**Your anime, remembered.** A Windows 10/11 anime library built with Tauri 2, Rust, React, TypeScript, SQLite and Three.js. Personal data stays on your computer. No account, subscription, external AI or cloud service is required.
+### Tu anime, tus recuerdos.
 
-Nexume has a true WebGL Collection view, a practical Grid and a configurable List. Track episodes, rate in half stars, keep independent likes and favorites, write quick thoughts and spoiler-aware reviews, curate ranked lists, choose six profile favorites and revisit your diary and statistics.
+Nexume es una aplicación de escritorio para Windows que convierte tu historial de anime en una colección personal. Organiza lo que quieres ver, registra episodios, puntúa tus series y películas y conserva tus impresiones en un espacio propio.
 
-## Try it
+**Sin cuenta obligatoria. Datos locales. Compartir es opcional.**
 
-Ready-to-try copies are in `release/`:
+![Selector de anime de Nexume](docs/images/gallery-random.png)
 
-- `Nexume-0.2.1-windows-x64-setup.exe`: Windows installer.
-- `Nexume-0.2.1-windows-x64.exe`: executable without installation.
-- `SHA256SUMS-0.2.1.txt`: package hashes.
+## Una colección que apetece abrir
 
-Build outputs are also generated under `src-tauri/target/release/`:
+- **Biblioteca en tres vistas:** colección espacial con Three.js, cuadrícula de portadas y tabla configurable.
+- **Acciones rápidas:** añade a Watchlist, da me gusta, puntúa con medias estrellas y marca como visto desde las tarjetas, sin abrir la ficha. Las notas y los cambios de estado se integran en el diario.
+- **Seguimiento:** progreso por episodios, estados de visionado, revisiones, favoritos independientes de los me gusta y prioridades de Watchlist.
+- **Descubrimiento:** búsqueda en AniList con sugerencias y teclado, filtros y exploración por temporada, popularidad o tendencias.
+- **Anime aleatorio:** elige desde Watchlist, tu biblioteca, una muestra sin conexión o todo el catálogo de AniList, con filtros de género, formato, año y duración y una ruleta de portadas que frena sobre el resultado.
+- **Perfil personal:** carga una foto JPG, PNG o WebP desde tu equipo, previsualízala o usa una URL. La imagen se recorta al centro y se guarda localmente a 256 × 256 píxeles.
+- **Fichas panorámicas:** imagen de fondo visible, degradado de lectura y controles de seguimiento integrados.
+- **Tu memoria de anime:** reseñas con control de spoilers, pensamientos breves, listas ordenadas, perfil, calendario y estadísticas.
+- **Diseño editorial:** fondo crema, titulares Inter en negrita cursiva, tarjetas suaves, portadas en color y acciones en magenta. Animaciones compatibles con movimiento reducido.
+- **Copias de seguridad:** exportación JSON y CSV, restauración validada y combinación de colecciones.
 
-- `nexume.exe`: standalone application executable. Requires Microsoft Edge WebView2 Runtime.
-- `bundle/nsis/Nexume_0.2.1_x64-setup.exe`: per-user installer, with English and Spanish installer UI. Application UI is English.
+![Catálogo y acciones rápidas](docs/images/gallery-discover.png)
 
-See `docs/VERIFICATION.md` for which source revision and checks each package represents. A development build is unsigned; no certificate or automatic updater is configured.
+Nexume es un organizador de anime; no reproduce ni descarga episodios.
 
-Start with **Search anime**, or choose **Try a sample** on Home. Sample data is explicitly opt-in and tagged `sample`; it contains illustrative progress, ratings and thoughts. Existing library records are kept. Settings also exposes the sample loader.
+## Probar en Windows
 
-**AniList availability:** during implementation on September 9, 2026, the live GraphQL endpoint returned HTTP 403 with an explicit temporary-disablement message. Nexume surfaces upstream failures and keeps all local features usable. Successful search/add is covered with controlled GraphQL responses; that is not evidence that the live upstream outage has ended. On September 10, the packaged 0.2.1 WebView successfully loaded live search suggestions and Discover covers, while the external Node probe still received 403.
+La versión de prueba actual es **0.5.2**, para Windows 10/11 de 64 bits. Los paquetes generados localmente están en `release/`:
 
-## Development
+| Archivo | Uso |
+| --- | --- |
+| `Nexume-0.5.2-windows-x64-setup.exe` | Instalador para el usuario actual |
+| `Nexume-0.5.2-windows-x64.exe` | Ejecutable sin instalación; necesita WebView2 |
+| `SHA256SUMS-0.5.2.txt` | Huellas SHA-256 de ambos paquetes |
 
-Install Node.js 22.18+ (Node 24 recommended), the stable Rust MSVC toolchain, Visual Studio C++ Build Tools, Windows SDK and WebView2. Use the checked-in pnpm lockfile for exact dependency versions:
+La carpeta `release/` no se versiona en Git. Estos archivos deben adjuntarse a una publicación de GitHub Releases para distribuirlos; todavía no hay una publicación creada por este cambio. Los paquetes de desarrollo no están firmados. La interfaz de la aplicación está en inglés; el instalador permite español e inglés.
+
+Empieza con **Add anime**, usa el buscador superior o pulsa **Try a sample** para cargar 12 animes con progreso y notas de ejemplo. La muestra es opcional y conserva las entradas existentes.
+
+## Cómo funciona el sorteo
+
+En **Recommend → Choose from**, selecciona **All anime · AniList** para descubrir títulos fuera de los resultados populares. Cada tirada toma una nueva muestra de identificadores de todo el rango del catálogo, aplica los filtros y elige un candidato al azar. No descarga la base de datos completa ni usa IA.
+
+Los filtros muy restrictivos pueden dejar una tirada sin coincidencias: vuelve a intentar o amplía los filtros. Esto no significa que no existan animes que cumplan esos criterios. El acceso al catálogo requiere conexión y depende de la disponibilidad y los límites de AniList. Watchlist, Library y Sample catalog permiten sorteos locales.
+
+## Datos y privacidad
+
+La aplicación Windows guarda tu colección en SQLite (`nexume.db`) bajo `%APPDATA%/app.nexume.desktop`. Las imágenes se almacenan en una caché separada. La versión del navegador usa almacenamiento local: **las colecciones del navegador y de Windows son independientes**. Puedes transferirlas mediante un backup JSON.
+
+Los fallos de lectura o guardado se muestran sin reiniciar silenciosamente tu colección. Restaurar una copia valida su estructura, ofrece combinar o reemplazar y solicita una copia previa. Los backups no incluyen sesiones, propiedad de publicaciones ni subidas pendientes. Restaurar no publica contenido automáticamente.
+
+## Desarrollo
+
+Stack: **Tauri 2 · Rust · React 19 · TypeScript · Zustand · SQLite · Three.js · Vite**. Metadatos de AniList; Supabase solo para compartir opcionalmente.
+
+Requisitos: Node.js 22.18 o superior, pnpm, Rust estable con MSVC, Visual Studio C++ Build Tools, Windows SDK y Microsoft Edge WebView2.
 
 ```powershell
 corepack pnpm install --frozen-lockfile
 npm run dev
+```
+
+La vista web se abre en `http://127.0.0.1:1420`. Para ejecutar la aplicación nativa:
+
+```powershell
 npm run tauri dev
 ```
 
-The browser preview at `http://127.0.0.1:1420` stores data in this browser. The Windows application uses SQLite. **Their collections are separate.** JSON backups can transfer your records between them.
+Validación y compilación:
 
 ```powershell
 npm run lint
 npm run typecheck
-npm run test
+npm test
 npm run test:e2e
 npm run build
 npm run tauri build
-cd src-tauri
-cargo fmt --check
-cargo clippy --all-targets
-cargo test
 ```
 
-Playwright tests use installed Microsoft Edge. They run against the local application, without creating cloud accounts or publishing user data. The PostgreSQL privacy tests use PGlite locally and apply the actual Supabase schema.
+Playwright utiliza Microsoft Edge instalado. Las pruebas de catálogo usan respuestas controladas y las de privacidad ejecutan el esquema PostgreSQL real mediante PGlite. Los resultados y límites de la verificación se documentan en [VERIFICATION.md](docs/VERIFICATION.md).
 
-## Local data and backups
+## Compartir opcionalmente
 
-The native database is `nexume.db` under the application configuration directory (`%APPDATA%/app.nexume.desktop` on Windows). Artwork is cached separately under the application cache directory. Window placement is managed by Tauri's window-state plugin. A second application launch focuses the existing window to avoid competing writers.
+1. Crea un proyecto Supabase y aplica `supabase/schema.sql`.
+2. Copia `.env.example` a `.env.local` y configura `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` y `VITE_PUBLIC_VIEWER_URL`.
+3. Usa como URL del visor tu dirección HTTPS real, terminada en `viewer.html`, y compila la aplicación con esos valores.
+4. Aloja `dist/` en un servidor estático e inicia sesión desde Settings.
+5. Elige la visibilidad de una lista, perfil o reseña y publícala explícitamente.
 
-Settings exports a versioned JSON backup or a formula-safe CSV. Restore validates fields, IDs and relationships, shows a summary, and offers merge or replacement. It asks you to save a pre-restore backup before proceeding. Merge preserves existing personal records. Online sessions, publication ownership and pending uploads are excluded from exported backups; a restored copy does not automatically publish anything. Remote publications are not part of local backup restoration.
+El frontend solo debe contener una clave pública/anon. Las notas privadas, rutas del dispositivo e historial no forman parte de los datos públicos. Las publicaciones Unlisted son accesibles a quien tenga el enlace; no tienen contraseña. Sin configuración, todas las funciones locales siguen disponibles.
 
-The application never silently resets an unreadable database. A failed save reports an error and retains the previously committed state.
+## Atajos
 
-## Optional online sharing
+| Acción | Atajo |
+| --- | --- |
+| Buscar anime | Ctrl+K |
+| Biblioteca / Inicio / Ajustes | Ctrl+L / Ctrl+H / Ctrl+, |
+| Mover selección en Collection | Flechas o rueda |
+| Abrir ficha / Vista rápida en Collection | Enter / Espacio |
+| Cerrar o volver | Escape |
+| Me gusta / Puntuar en la ficha | F / R |
+| Ajustar una puntuación enfocada | Flechas, Inicio, Fin; Supr para borrar |
 
-1. Create your own Supabase project and run `supabase/schema.sql` in its SQL editor.
-2. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_PUBLIC_VIEWER_URL`.
-3. Set the viewer URL to your actual HTTPS URL, such as `https://your-host.example/viewer.html`. No Nexume domain is assumed.
-4. Build the application. Deploy the contents of `dist/` to a static host of your choice; `viewer.html` is its public entry. The same environment values must be present at build time.
-5. Sign in from Settings. Set the intended list/profile/review visibility and explicitly publish it. Future edits to that opted-in publication enter the durable local queue. Switching it to Private or deleting it queues remote removal.
+## Documentación y créditos
 
-Only an anon/publishable key belongs in the frontend. Never put service-role or administrative secrets there. Private notes, internal record IDs, device paths and viewing history are excluded from public DTOs. Quick thoughts in lists require explicit opt-in. The viewer has no dependency on the desktop store, repository or native bridge, and does not persist an authentication session.
+- [Arquitectura](ARCHITECTURE.md) y [base de datos](DATABASE.md)
+- [Colección 3D](COLLECTION_3D.md) y [compartir](SOCIAL_ARCHITECTURE.md)
+- [Diseño](DESIGN.md) y [cambios visuales 0.5.2](docs/GALLERY_REVAMP.md)
+- [Atribución de imágenes y fuentes](docs/ASSETS.md)
 
-Public and Unlisted snapshots are readable only through an ID-specific RPC. Anonymous visitors cannot enumerate the backing table. Publishing is owner-scoped, versioned and protected against stale writes. Unlisted means accessible to someone with the link; it is not password protection. Without configuration, sharing says **Not configured** and local Lists/Profile remain available.
+Las portadas y los metadatos pertenecen a sus titulares y se obtienen de AniList. El emblema de Nexume procede de los recursos proporcionados para el proyecto. Inter se distribuye localmente, incluidos sus pesos en cursiva, siguiendo la referencia Playful. Android e iOS quedan fuera de esta versión.
 
-## Watchlist, recommendations and statistics
+## Novedades de 0.5.2
 
-New anime added through Search or a detail page enter **Watchlist** (Planning). Use **Start watching** to move the same record into Watching; search, genre and priority controls help organize upcoming titles.
+Las portadas priorizan la resolución original disponible, incluso para animes guardados. Los fondos usan banners panorámicos y evitan ampliar una portada vertical a toda la ficha. Las estrellas de la ficha aumentan a 24 píxeles, conservando las medias estrellas y los atajos de teclado.
 
-**Recommend** chooses a random anime from Watchlist, Library, AniList popular results or the explicitly labeled offline sample catalog. Combine genre, format, earliest year and maximum episodes, then select **Pick an anime**. The result can be opened or added to Watchlist. This is a random selection from the displayed candidate pool, not an AI prediction or a uniform sample of the full AniList database.
+Ruleta visual de portadas, colección con fondo claro y controles laterales separados del borde, búsqueda por relevancia, fichas con imagen panorámica y estadísticas con color. En **Profile → Edit profile → Upload profile photo** puedes elegir una foto local (JPG, PNG o WebP, hasta 10 MB), previsualizarla y guardarla.
 
-**Statistics** includes a status donut, monthly activity, half-star histogram and genre/studio/decade/season charts. The compact header accepts a search query directly. Tab and recommendation animations respect reduced motion.
-
-## Keyboard and mouse
-
-| Input | Action |
-|---|---|
-| Ctrl+K | Global AniList search |
-| Ctrl+L / Ctrl+H / Ctrl+, | Library / Home / Settings |
-| Arrow keys in Collection | Select adjacent anime |
-| Enter / Space | Detail / Quick view |
-| Escape | Back or close an overlay |
-| F / R | Like selected anime / focus or open rating |
-| Click / double click in Collection | Select / open |
-| Wheel over Collection | Move selection |
-| Right click an anime | Context actions |
-
-The rating control also supports arrow keys, Home/End and Delete to clear. Ranked lists support drag-and-drop and keyboard-accessible move buttons. Grid and List provide alternatives to WebGL. Reduced motion respects both system and application settings.
-
-## Documentation
-
-`ARCHITECTURE.md`, `DATABASE.md`, `DESIGN.md`, `COLLECTION_3D.md`, `SOCIAL_ARCHITECTURE.md`, `MOBILE_PORT_PLAN.md`, `NEXT_TODOS.md` and `docs/VERIFICATION.md` describe the implementation and remaining verification. `docs/COMMIT_MESSAGE.txt` contains the detailed English commit message.
-
-The original design reference is preserved in `docs/ACTIVE_THEORY_REFERENCE.md`. Nexume uses the supplied emblem; no Sony/PlayStation assets or proprietary fonts are included. See `docs/ASSETS.md` for artwork and font attribution. Android/iOS implementation is intentionally deferred.
+![Ficha de anime con imagen de fondo](docs/images/anime-detail.png)
+![Estadísticas de la colección](docs/images/statistics.png)

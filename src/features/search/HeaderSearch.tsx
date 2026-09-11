@@ -18,7 +18,10 @@ export function HeaderSearch({
 }) {
   const { data } = useApp();
   const [focused, setFocused] = useState(false);
-  const [results, setResults] = useState<Anime[]>([]);
+  const [results, setResults] = useState<{
+    query: string;
+    items: Anime[];
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [active, setActive] = useState(-1);
@@ -38,15 +41,13 @@ export function HeaderSearch({
         )
         .map((entry) => entry.cachedMetadata)
     : [];
-  const items = [
-    ...local,
-    ...results.filter(
-      (item) => !local.some((a) => a.anilistId === item.anilistId),
-    ),
-  ].slice(0, 6);
+  // Catalog relevance is authoritative; saved titles remain an offline fallback.
+  const items = (
+    results?.query === needle ? results.items : error ? local : []
+  ).slice(0, 6);
   const expanded = focused && !!needle;
   useEffect(() => {
-    setResults([]);
+    setResults(null);
     setActive(-1);
     setError("");
     setLoading(!!needle && focused);
@@ -59,7 +60,8 @@ export function HeaderSearch({
           controller.signal,
         )
         .then((result) => {
-          if (!controller.signal.aborted) setResults(result.items);
+          if (!controller.signal.aborted)
+            setResults({ query: needle, items: result.items });
         })
         .catch(() => {
           if (!controller.signal.aborted)
@@ -114,7 +116,7 @@ export function HeaderSearch({
             ? `header-anime-${items[active].anilistId}`
             : undefined
         }
-        placeholder="Search anime…"
+        placeholder="Search anime"
         value={query}
         autoComplete="off"
         onFocus={() => setFocused(true)}
@@ -172,7 +174,7 @@ export function HeaderSearch({
                 onClick={() => open(anime)}
               >
                 <Artwork
-                  src={anime.coverImage || anime.coverLarge}
+                  src={anime.coverLarge || anime.coverImage}
                   title={anime.english || anime.romaji}
                   eager
                 />

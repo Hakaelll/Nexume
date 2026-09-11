@@ -109,7 +109,13 @@ export const profileSchema = z.object({
   publicId: z.string().uuid(),
   username: z.string().regex(/^[a-zA-Z0-9_-]{1,40}$/),
   displayName: text(100),
-  avatar: remoteImage,
+  avatar: z.union([
+    remoteImage,
+    z
+      .string()
+      .max(200000)
+      .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/),
+  ]),
   bio: text(2000),
   createdAt: date,
   favoriteIds: z.array(z.string().uuid()).max(6),

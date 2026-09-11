@@ -1,3 +1,4 @@
+import { animeCover } from "../../domain/artwork";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Heart } from "lucide-react";
 import {
@@ -48,7 +49,7 @@ export default function Collection({
       entries.map((e) => ({
         id: e.localId,
         title: e.preferredTitle,
-        cover: e.coverImage,
+        cover: animeCover(e.cachedMetadata, e.coverImage),
       })),
     [entries],
   );

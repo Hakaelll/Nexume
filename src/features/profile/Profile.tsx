@@ -1,3 +1,4 @@
+import { readAvatar } from "./avatar";
 import { useState } from "react";
 import { Edit3, Plus, Check, Share2, ArrowUpRight } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -9,6 +10,8 @@ import { enqueue, flushQueue } from "../../services/social/sync";
 export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
   const store = useApp();
   const { profile, entries } = store.data;
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
   const [editing, setEditing] = useState(false);
   const [favorites, setFavorites] = useState(false);
   const [draft, setDraft] = useState(profile);
@@ -71,6 +74,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             className="button"
             onClick={() => {
               setDraft(profile);
+              setAvatarError("");
               setEditing(true);
             }}
           >
@@ -237,12 +241,59 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                 onChange={(e) => setDraft({ ...draft, bio: e.target.value })}
               />
             </label>
+            <div className="avatar-upload">
+              {draft.avatar && (
+                <Artwork
+                  src={draft.avatar}
+                  title="Profile photo preview"
+                  eager
+                />
+              )}
+              <label className="field">
+                Upload profile photo
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={avatarBusy}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    setAvatarBusy(true);
+                    setAvatarError("");
+                    try {
+                      const avatar = await readAvatar(file);
+                      setDraft((current) => ({ ...current, avatar }));
+                    } catch (error) {
+                      setAvatarError(
+                        error instanceof Error
+                          ? error.message
+                          : "Could not read this image.",
+                      );
+                    } finally {
+                      setAvatarBusy(false);
+                    }
+                  }}
+                />
+              </label>
+              {draft.avatar && (
+                <button
+                  type="button"
+                  className="text-button"
+                  disabled={avatarBusy}
+                  onClick={() => setDraft({ ...draft, avatar: "" })}
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+            {avatarError && <p role="alert">{avatarError}</p>}
             <label className="field">
               Avatar URL
               <input
                 type="url"
                 placeholder="https://…"
-                value={draft.avatar}
+                value={draft.avatar.startsWith("data:") ? "" : draft.avatar}
                 onChange={(e) => setDraft({ ...draft, avatar: e.target.value })}
               />
             </label>
@@ -263,7 +314,9 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               </select>
             </label>
             <div className="form-actions">
-              <button className="button primary">Save profile</button>
+              <button className="button primary" disabled={avatarBusy}>
+                Save profile
+              </button>
             </div>
           </form>
         </Modal>

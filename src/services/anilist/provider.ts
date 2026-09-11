@@ -86,8 +86,8 @@ export function mapAnime(d: AniListDTO): Anime {
     english: d.title?.english ?? null,
     native: d.title?.native ?? null,
     synonyms: d.synonyms ?? [],
-    coverImage: d.coverImage?.large || d.coverImage?.extraLarge || "",
-    coverLarge: d.coverImage?.extraLarge ?? d.coverImage?.large ?? "",
+    coverImage: d.coverImage?.extraLarge || d.coverImage?.large || "",
+    coverLarge: d.coverImage?.extraLarge || d.coverImage?.large || "",
     bannerImage: d.bannerImage ?? "",
     description: plainText(d.description ?? ""),
     averageScore: d.averageScore ?? null,
@@ -243,6 +243,7 @@ export class AniListMetadataProvider implements AnimeMetadataProvider {
   }
   search(options: SearchOptions, signal?: AbortSignal) {
     const sorts = [
+      "SEARCH_MATCH",
       "TRENDING_DESC",
       "POPULARITY_DESC",
       "SCORE_DESC",
@@ -251,7 +252,11 @@ export class AniListMetadataProvider implements AnimeMetadataProvider {
     const variables = {
       search: options.query || undefined,
       page: options.page ?? 1,
-      sort: sorts.includes(options.sort ?? "") ? options.sort : "TRENDING_DESC",
+      sort: sorts.includes(options.sort ?? "")
+        ? options.sort
+        : options.query?.trim()
+          ? "SEARCH_MATCH"
+          : "TRENDING_DESC",
       seasonYear: options.year || undefined,
       season: options.season || undefined,
       genre: options.genre || undefined,
@@ -276,6 +281,52 @@ export class AniListMetadataProvider implements AnimeMetadataProvider {
       result.push(...page.items);
     }
     return result;
+  }
+  async randomCatalog(
+    options: SearchOptions & { minYear?: number; maxEpisodes?: number },
+    signal?: AbortSignal,
+  ) {
+    // Sample IDs across the full catalog, including obscure and older titles.
+    // Never assume pageInfo.total is an exact catalog size.
+    const latest = await this.request(
+      `query{Page(perPage:1){pageInfo{hasNextPage}media(type:ANIME,sort:ID_DESC){${fields}}}}`,
+      {},
+      signal,
+    );
+    const maxId = latest.items[0]?.anilistId;
+    if (!maxId) return [];
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const ids = [
+        ...new Set(
+          Array.from(
+            { length: 512 },
+            () => 1 + Math.floor(Math.random() * maxId),
+          ),
+        ),
+      ];
+      const items: Anime[] = [];
+      for (let page = 1; ; page++) {
+        const result = await this.request(
+          `query($ids:[Int],$page:Int,$genre:String,$format:MediaFormat,$adult:Boolean,$since:FuzzyDateInt,$episodes:Int){Page(page:$page,perPage:50){pageInfo{hasNextPage}media(type:ANIME,id_in:$ids,genre:$genre,format:$format,isAdult:$adult,startDate_greater:$since,episodes_lesser:$episodes){${fields}}}}`,
+          {
+            ids,
+            page,
+            genre: options.genre || undefined,
+            format: options.format || undefined,
+            adult: options.adult ? undefined : false,
+            since: options.minYear ? options.minYear * 10000 - 1 : undefined,
+            episodes: options.maxEpisodes ? options.maxEpisodes + 1 : undefined,
+          },
+          signal,
+        );
+        items.push(...result.items);
+        if (!result.hasNextPage) break;
+      }
+      if (items.length) return items;
+    }
+    throw new Error(
+      "No matches in this draw. Try again or broaden your filters.",
+    );
   }
 }
 export const anilist = new AniListMetadataProvider();

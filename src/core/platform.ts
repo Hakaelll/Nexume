@@ -35,7 +35,7 @@ export async function readBackupFile(): Promise<string | null> {
 const imageCache = new Map<string, Promise<string>>();
 export function cachedImage(url: string): Promise<string> {
   if (!url) return Promise.resolve("");
-  if (!native || url.startsWith("/")) return Promise.resolve(url);
+  if (!native || url.startsWith("/") || url.startsWith("data:image/")) return Promise.resolve(url);
   const known = imageCache.get(url);
   if (known) return known;
   const job = invoke<string>("cache_image", { url })

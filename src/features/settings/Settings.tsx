@@ -13,6 +13,7 @@ import { PageTitle, Modal } from "../../components/ui";
 import { social } from "../../services/social/provider";
 import { flushQueue } from "../../services/social/sync";
 import { anilist } from "../../services/anilist/provider";
+import { version } from "../../../package.json";
 export default function Settings({ onSample }: { onSample: () => void }) {
   const store = useApp();
   const p = store.data.preferences;
@@ -370,7 +371,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
         <img src="/brand/logo.png" alt="Nexume logo" />
         <div>
           <h2>
-            Nexume <small>0.2.1</small>
+            Nexume <small>{version}</small>
           </h2>
           <span>Metadata by AniList</span>
         </div>

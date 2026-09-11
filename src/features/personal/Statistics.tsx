@@ -5,12 +5,12 @@ import { PageTitle } from "../../components/ui";
 import { statistics } from "../../domain/rules";
 import { statuses } from "../../domain/model";
 const colors = [
-  "#8b7ae5",
-  "#62c7b8",
-  "#d0a968",
-  "#668bd5",
-  "#d47c96",
-  "#b09be4",
+  "#b84d87",
+  "#537cbd",
+  "#418677",
+  "#c39135",
+  "#c16d58",
+  "#8870af",
 ];
 function HorizontalChart({
   title,
@@ -120,7 +120,7 @@ export default function Statistics() {
                 cy="95"
                 r="72"
                 fill="none"
-                stroke="#23232e"
+                stroke="#eeeeee"
                 strokeWidth="18"
               />
               {distribution
@@ -195,12 +195,6 @@ export default function Statistics() {
             role="img"
             aria-label={`Monthly episodes: ${months.map((m) => `${m.key}: ${m.count}`).join(", ")}`}
           >
-            <defs>
-              <linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#a28be5" stopOpacity=".4" />
-                <stop offset="100%" stopColor="#a28be5" stopOpacity="0" />
-              </linearGradient>
-            </defs>
             {[0, 1, 2, 3].map((i) => (
               <g key={i}>
                 <line
@@ -208,7 +202,7 @@ export default function Statistics() {
                   x2="685"
                   y1={172 - i * 43.33}
                   y2={172 - i * 43.33}
-                  stroke="#292a35"
+                  stroke="#b3b3b3"
                   strokeDasharray="3 6"
                 />
                 <text x="25" y={176 - i * 43.33} textAnchor="end">
@@ -216,14 +210,11 @@ export default function Statistics() {
                 </text>
               </g>
             ))}
-            <polygon
-              points={`35,172 ${line} 685,172`}
-              fill="url(#activity-fill)"
-            />
+            <polygon points={`35,172 ${line} 685,172`} fill="#537cbd18" />
             <polyline
               points={line}
               fill="none"
-              stroke="#b5a0f1"
+              stroke="#537cbd"
               strokeWidth="2.5"
               strokeLinejoin="round"
             />
@@ -233,7 +224,7 @@ export default function Statistics() {
                   cx={p.x}
                   cy={p.y}
                   r="4"
-                  fill="#b5a0f1"
+                  fill="#537cbd"
                   tabIndex={0}
                   aria-label={`${p.key}: ${p.count} episodes`}
                 >

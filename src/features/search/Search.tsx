@@ -184,7 +184,7 @@ export function SearchDialog({
                     onClick={() => open(a)}
                     onFocus={() => setActive(i)}
                   >
-                    <Artwork src={a.coverImage} title={a.english ?? a.romaji} />
+                    <Artwork src={a.coverLarge || a.coverImage} title={a.english ?? a.romaji} />
                     <span>
                       <strong>{a.english ?? a.romaji}</strong>
                       <small>

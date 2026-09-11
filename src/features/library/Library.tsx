@@ -1,3 +1,4 @@
+import { animeCover } from "../../domain/artwork";
 import { useMemo, useState, useEffect, useRef, lazy, Suspense } from "react";
 import {
   LayoutGrid,
@@ -360,7 +361,7 @@ export default function Library({
                         onClick={() => onOpen(entry)}
                       >
                         <Artwork
-                          src={entry.coverImage}
+                          src={animeCover(entry.cachedMetadata, entry.coverImage)}
                           title={entry.preferredTitle}
                         />
                         <span>{entry.preferredTitle}</span>

@@ -46,6 +46,27 @@ test("offline-first library, rating, review, lists, profile and reload", async (
   });
   await page.getByRole("button", { name: "Grid", exact: true }).click();
   await expect(page.locator(".poster-grid .anime-card")).toHaveCount(12);
+  // The wider navigation creates another row. Exercise lazy artwork by scrolling.
+  for (const card of await page.locator(".poster-grid .anime-card").all()) {
+    await card.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() =>
+        card
+          .locator("img")
+          .evaluateAll(
+            (images) =>
+              images.length > 0 &&
+              images.every(
+                (image) => (image as HTMLImageElement).naturalWidth > 0,
+              ),
+          ),
+      )
+      .toBe(true);
+  }
+  await page
+    .locator(".poster-grid .anime-card")
+    .first()
+    .scrollIntoViewIfNeeded();
   await expect
     .poll(() =>
       page
@@ -127,7 +148,7 @@ test("offline-first library, rating, review, lists, profile and reload", async (
   await page.getByRole("button", { name: "Share", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("Not configured");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Profile", exact: true }).click();
+  await page.getByRole("button", { name: "Your profile", exact: true }).click();
   await page
     .getByRole("button", { name: "Choose favorites", exact: true })
     .click();
@@ -231,4 +252,3 @@ test("collection fits desktop sizes and recovers from context loss", async ({
   ).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".poster-grid .anime-card")).toHaveCount(12);
 });
-
