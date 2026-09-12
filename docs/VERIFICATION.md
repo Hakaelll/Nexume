@@ -1,3 +1,19 @@
+# Verification · 0.6.1 profile framing and Spanish time
+
+September 12, 2026.
+
+- Final Tauri/NSIS 0.6.1 build succeeded. Both release files were scanned without execution using Defender definitions 1.459.166.0; both explicitly reported no threats. SHA-256 hashes are in release/SHA256SUMS-0.6.1.txt. This local result does not resolve the detection on the other Windows 10 computer.
+
+- TypeScript and ESLint passed; Vitest: **43/43 passed**.
+- Full production regression run: 19 tests passed; one old avatar-preview selector failed because the editor now uses a full-image canvas. Updated that selector and reran the remaining test successfully (1/1), including saved-avatar persistence after reload. All 20 scenarios are verified.
+- Three targeted production browser tests passed: visual avatar crop with pointer dragging, arrow keys and zoom; favorite search/selection and save; calendar/discovery regressions; full-motion override; Spain's Home schedule with a browser configured for America/Los_Angeles.
+- Unit coverage verifies summer/winter hours, a Spanish date differing from UTC, and 23/25-hour daylight-saving days.
+- Visually inspected the full-photo crop editor at 960×640. The image, selection circle and zoom fit within the scrollable dialog without overlap. Updated docs/images/avatar-crop.png and home-today.png.
+- Reported 0.6.0 Defender detection occurred on a separate Windows 10 computer. Local scans did not reproduce it; see [investigation](DEFENDER-0.6.0.md). This is not a confirmed false positive or a fixed malware detection.
+- No changes to rating behavior, database schema or antivirus exclusions. No native installation or testing on the affected Windows 10 computer was performed.
+
+---
+
 # Verification · 0.6.0 personal workspace
 
 September 12, 2026.

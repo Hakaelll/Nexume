@@ -1,4 +1,9 @@
-import { useAiring, useClock, dayStart } from "../../core/airing";
+import {
+  spainDayRange,
+  spainTime,
+  SPAIN_TIME_ZONE,
+} from "../../core/spainTime";
+import { useAiring, useClock } from "../../core/airing";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowRight, Plus } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -24,12 +29,7 @@ export function Home({
 }: { onSample: () => void; onAnime: (a: Anime) => void } & Props) {
   const { data, prefs } = useApp();
   const now = useClock();
-  const today = dayStart(new Date(now));
-  const tomorrow = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() + 1,
-  );
+  const [today, tomorrow] = spainDayRange(now);
   const airing = useAiring(today, tomorrow);
   const watching = data.entries.filter((e) =>
     ["Watching", "Rewatching"].includes(e.personalStatus),
@@ -72,6 +72,7 @@ export function Home({
       <PageTitle
         title="Home"
         subtitle={today.toLocaleDateString("en", {
+          timeZone: SPAIN_TIME_ZONE,
           weekday: "long",
           month: "long",
           day: "numeric",
@@ -109,6 +110,9 @@ export function Home({
             <ArrowUpRight size={14} />
           </button>
         </div>
+        <p className="airing-timezone">
+          España peninsular · Europe/Madrid · Canarias: una hora menos
+        </p>
         {airing.items.length ? (
           <div className="today-airing-grid">
             {airing.items.map((a) => {
@@ -125,11 +129,7 @@ export function Home({
                   />
                   <span>
                     <small>
-                      {new Date(air.airingAt * 1000).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}{" "}
-                      · EP {air.episode}
+                      {spainTime(air.airingAt * 1000)} · EP {air.episode}
                     </small>
                     <strong>{a.english ?? a.romaji}</strong>
                     <em>

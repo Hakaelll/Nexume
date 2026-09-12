@@ -1,51 +1,53 @@
-feat: improve motion settings and personalize the anime workspace
+feat: simplify profile photo cropping and use Spanish airing times
 
-Make animation behavior configurable across Windows installations and expand
-profile editing, airing schedules, Home, Diary and discovery tools.
+Replace the profile photo position sliders with a visual crop editor and
+make Home's airing schedule independent of the computer's time zone.
+Document the reported Windows Defender installer detection and the checks
+performed without claiming that the detection has been fixed.
 
-Animation behavior
-- Add Follow system, Full animations and Reduced motion preferences.
-- Resolve motion preferences consistently for Collection, the recommendation
-  roulette, route transitions and CSS animations.
-- Allow Full animations to override Windows reduced-motion preferences while
-  preserving the existing reduced-motion setting and accessible defaults.
-- Listen for operating-system preference changes and persist the selected mode.
-- Keep the existing route-animation fallback for WebView versions without
-  document.startViewTransition support.
+Profile photo editor:
+- Display the complete uploaded image with a circular selection overlay.
+- Allow dragging the circle with pointer capture and fine adjustments with
+  arrow keys; support Shift for larger keyboard movements.
+- Keep one zoom slider, a visible zoom value and a Center photo action.
+- Scroll the editor into view after selecting an image, including on smaller
+  desktop windows, and retain compact cropped-avatar persistence.
+- Preserve existing upload validation, photo removal and profile saving.
 
-Profile
-- Add title search to the favorite-anime picker while retaining the six-title
-  limit, selection indicators and the ability to remove existing favorites.
-- Increase the profile avatar size.
-- Add horizontal position, vertical position and zoom controls when uploading
-  a photo, with a live circular preview and a center/reset action.
-- Store the selected crop as a compact local JPEG while retaining file
-  validation, URL avatars and profile persistence.
+Profile favorites:
+- Retain title search in the six-favorite picker and focus it when opened.
+- Reset previous search text when opening from either Choose favorites or
+  an empty favorite slot, while preserving the six-title selection limit.
 
-Calendar and Home
-- Add Monday-based weekly and full-month calendar views with period navigation,
-  Today navigation, highlighted current dates and local-time episode cards.
-- Fetch paginated AniList airing schedules for the selected date range, batch
-  followed title IDs, cancel obsolete requests and retain known local dates
-  when the remote schedule is unavailable.
-- Show today's scheduled episodes on Home, including already aired episodes.
-- Replace Home's recently watched section with in-progress viewing and retain
-  episode controls, seasonal anime and genre-based recommendations.
+Spanish airing schedule:
+- Use Europe/Madrid explicitly for Home's displayed episode times and daily
+  query boundaries, regardless of the device's configured time zone.
+- Calculate both midnight boundaries independently to handle 23-hour and
+  25-hour days at daylight-saving transitions.
+- Label the schedule as mainland Spain time and note the Canary Islands'
+  one-hour difference; clarify that AniList times describe original airing,
+  not Spanish streaming-platform availability.
 
-Diary and Discover
-- Add Diary activity totals and distinct visual accents for event types.
-- Group diary dates using local time consistently.
-- Add title, minimum community score, maximum episode count and ordering
-  controls to Discover, with server-side filtering and a reset action.
-- Clear stale discovery results when changing filters.
+Windows Defender investigation:
+- Document the reported Bearfoos.B!ml detection on the 0.6.0 NSIS setup on
+  another computer running Windows 10.
+- Record SHA-256 matches between local release files and build outputs,
+  unsigned Authenticode status, source/configuration review and scan limits.
+- Record no-threat results for the local 0.6.0 installer and executable after
+  updating Defender definitions to 1.459.166.0.
+- Provide evidence and submission instructions for Microsoft analysis;
+  leave the reported detection unresolved pending affected-file comparison
+  and investigation. Do not add antivirus exclusions or bypass protection.
 
-Quality and delivery
-- Cover calendar boundaries, schedule pagination, favorite search, photo crops,
-  discovery filters and full-animation overrides with regression tests.
-- Keep the existing rating implementation unchanged, as requested.
-- Update the README and verification notes and package Windows version 0.6.0.
-
-Validation
-- TypeScript and ESLint passed.
-- 40 unit/integration tests and 19 production browser tests passed.
-- Verified desktop layouts at 960x640 and 1440x1000.
+Validation and release:
+- Add winter/summer, date-boundary and DST-transition unit coverage.
+- Exercise circular selection dragging, keyboard movement, zoom, favorite
+  search and profile saving in production browser tests.
+- Verify Spanish Home times with a browser using America/Los_Angeles.
+- Retain regression coverage for calendar, Discover and motion preferences.
+- Pass TypeScript, ESLint and all 43 unit tests; verify all 20 browser
+  scenarios (19 in the full run plus the updated avatar test on rerun).
+- Build version 0.6.1 with NSIS and publish local SHA-256 manifests.
+- Scan both final 0.6.1 artifacts locally with Defender: no threats reported.
+  Do not treat these local results as confirmation for the affected PC.
+- Update README, verification notes and visual documentation.

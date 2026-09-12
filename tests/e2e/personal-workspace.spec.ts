@@ -14,12 +14,10 @@ test("calendar modes, today episodes, favorite search, avatar framing and discov
   data.preferences.reducedMotion = true;
   const today = new Date();
   today.setHours(18, 0, 0, 0);
-  data.entries = sample
-    .slice(0, 4)
-    .map((a) => ({
-      ...createEntry(mapAnime(a)),
-      personalStatus: "Watching" as const,
-    }));
+  data.entries = sample.slice(0, 4).map((a) => ({
+    ...createEntry(mapAnime(a)),
+    personalStatus: "Watching" as const,
+  }));
   data.history = [
     event(data.entries[0].localId, "episode", "Watched episode 6", 1),
     event(data.entries[1].localId, "rating", "Rated 4 stars"),
@@ -69,6 +67,7 @@ test("calendar modes, today episodes, favorite search, avatar framing and discov
   await expect(
     page.getByRole("heading", { name: "Continue watching" }),
   ).toBeVisible();
+  await expect(page.locator(".airing-timezone")).toContainText("Europe/Madrid");
   await page.screenshot({ path: "test-results/home-today.png" });
   await page.getByRole("button", { name: "Diary", exact: true }).click();
   await expect(page.locator(".diary-event")).toHaveCount(3);
@@ -104,14 +103,30 @@ test("calendar modes, today episodes, favorite search, avatar framing and discov
   await page
     .getByLabel("Upload profile photo")
     .setInputFiles("public/demo/1-cover.jpg");
-  const preview = page.locator(".avatar-crop-controls img");
-  await expect(preview).toHaveAttribute("src", /^data:image/);
-  const before = await preview.getAttribute("src");
+  await expect(
+    page.getByRole("img", { name: "Complete uploaded photo" }),
+  ).toBeVisible();
+  const circle = page.getByRole("button", { name: "Move photo selection" });
+  const before = await circle.getAttribute("style");
   await page.getByLabel("Zoom", { exact: true }).focus();
   await page.keyboard.press("End");
-  await expect(preview).not.toHaveAttribute("src", before!);
-  await page.getByLabel("Vertical position").focus();
-  await page.keyboard.press("End");
+  await expect(circle).not.toHaveAttribute("style", before!);
+  await circle.scrollIntoViewIfNeeded();
+  const box = (await circle.boundingBox())!;
+  const beforeDrag = await circle.getAttribute("style");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    box.x + box.width / 2 + 20,
+    box.y + box.height / 2 + 25,
+    { steps: 5 },
+  );
+  await page.mouse.up();
+  await expect(circle).not.toHaveAttribute("style", beforeDrag!);
+  const afterDrag = await circle.getAttribute("style");
+  await circle.focus();
+  await page.keyboard.press("ArrowUp");
+  await expect(circle).not.toHaveAttribute("style", afterDrag!);
   await page.screenshot({ path: "test-results/avatar-crop.png" });
   await page.getByRole("button", { name: "Save profile", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -176,4 +191,60 @@ test("full animation override works when Windows requests reduced motion", async
     "data-reduced-motion",
     "true",
   );
+});
+
+test("Home uses Spain's day and time on a computer in another timezone", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    timezoneId: "America/Los_Angeles",
+  });
+  const page = await context.newPage();
+  try {
+    await page.clock.setFixedTime(new Date("2026-07-10T23:30:00Z"));
+    const data = emptyData();
+    data.preferences.reducedMotion = true;
+    await page.addInitScript(
+      (value) =>
+        localStorage.setItem("nexume.preview.v1", JSON.stringify(value)),
+      data,
+    );
+    let bounds: Record<string, unknown> = {};
+    await page.route("https://graphql.anilist.co", (route) => {
+      const body = route.request().postDataJSON();
+      if (body.query.includes("airingSchedules")) bounds = body.variables;
+      return route.fulfill({
+        json: {
+          data: {
+            Page: body.query.includes("airingSchedules")
+              ? {
+                  pageInfo: { hasNextPage: false },
+                  airingSchedules: [
+                    {
+                      media: sample[0],
+                      episode: 7,
+                      airingAt: Date.parse("2026-07-10T23:00:00Z") / 1000,
+                    },
+                  ],
+                }
+              : { pageInfo: { hasNextPage: false }, media: [] },
+          },
+        },
+      });
+    });
+    await page.goto("/");
+    await expect(page.locator(".today-airing-card")).toContainText("01:00");
+    await expect(page.locator(".airing-timezone")).toContainText(
+      "Europe/Madrid",
+    );
+    await expect
+      .poll(() =>
+        Object.values(bounds).includes(
+          Date.parse("2026-07-10T22:00:00Z") / 1000 - 1,
+        ),
+      )
+      .toBe(true);
+  } finally {
+    await context.close();
+  }
 });

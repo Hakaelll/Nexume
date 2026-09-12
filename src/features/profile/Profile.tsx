@@ -1,3 +1,4 @@
+import { AvatarEditor } from "./AvatarEditor";
 import {
   loadAvatar,
   cropAvatar,
@@ -112,7 +113,13 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
       <section className="home-section">
         <div className="section-heading">
           <h2>Favorites</h2>
-          <button className="text-button" onClick={() => setFavorites(true)}>
+          <button
+            className="text-button"
+            onClick={() => {
+              setFavoriteQuery("");
+              setFavorites(true);
+            }}
+          >
             Choose favorites
             <Plus size={14} />
           </button>
@@ -125,7 +132,10 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             <button
               className="favorite-slot"
               key={i}
-              onClick={() => setFavorites(true)}
+              onClick={() => {
+                setFavoriteQuery("");
+                setFavorites(true);
+              }}
               aria-label={`Choose profile favorite ${picked.length + i + 1}`}
             >
               <Plus size={20} />
@@ -316,44 +326,11 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               )}
             </div>
             {avatarSource && (
-              <div className="avatar-crop-controls">
-                <p>Frame your photo</p>
-                <Artwork
-                  src={draft.avatar}
-                  title="Profile photo crop preview"
-                  eager
-                />
-                <div className="crop-sliders">
-                  {(
-                    [
-                      ["x", "Horizontal position", 0, 100, 1],
-                      ["y", "Vertical position", 0, 100, 1],
-                      ["zoom", "Zoom", 1, 3, 0.05],
-                    ] as const
-                  ).map(([key, label, min, max, step]) => (
-                    <label className="field" key={key}>
-                      {label}
-                      <input
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={crop[key]}
-                        onChange={(e) =>
-                          adjustCrop({ [key]: Number(e.target.value) })
-                        }
-                      />
-                    </label>
-                  ))}
-                  <button
-                    type="button"
-                    className="text-button"
-                    onClick={() => adjustCrop(centeredCrop)}
-                  >
-                    Center photo
-                  </button>
-                </div>
-              </div>
+              <AvatarEditor
+                image={avatarSource}
+                crop={crop}
+                onChange={adjustCrop}
+              />
             )}
             {avatarError && <p role="alert">{avatarError}</p>}
             <label className="field">
@@ -399,6 +376,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             Find an anime
             <input
               type="search"
+              autoFocus
               value={favoriteQuery}
               onChange={(e) => setFavoriteQuery(e.target.value)}
               placeholder="Search your library"

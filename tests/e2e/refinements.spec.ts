@@ -99,10 +99,12 @@ test("relevant search, paper collection, banner, roulette landing and uploaded a
   await expect(
     page.getByRole("button", { name: "Save profile", exact: true }),
   ).toBeEnabled();
-  await expect(page.locator(".avatar-crop-controls img")).toHaveAttribute(
-    "src",
-    /^data:image\/jpeg;base64,/,
-  );
+  await expect(
+    page.getByRole("img", { name: "Complete uploaded photo" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Move photo selection" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Save profile", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.reload();
