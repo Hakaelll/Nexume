@@ -99,7 +99,7 @@ test("relevant search, paper collection, banner, roulette landing and uploaded a
   await expect(
     page.getByRole("button", { name: "Save profile", exact: true }),
   ).toBeEnabled();
-  await expect(page.locator(".avatar-upload img")).toHaveAttribute(
+  await expect(page.locator(".avatar-crop-controls img")).toHaveAttribute(
     "src",
     /^data:image\/jpeg;base64,/,
   );

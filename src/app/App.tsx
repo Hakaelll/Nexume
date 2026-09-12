@@ -1,3 +1,4 @@
+import { useReducedMotion } from "../core/motion";
 import {
   useEffect,
   useCallback,
@@ -65,6 +66,10 @@ const sections = [
 ] as const;
 export default function App() {
   const store = useApp();
+  const reducedMotion = useReducedMotion();
+  useEffect(() => {
+    document.documentElement.dataset.reducedMotion = String(reducedMotion);
+  }, [reducedMotion]);
   const section = store.data.preferences.section;
   const [search, setSearch] = useState(false);
   const [headerQuery, setHeaderQuery] = useState("");
@@ -73,11 +78,7 @@ export default function App() {
   const animateRoute = useCallback(
     (change: () => void | Promise<void>) => {
       routeTransition.current?.skipTransition();
-      if (
-        !document.startViewTransition ||
-        store.data.preferences.reducedMotion ||
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
+      if (!document.startViewTransition || reducedMotion) {
         void change();
         return;
       }
@@ -85,7 +86,7 @@ export default function App() {
       routeTransition.current = transition;
       void transition.finished.catch(() => {});
     },
-    [store.data.preferences.reducedMotion],
+    [reducedMotion],
   );
   const setDetail = useCallback(
     (anime: Anime | null) => {
@@ -292,10 +293,7 @@ export default function App() {
           )}
         </button>
       </aside>
-      <div
-        className="app-shell"
-        data-reduced-motion={store.data.preferences.reducedMotion}
-      >
+      <div className="app-shell" data-reduced-motion={reducedMotion}>
         <header className="topbar">
           <div className="topbar-right">
             {offline ? (

@@ -1,3 +1,4 @@
+import { useReducedMotion } from "../../core/motion";
 import { animeCover } from "../../domain/artwork";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shuffle, BookmarkPlus, ArrowUpRight, RotateCcw } from "lucide-react";
@@ -30,6 +31,7 @@ export default function Recommend({
 }: {
   onOpen: (anime: Anime) => void;
 }) {
+  const reducedMotion = useReducedMotion();
   const store = useApp();
   const [source, setSource] = useState(
     store.data.entries.some((e) => e.personalStatus === "Planning")
@@ -188,9 +190,7 @@ export default function Recommend({
       setSpinning(false);
       return;
     }
-    const reduced =
-      store.data.preferences.reducedMotion ||
-      matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = reducedMotion;
     setSpinning(true);
     setWinner(null);
     const cards = Array.from(

@@ -177,7 +177,7 @@ test("offline-first library, rating, review, lists, profile and reload", async (
 test("AniList search, add, pagination and upstream error", async ({ page }) => {
   let requests = 0;
   await page.route(/^https:\/\/graphql\.anilist\.co\/?$/, (route) => {
-    requests++;
+    if (route.request().postDataJSON().variables.search) requests++;
     return route.fulfill({
       json: {
         data: {
@@ -191,10 +191,13 @@ test("AniList search, add, pagination and upstream error", async ({ page }) => {
   await page.getByRole("combobox", { name: "Search AniList" }).fill("Cowboy");
   await expect(page.locator(".search-result")).toHaveCount(1);
   await page
+    .getByRole("dialog")
     .getByRole("button", { name: "Add Cowboy Bebop to Watchlist" })
     .click();
   await expect(
-    page.getByRole("button", { name: "Cowboy Bebop is in your library" }),
+    page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Cowboy Bebop is in your library" }),
   ).toBeDisabled();
   expect(requests).toBe(1);
   await page.getByRole("combobox", { name: "Search AniList" }).press("Enter");

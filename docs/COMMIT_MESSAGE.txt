@@ -1,50 +1,51 @@
-feat: revamp Nexume with Playful visuals and richer anime workflows
+feat: improve motion settings and personalize the anime workspace
 
-Apply the Playful style reference throughout the desktop app while retaining
-local-first storage, existing collection views and personal tracking actions.
+Make animation behavior configurable across Windows installations and expand
+profile editing, airing schedules, Home, Diary and discovery tools.
 
-Visual design and navigation
-- Introduce oat backgrounds, white cards, bold italic Inter headings and
-  magenta primary actions, with consistent spacing and artwork treatment.
-- Integrate the header search and refine sidebar navigation; keep profile
-  access in the bottom avatar instead of a duplicate navigation entry.
-- Match the Three.js collection background to the light interface and inset
-  its previous/next controls to prevent clipping by the rounded container.
-- Restore panoramic anime detail backgrounds with a readable dark overlay,
-  a cover-art fallback and contrasting status, rating and progress controls.
-- Add distinct colors to statistics charts, legends and summary cards.
+Animation behavior
+- Add Follow system, Full animations and Reduced motion preferences.
+- Resolve motion preferences consistently for Collection, the recommendation
+  roulette, route transitions and CSS animations.
+- Allow Full animations to override Windows reduced-motion preferences while
+  preserving the existing reduced-motion setting and accessible defaults.
+- Listen for operating-system preference changes and persist the selected mode.
+- Keep the existing route-animation fallback for WebView versions without
+  document.startViewTransition support.
 
-Recommendations and search
-- Add a decelerating cover-art roulette that lands on the selected anime.
-- Preserve source and content filters, repeat avoidance, cancellation on
-  filter changes, reduced-motion support and Watchlist actions.
-- Support fresh random candidate samples across the AniList catalog ID range.
-- Request SEARCH_MATCH for title queries and retain explicit discovery sorts.
-- Keep catalog relevance authoritative instead of promoting saved titles;
-  retain matching local entries as a fallback when the catalog is unavailable.
-- Prevent results from a previous search query from appearing under a new one.
+Profile
+- Add title search to the favorite-anime picker while retaining the six-title
+  limit, selection indicators and the ability to remove existing favorites.
+- Increase the profile avatar size.
+- Add horizontal position, vertical position and zoom controls when uploading
+  a photo, with a live circular preview and a center/reset action.
+- Store the selected crop as a compact local JPEG while retaining file
+  validation, URL avatars and profile persistence.
 
-Personal library and profile
-- Provide card-level rating, like, watched and Watchlist actions without
-  requiring navigation to an anime's full detail page.
-- Allow JPG, PNG and WebP profile uploads with a preview and removal action.
-- Validate file type and size, center-crop to 256 pixels and store a compact
-  JPEG locally; preserve URL avatars and avatar persistence across reloads.
-- Extend profile validation for embedded JPEGs without relaxing remote
-  cover-image validation or sending local avatars through the image cache.
+Calendar and Home
+- Add Monday-based weekly and full-month calendar views with period navigation,
+  Today navigation, highlighted current dates and local-time episode cards.
+- Fetch paginated AniList airing schedules for the selected date range, batch
+  followed title IDs, cancel obsolete requests and retain known local dates
+  when the remote schedule is unavailable.
+- Show today's scheduled episodes on Home, including already aired episodes.
+- Replace Home's recently watched section with in-progress viewing and retain
+  episode controls, seasonal anime and genre-based recommendations.
+
+Diary and Discover
+- Add Diary activity totals and distinct visual accents for event types.
+- Group diary dates using local time consistently.
+- Add title, minimum community score, maximum episode count and ordering
+  controls to Discover, with server-side filtering and a reset action.
+- Clear stale discovery results when changing filters.
 
 Quality and delivery
-- Preserve library, diary, reviews, lists, backup/restore and optional sharing.
-- Cover search ordering, roulette outcomes, profile uploads and desktop layout
-  with regression tests, including bounded rendering for 1,000-title libraries.
-- Limit Vite dependency scanning to application entries and ignore local stores.
-- Update the README, design notes and verification record and package Windows
-  version 0.5.2 for testing.
+- Cover calendar boundaries, schedule pagination, favorite search, photo crops,
+  discovery filters and full-animation overrides with regression tests.
+- Keep the existing rating implementation unchanged, as requested.
+- Update the README and verification notes and package Windows version 0.6.0.
 
-Artwork quality refinements
-- Prefer extraLarge provider artwork for new and previously saved anime.
-- Preserve custom/local covers and fallback images without rewriting user data.
-- Avoid stretching portrait artwork across the entire detail background.
-- Present real banners at a bounded height with a directional reading overlay.
-- Increase detail rating stars to 24 pixels while preserving half-star hit areas
-  and keyboard rating controls.
+Validation
+- TypeScript and ESLint passed.
+- 40 unit/integration tests and 19 production browser tests passed.
+- Verified desktop layouts at 960x640 and 1440x1000.

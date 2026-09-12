@@ -1,3 +1,4 @@
+import { useReducedMotion } from "../../core/motion";
 import { animeCover } from "../../domain/artwork";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Heart } from "lucide-react";
@@ -41,9 +42,7 @@ export default function Collection({
     textureMB: 0,
     heapMB: null as number | null,
   });
-  const [systemReduced, setSystemReduced] = useState(
-    matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
+  const reducedMotion = useReducedMotion();
   const items = useMemo(
     () =>
       entries.map((e) => ({
@@ -53,17 +52,11 @@ export default function Collection({
       })),
     [entries],
   );
-  useEffect(() => {
-    const media = matchMedia("(prefers-reduced-motion: reduce)");
-    const change = () => setSystemReduced(media.matches);
-    media.addEventListener("change", change);
-    return () => media.removeEventListener("change", change);
-  }, []);
   const config: RendererConfig = {
     items,
     selected: index,
     quality: p.quality,
-    reducedMotion: p.reducedMotion || systemReduced,
+    reducedMotion: reducedMotion,
     resolveImage: cachedImage,
     onSelect: (i) => void prefs({ selectedId: entries[i].localId }),
     onOpen: (i) => onOpen(entries[i]),
@@ -95,7 +88,7 @@ export default function Collection({
   }, []);
   useEffect(() => {
     renderer.current?.update(configRef.current);
-  }, [items, index, p.quality, p.reducedMotion, systemReduced]);
+  }, [items, index, p.quality, reducedMotion]);
   const move = (delta: number) => {
     const next = navigate(index, delta, entries.length);
     if (next !== index) void prefs({ selectedId: entries[next].localId });

@@ -106,16 +106,14 @@ it("honors 429 then retries the same page", async () => {
 });
 
 it("uses relevance for title searches and retains discovery ordering", async () => {
-  const fetcher = vi
-    .fn<typeof fetch>()
-    .mockImplementation(
-      async () =>
-        new Response(
-          JSON.stringify({
-            data: { Page: { media: [], pageInfo: { hasNextPage: false } } },
-          }),
-        ),
-    );
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(
+    async () =>
+      new Response(
+        JSON.stringify({
+          data: { Page: { media: [], pageInfo: { hasNextPage: false } } },
+        }),
+      ),
+  );
   const provider = new AniListMetadataProvider(fetcher);
   await provider.search({ query: "Cowboy Bebop" });
   expect(
@@ -125,4 +123,39 @@ it("uses relevance for title searches and retains discovery ordering", async () 
   expect(
     JSON.parse(String(fetcher.mock.calls[1][1]?.body)).variables.sort,
   ).toBe("TRENDING_DESC");
+});
+
+it("loads complete airing windows and keeps the scheduled episode on each result", async () => {
+  vi.useFakeTimers();
+  try {
+    const response = (episode: number, more: boolean) =>
+      new Response(
+        JSON.stringify({
+          data: {
+            Page: {
+              pageInfo: { hasNextPage: more },
+              airingSchedules: [
+                { episode, airingAt: 2000 + episode, media: { id: 1 } },
+              ],
+            },
+          },
+        }),
+      );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(response(1, true))
+      .mockResolvedValueOnce(response(2, false));
+    const job = new AniListMetadataProvider(fetcher).airing(2000, 3000, [1]);
+    await vi.runAllTimersAsync();
+    const items = await job;
+    expect(items.map((a) => a.nextAiringEpisode?.episode)).toEqual([1, 2]);
+    expect(
+      JSON.parse(String(fetcher.mock.calls[0][1]?.body)).variables,
+    ).toEqual({ start: 1999, end: 3000, ids: [1], page: 1 });
+    expect(
+      JSON.parse(String(fetcher.mock.calls[1][1]?.body)).variables.page,
+    ).toBe(2);
+  } finally {
+    vi.useRealTimers();
+  }
 });

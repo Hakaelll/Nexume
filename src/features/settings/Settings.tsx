@@ -148,15 +148,25 @@ export default function Settings({ onSample }: { onSample: () => void }) {
           </label>
           <label className="setting-row">
             <span>
-              Reduce motion<small>System preferences are also respected.</small>
+              Animations
+              <small>
+                Full animations also work when Windows reduces motion.
+              </small>
             </span>
-            <input
-              type="checkbox"
-              checked={p.reducedMotion}
+            <select
+              aria-label="Animations"
+              value={p.reducedMotion ? "reduced" : p.motionMode}
               onChange={(e) =>
-                void store.prefs({ reducedMotion: e.target.checked })
+                void store.prefs({
+                  motionMode: e.target.value as typeof p.motionMode,
+                  reducedMotion: false,
+                })
               }
-            />
+            >
+              <option value="system">Follow system</option>
+              <option value="full">Full animations</option>
+              <option value="reduced">Reduced motion</option>
+            </select>
           </label>
           <label className="setting-row">
             <span>

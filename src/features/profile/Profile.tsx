@@ -1,4 +1,9 @@
-import { readAvatar } from "./avatar";
+import {
+  loadAvatar,
+  cropAvatar,
+  centeredCrop,
+  type AvatarCrop,
+} from "./avatar";
 import { useState } from "react";
 import { Edit3, Plus, Check, Share2, ArrowUpRight } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -10,6 +15,11 @@ import { enqueue, flushQueue } from "../../services/social/sync";
 export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
   const store = useApp();
   const { profile, entries } = store.data;
+  const [avatarSource, setAvatarSource] = useState<HTMLImageElement | null>(
+    null,
+  );
+  const [crop, setCrop] = useState(centeredCrop);
+  const [favoriteQuery, setFavoriteQuery] = useState("");
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [editing, setEditing] = useState(false);
@@ -18,6 +28,17 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
   const [sharing, setSharing] = useState(false);
   const [link, setLink] = useState("");
   const [revealed, setRevealed] = useState<string[]>([]);
+  const visibleFavorites = entries.filter((e) =>
+    [e.preferredTitle, e.cachedMetadata.english, e.cachedMetadata.romaji].some(
+      (t) => t?.toLowerCase().includes(favoriteQuery.trim().toLowerCase()),
+    ),
+  );
+  const adjustCrop = (patch: Partial<AvatarCrop>) => {
+    const next = { ...crop, ...patch };
+    setCrop(next);
+    if (avatarSource)
+      setDraft((d) => ({ ...d, avatar: cropAvatar(avatarSource, next) }));
+  };
   const picked = profile.favoriteIds.flatMap(
     (id) => entries.find((e) => e.localId === id) ?? [],
   );
@@ -74,6 +95,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             className="button"
             onClick={() => {
               setDraft(profile);
+              setAvatarSource(null);
               setAvatarError("");
               setEditing(true);
             }}
@@ -242,7 +264,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               />
             </label>
             <div className="avatar-upload">
-              {draft.avatar && (
+              {draft.avatar && !avatarSource && (
                 <Artwork
                   src={draft.avatar}
                   title="Profile photo preview"
@@ -262,7 +284,10 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                     setAvatarBusy(true);
                     setAvatarError("");
                     try {
-                      const avatar = await readAvatar(file);
+                      const image = await loadAvatar(file);
+                      setAvatarSource(image);
+                      setCrop(centeredCrop);
+                      const avatar = cropAvatar(image, centeredCrop);
                       setDraft((current) => ({ ...current, avatar }));
                     } catch (error) {
                       setAvatarError(
@@ -281,12 +306,55 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                   type="button"
                   className="text-button"
                   disabled={avatarBusy}
-                  onClick={() => setDraft({ ...draft, avatar: "" })}
+                  onClick={() => {
+                    setDraft({ ...draft, avatar: "" });
+                    setAvatarSource(null);
+                  }}
                 >
                   Remove photo
                 </button>
               )}
             </div>
+            {avatarSource && (
+              <div className="avatar-crop-controls">
+                <p>Frame your photo</p>
+                <Artwork
+                  src={draft.avatar}
+                  title="Profile photo crop preview"
+                  eager
+                />
+                <div className="crop-sliders">
+                  {(
+                    [
+                      ["x", "Horizontal position", 0, 100, 1],
+                      ["y", "Vertical position", 0, 100, 1],
+                      ["zoom", "Zoom", 1, 3, 0.05],
+                    ] as const
+                  ).map(([key, label, min, max, step]) => (
+                    <label className="field" key={key}>
+                      {label}
+                      <input
+                        type="range"
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={crop[key]}
+                        onChange={(e) =>
+                          adjustCrop({ [key]: Number(e.target.value) })
+                        }
+                      />
+                    </label>
+                  ))}
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => adjustCrop(centeredCrop)}
+                  >
+                    Center photo
+                  </button>
+                </div>
+              </div>
+            )}
             {avatarError && <p role="alert">{avatarError}</p>}
             <label className="field">
               Avatar URL
@@ -327,13 +395,26 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
           onClose={() => setFavorites(false)}
           wide
         >
+          <label className="field favorite-search">
+            Find an anime
+            <input
+              type="search"
+              value={favoriteQuery}
+              onChange={(e) => setFavoriteQuery(e.target.value)}
+              placeholder="Search your library"
+            />
+          </label>
+          {entries.length > 0 && !visibleFavorites.length && (
+            <p className="prose">No matching anime.</p>
+          )}
           {entries.length ? (
             <div className="picker-list">
-              {entries.map((e) => {
+              {visibleFavorites.map((e) => {
                 const checked = profile.favoriteIds.includes(e.localId);
                 return (
                   <button
                     aria-label={e.preferredTitle}
+                    aria-pressed={checked}
                     disabled={!checked && picked.length >= 6}
                     key={e.localId}
                     onClick={() =>

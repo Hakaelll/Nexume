@@ -1,3 +1,23 @@
+# Verification · 0.6.0 personal workspace
+
+September 12, 2026.
+
+- Tauri Windows x64 and NSIS packaging succeeded. Executable, installer and SHA-256 hashes are available in `release/` under version 0.6.0.
+
+- TypeScript and ESLint passed. Vitest: **40/40 passed**.
+- Final production Playwright suite: **19/19 passed** in 2.0 minutes.
+- Motion regression: emulate an OS requesting reduced motion, choose Full animations, reload to verify persistence, run a visible roulette, then switch back to Reduced motion. A shared hook supplies the effective preference to Collection, Recommend and navigation; CSS uses the same root state.
+- The previous implementation combined the app checkbox with the Windows media preference and unconditionally disabled CSS animations under that media query. Full mode now overrides that path. The other physical computer was not available for direct inspection; this is verified with browser media emulation, not a claim of testing its GPU/WebView installation.
+- Calendar tests cover Monday-based weeks crossing a year boundary, a six-row month, a complete local day, next-month navigation and Today. Provider tests verify airing pagination, inclusive start boundaries and per-occurrence episode metadata.
+- Profile tests cover favorite search/selection, a cropped upload with zoom/position adjustment, saving and existing avatar persistence. No rating behavior was changed; the abandoned star-regression test was removed following the user's correction.
+- Discover tests verify server filter variables for an 80/100 minimum score and at most 12 episodes. The old search test is scoped to the search dialog because Home now also shows catalog cards.
+- Existing library, diary, rating, review, lists, backup, profile and quick-action tests remain passing; bounded Collection resource tests cover up to 1,000 titles.
+- Layout checks cover all 11 sections at 960×640 and 1440×1000. Screenshots of populated Home, Diary, month view and crop controls are saved in docs/images.
+- AniList responses in tests are controlled fixtures. Schedule fields were checked against https://docs.anilist.co/reference/object/page. Live schedules depend on provider availability; known local upcoming dates remain available offline.
+- Preferences add motionMode with backward-compatible defaults. No database migration, installation over the user's app, commit, push or release publication was performed during this task.
+
+---
+
 # Verification · 0.5.2 artwork quality
 
 September 11, 2026.

@@ -1,3 +1,4 @@
+import { useAiring, useClock, dayStart } from "../../core/airing";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowRight, Plus } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -22,60 +23,61 @@ export function Home({
   onAnime,
 }: { onSample: () => void; onAnime: (a: Anime) => void } & Props) {
   const { data, prefs } = useApp();
+  const now = useClock();
+  const today = dayStart(new Date(now));
+  const tomorrow = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + 1,
+  );
+  const airing = useAiring(today, tomorrow);
   const watching = data.entries.filter((e) =>
     ["Watching", "Rewatching"].includes(e.personalStatus),
   );
-  const recent = [...data.entries]
-    .filter((e) => e.lastWatchedDate)
-    .sort((a, b) =>
-      (b.lastWatchedDate ?? "").localeCompare(a.lastWatchedDate ?? ""),
-    )
-    .slice(0, 6);
   const [season, setSeason] = useState<Anime[]>([]);
   useEffect(() => {
-    if (!navigator.onLine || !data.entries.length) return;
     const c = new AbortController();
+    if (!navigator.onLine) return;
     anilist
       .search(
         { ...seasonNow(), adult: data.preferences.adultContent },
         c.signal,
       )
-      .then((r) => setSeason(r.items.slice(0, 6)))
+      .then((r) => {
+        if (!c.signal.aborted) setSeason(r.items);
+      })
       .catch(() => {});
     return () => c.abort();
-  }, [data.entries.length, data.preferences.adultContent]);
+  }, [data.preferences.adultContent]);
+  const affinity = new Set(
+    data.entries
+      .filter(
+        (e) =>
+          ["Watching", "Rewatching"].includes(e.personalStatus) ||
+          (e.personalRating ?? 0) >= 8,
+      )
+      .flatMap((e) => e.cachedMetadata.genres),
+  );
+  const recommendations = [...season]
+    .filter((a) => !data.entries.some((e) => e.anilistId === a.anilistId))
+    .sort(
+      (a, b) =>
+        b.genres.filter((g) => affinity.has(g)).length -
+          a.genres.filter((g) => affinity.has(g)).length ||
+        (b.averageScore ?? 0) - (a.averageScore ?? 0),
+    )
+    .slice(0, 3);
   return (
     <div className="page home-page">
-      <PageTitle title="Home" />
-      {watching.length > 0 ? (
-        <section>
-          <div className="section-heading">
-            <h2>Continue watching</h2>
-            <button
-              className="text-button"
-              onClick={() =>
-                void prefs({
-                  section: "Library",
-                  filter: "Watching",
-                  view: "Grid",
-                })
-              }
-            >
-              View all <ArrowUpRight size={14} />
-            </button>
-          </div>
-          <div className="continue-grid">
-            {watching.slice(0, 5).map((entry) => (
-              <AnimeCard
-                entry={entry}
-                tracking
-                key={entry.localId}
-                onOpen={() => onOpen(entry)}
-              />
-            ))}
-          </div>
-        </section>
-      ) : !data.entries.length ? (
+      <PageTitle
+        title="Home"
+        subtitle={today.toLocaleDateString("en", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        })}
+      />
+      {!data.entries.length && (
         <section className="home-welcome">
           <div className="welcome-copy">
             <h2>What are you watching?</h2>
@@ -85,86 +87,103 @@ export function Home({
                 Add anime
               </button>
               <button className="text-button" onClick={onSample}>
-                Try a sample <ArrowRight size={14} />
+                Try a sample
+                <ArrowRight size={14} />
               </button>
             </div>
           </div>
           <SampleCovers />
         </section>
-      ) : null}
-      {data.entries.length > 0 && (
-        <button
-          className="collection-invitation"
-          onClick={() =>
-            void prefs({
-              section: "Library",
-              view: "Collection",
-              filter: "All",
-            })
-          }
-        >
-          <div className="collection-preview-covers">
-            {data.entries.slice(0, 4).map((entry) => (
-              <Artwork
-                key={entry.localId}
-                src={entry.coverImage}
-                title={entry.preferredTitle}
+      )}
+      <section className="home-section today-section">
+        <div className="section-heading">
+          <h2>
+            Airing today{" "}
+            <span className="section-count">{airing.items.length}</span>
+          </h2>
+          <button
+            className="text-button"
+            onClick={() => void prefs({ section: "Calendar" })}
+          >
+            Calendar
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
+        {airing.items.length ? (
+          <div className="today-airing-grid">
+            {airing.items.map((a) => {
+              const air = a.nextAiringEpisode!;
+              return (
+                <button
+                  className="today-airing-card"
+                  key={`${a.anilistId}-${air.episode}`}
+                  onClick={() => onAnime(a)}
+                >
+                  <Artwork
+                    src={a.coverLarge || a.coverImage}
+                    title={a.english ?? a.romaji}
+                  />
+                  <span>
+                    <small>
+                      {new Date(air.airingAt * 1000).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      · EP {air.episode}
+                    </small>
+                    <strong>{a.english ?? a.romaji}</strong>
+                    <em>
+                      {air.airingAt * 1000 < now
+                        ? "Aired today"
+                        : "Later today"}
+                    </em>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="prose muted">
+            {airing.loading
+              ? "Checking today’s schedule…"
+              : airing.error || "No episodes scheduled for today."}
+          </p>
+        )}
+      </section>
+      <section className="home-section">
+        <div className="section-heading">
+          <h2>Continue watching</h2>
+          <button
+            className="text-button"
+            onClick={() =>
+              void prefs({
+                section: "Library",
+                filter: "Watching",
+                view: "Grid",
+              })
+            }
+          >
+            View all
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
+        {watching.length ? (
+          <div className="continue-grid">
+            {watching.slice(0, 6).map((e) => (
+              <AnimeCard
+                entry={e}
+                tracking
+                key={e.localId}
+                onOpen={() => onOpen(e)}
               />
             ))}
           </div>
-          <h2>Open collection</h2>
-          <ArrowUpRight size={20} />
-        </button>
-      )}
-      {watching.some((e) => e.cachedMetadata.nextAiringEpisode) && (
-        <section className="home-section">
-          <div className="section-heading">
-            <h2>New episodes</h2>
-            <button
-              className="text-button"
-              onClick={() => void prefs({ section: "Calendar" })}
-            >
-              Calendar
-              <ArrowUpRight size={14} />
-            </button>
-          </div>
-          <div className="airing-strip">
-            {watching
-              .filter((e) => e.cachedMetadata.nextAiringEpisode)
-              .slice(0, 4)
-              .map((e) => (
-                <button key={e.localId} onClick={() => onOpen(e)}>
-                  <span>{e.preferredTitle}</span>
-                  <small>
-                    Episode {e.cachedMetadata.nextAiringEpisode!.episode} ·{" "}
-                    {new Date(
-                      e.cachedMetadata.nextAiringEpisode!.airingAt * 1000,
-                    ).toLocaleString()}
-                  </small>
-                </button>
-              ))}
-          </div>
-        </section>
-      )}
-      {recent.length > 0 && (
-        <section className="home-section">
-          <div className="section-heading">
-            <h2>Recently watched</h2>
-            <button
-              className="text-button"
-              onClick={() => void prefs({ section: "Diary" })}
-            >
-              Your diary
-              <ArrowUpRight size={14} />
-            </button>
-          </div>
-          <div className="poster-grid">
-            {recent.map((e) => (
-              <AnimeCard key={e.localId} entry={e} onOpen={() => onOpen(e)} />
-            ))}
-          </div>
-        </section>
-      )}
+        ) : (
+          <p className="prose muted">
+            Mark an anime as Watching to keep your next episode here.
+          </p>
+        )}
+      </section>
       {season.length > 0 && (
         <section className="home-section">
           <div className="section-heading">
@@ -178,7 +197,7 @@ export function Home({
             </button>
           </div>
           <div className="poster-grid">
-            {season.map((a) => (
+            {season.slice(0, 6).map((a) => (
               <AnimeCard
                 key={a.anilistId}
                 anime={a}
@@ -188,9 +207,62 @@ export function Home({
           </div>
         </section>
       )}
+      {recommendations.length > 0 && (
+        <section className="home-section">
+          <div className="section-heading">
+            <h2>{affinity.size ? "Picked for you" : "Worth a look"}</h2>
+            <button
+              className="text-button"
+              onClick={() => void prefs({ section: "Recommend" })}
+            >
+              Find another
+              <ArrowUpRight size={14} />
+            </button>
+          </div>
+          <p className="muted recommendation-reason">
+            {affinity.size
+              ? "Seasonal picks based on genres in your watching and highly rated anime."
+              : "A few highly rated titles from this season."}
+          </p>
+          <div className="home-recommendations">
+            {recommendations.map((a) => (
+              <AnimeCard
+                key={a.anilistId}
+                anime={a}
+                onOpen={() => onAnime(a)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+      {data.entries.length > 0 && (
+        <button
+          className="collection-invitation"
+          onClick={() =>
+            void prefs({
+              section: "Library",
+              view: "Collection",
+              filter: "All",
+            })
+          }
+        >
+          <div className="collection-preview-covers">
+            {data.entries.slice(0, 4).map((e) => (
+              <Artwork
+                key={e.localId}
+                src={e.coverImage}
+                title={e.preferredTitle}
+              />
+            ))}
+          </div>
+          <h2>Open collection</h2>
+          <ArrowUpRight size={20} />
+        </button>
+      )}
     </div>
   );
 }
+
 export function Diary({ onOpen, onSearch }: Props) {
   const { data } = useApp();
   const [kind, setKind] = useState("All");
@@ -198,8 +270,33 @@ export function Diary({ onOpen, onSearch }: Props) {
     .sort((a, b) => b.at.localeCompare(a.at))
     .filter((h) => kind === "All" || h.kind === kind);
   return (
-    <div className="page">
-      <PageTitle title="Diary" />
+    <div className="page diary-page">
+      <PageTitle
+        title="Diary"
+        subtitle="Your viewing history, one moment at a time"
+      />
+      <div className="diary-summary">
+        <span>
+          <strong>
+            {data.history
+              .filter((h) => h.kind === "episode")
+              .reduce((n, h) => n + Math.max(0, h.episodeDelta), 0)}
+          </strong>{" "}
+          episodes logged
+        </span>
+        <span>
+          <strong>
+            {data.history.filter((h) => h.kind === "completed").length}
+          </strong>{" "}
+          completions
+        </span>
+        <span>
+          <strong>
+            {data.history.filter((h) => h.kind === "review").length}
+          </strong>{" "}
+          review updates
+        </span>
+      </div>
       <div className="discover-tabs">
         {[
           "All",
@@ -233,9 +330,10 @@ export function Diary({ onOpen, onSearch }: Props) {
             if (!e) return null;
             const date = new Date(h.at);
             const first =
-              i === 0 || events[i - 1].at.slice(0, 10) !== h.at.slice(0, 10);
+              i === 0 ||
+              new Date(events[i - 1].at).toDateString() !== date.toDateString();
             return (
-              <article className="diary-event" key={h.id}>
+              <article className="diary-event" data-kind={h.kind} key={h.id}>
                 <div className="diary-date">
                   {first && (
                     <>
@@ -282,113 +380,5 @@ export function Diary({ onOpen, onSearch }: Props) {
     </div>
   );
 }
-export function Calendar({ onOpen }: Pick<Props, "onOpen">) {
-  const { data } = useApp();
-  const [offset, setOffset] = useState(0);
-  const [clock, setClock] = useState(Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setClock(Date.now()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-  const today = new Date();
-  const monday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() - ((today.getDay() + 6) % 7) + offset * 7,
-  );
-  const days = Array.from(
-    { length: 7 },
-    (_, i) =>
-      new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i),
-  );
-  const following = data.entries.filter(
-    (e) =>
-      ["Watching", "Rewatching", "Planning"].includes(e.personalStatus) &&
-      e.cachedMetadata.nextAiringEpisode,
-  );
-  return (
-    <div className="page">
-      <PageTitle title="Calendar" subtitle="Upcoming episodes · local time" />
-      <div className="calendar-nav">
-        <button className="button" onClick={() => setOffset((o) => o - 1)}>
-          ← Previous week
-        </button>
-        <span>
-          {monday.toLocaleDateString(undefined, {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </span>
-        <button className="button" onClick={() => setOffset((o) => o + 1)}>
-          Next week →
-        </button>
-        <button className="text-button" onClick={() => setOffset(0)}>
-          Today
-        </button>
-      </div>
-      <div className="week-grid">
-        {days.map((day) => (
-          <section
-            key={day.toISOString()}
-            className={
-              day.toDateString() === today.toDateString() ? "today" : ""
-            }
-          >
-            <header>
-              <span>
-                {day
-                  .toLocaleDateString("en", { weekday: "short" })
-                  .toUpperCase()}
-              </span>
-              <strong>{day.getDate()}</strong>
-            </header>
-            {following
-              .filter(
-                (e) =>
-                  new Date(
-                    e.cachedMetadata.nextAiringEpisode!.airingAt * 1000,
-                  ).toDateString() === day.toDateString(),
-              )
-              .map((e) => {
-                const air = e.cachedMetadata.nextAiringEpisode!;
-                const hours = Math.ceil(
-                  (air.airingAt * 1000 - clock) / 3600000,
-                );
-                return (
-                  <button
-                    key={e.localId}
-                    className="calendar-anime"
-                    onClick={() => onOpen(e)}
-                  >
-                    <Artwork src={e.coverImage} title={e.preferredTitle} />
-                    <strong>{e.preferredTitle}</strong>
-                    <small>
-                      EP {air.episode} ·{" "}
-                      {new Date(air.airingAt * 1000).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </small>
-                    <span>
-                      {hours > 0
-                        ? `In ${hours < 24 ? `${hours} hours` : `${Math.ceil(hours / 24)} days`}`
-                        : "Scheduled time passed"}
-                    </span>
-                  </button>
-                );
-              })}
-          </section>
-        ))}
-      </div>
-      {!following.length && (
-        <p className="prose muted calendar-note">
-          No upcoming episodes in your followed anime.
-          <br />
-          Add an airing series and refresh its metadata to see its schedule.
-        </p>
-      )}
-    </div>
-  );
-}
+export { default as Calendar } from "./Calendar";
 export { default as Stats } from "./Statistics";

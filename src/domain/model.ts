@@ -167,6 +167,7 @@ const preferencesBaseSchema = z.object({
   gridSize: z.number().min(130).max(260).default(180),
   quality: z.enum(["High", "Balanced", "Low"]).default("Balanced"),
   reducedMotion: z.boolean().default(false),
+  motionMode: z.enum(["system", "full", "reduced"]).default("system"),
   diagnostics: z.boolean().default(false),
   adultContent: z.boolean().default(false),
   columns: z

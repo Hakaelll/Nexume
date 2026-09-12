@@ -1,6 +1,6 @@
 [package]
 name = "nexume"
-version = "0.5.2"
+version = "0.6.0"
 description = "Your anime, remembered. A local-first personal anime collection."
 authors = ["Nexume Contributors"]
 edition = "2021"

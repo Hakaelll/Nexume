@@ -9,6 +9,8 @@ export interface SearchOptions {
   format?: string;
   status?: string;
   adult?: boolean;
+  minScore?: number;
+  maxEpisodes?: number;
 }
 export interface SearchPage {
   items: Anime[];
@@ -208,7 +210,15 @@ export class AniListMetadataProvider implements AnimeMetadataProvider {
         }
         const json = (await response.json()) as {
           data?: {
-            Page?: { media: AniListDTO[]; pageInfo: { hasNextPage: boolean } };
+            Page?: {
+              media?: AniListDTO[];
+              airingSchedules?: {
+                media: AniListDTO;
+                episode: number;
+                airingAt: number;
+              }[];
+              pageInfo: { hasNextPage: boolean };
+            };
           };
           errors?: { message: string }[];
         };
@@ -217,7 +227,12 @@ export class AniListMetadataProvider implements AnimeMetadataProvider {
         if (!json.data?.Page)
           throw new Error("AniList returned an incomplete response.");
         const data = {
-          items: json.data.Page.media.map(mapAnime),
+          items: json.data.Page.airingSchedules
+            ? json.data.Page.airingSchedules.map((a) => ({
+                ...mapAnime(a.media),
+                nextAiringEpisode: { episode: a.episode, airingAt: a.airingAt },
+              }))
+            : (json.data.Page.media ?? []).map(mapAnime),
           hasNextPage: json.data.Page.pageInfo.hasNextPage,
         };
         this.cache.set(key, { at: Date.now(), data });
@@ -263,12 +278,44 @@ export class AniListMetadataProvider implements AnimeMetadataProvider {
       format: options.format || undefined,
       status: options.status || undefined,
       isAdult: options.adult ? undefined : false,
+      score: options.minScore ? options.minScore - 1 : undefined,
+      episodes: options.maxEpisodes ? options.maxEpisodes + 1 : undefined,
     };
     return this.request(
-      `query($search:String,$page:Int,$sort:[MediaSort],$seasonYear:Int,$season:MediaSeason,$genre:String,$format:MediaFormat,$status:MediaStatus,$isAdult:Boolean){Page(page:$page,perPage:24){pageInfo{hasNextPage}media(type:ANIME,search:$search,sort:$sort,seasonYear:$seasonYear,season:$season,genre:$genre,format:$format,status:$status,isAdult:$isAdult){${fields}}}}`,
+      `query($search:String,$page:Int,$sort:[MediaSort],$seasonYear:Int,$season:MediaSeason,$genre:String,$format:MediaFormat,$status:MediaStatus,$isAdult:Boolean,$score:Int,$episodes:Int){Page(page:$page,perPage:24){pageInfo{hasNextPage}media(type:ANIME,search:$search,sort:$sort,seasonYear:$seasonYear,season:$season,genre:$genre,format:$format,status:$status,isAdult:$isAdult,averageScore_greater:$score,episodes_lesser:$episodes){${fields}}}}`,
       variables,
       signal,
     );
+  }
+  async airing(
+    start: number,
+    end: number,
+    ids?: number[],
+    signal?: AbortSignal,
+  ): Promise<Anime[]> {
+    if (ids && !ids.length) return [];
+    const batches = ids
+      ? Array.from({ length: Math.ceil(ids.length / 50) }, (_, i) =>
+          ids.slice(i * 50, i * 50 + 50),
+        )
+      : [undefined];
+    const items: Anime[] = [];
+    for (const batch of batches) {
+      let page = 1,
+        more = true;
+      while (more) {
+        signal?.throwIfAborted();
+        const result = await this.request(
+          `query($start:Int,$end:Int,$ids:[Int],$page:Int){Page(page:$page,perPage:50){pageInfo{hasNextPage}airingSchedules(airingAt_greater:$start,airingAt_lesser:$end,mediaId_in:$ids,sort:TIME){episode airingAt media{${fields}}}}}`,
+          { start: start - 1, end, ids: batch, page },
+          signal,
+        );
+        items.push(...result.items);
+        more = result.hasNextPage;
+        page++;
+      }
+    }
+    return items;
   }
   async byIds(ids: number[], signal?: AbortSignal) {
     const result: Anime[] = [];

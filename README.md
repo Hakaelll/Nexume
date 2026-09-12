@@ -27,13 +27,13 @@ Nexume es un organizador de anime; no reproduce ni descarga episodios.
 
 ## Probar en Windows
 
-La versión de prueba actual es **0.5.2**, para Windows 10/11 de 64 bits. Los paquetes generados localmente están en `release/`:
+La versión de prueba actual es **0.6.0**, para Windows 10/11 de 64 bits. Los paquetes generados localmente están en `release/`:
 
 | Archivo | Uso |
 | --- | --- |
-| `Nexume-0.5.2-windows-x64-setup.exe` | Instalador para el usuario actual |
-| `Nexume-0.5.2-windows-x64.exe` | Ejecutable sin instalación; necesita WebView2 |
-| `SHA256SUMS-0.5.2.txt` | Huellas SHA-256 de ambos paquetes |
+| `Nexume-0.6.0-windows-x64-setup.exe` | Instalador para el usuario actual |
+| `Nexume-0.6.0-windows-x64.exe` | Ejecutable sin instalación; necesita WebView2 |
+| `SHA256SUMS-0.6.0.txt` | Huellas SHA-256 de ambos paquetes |
 
 La carpeta `release/` no se versiona en Git. Estos archivos deben adjuntarse a una publicación de GitHub Releases para distribuirlos; todavía no hay una publicación creada por este cambio. Los paquetes de desarrollo no están firmados. La interfaz de la aplicación está en inglés; el instalador permite español e inglés.
 
@@ -107,12 +107,21 @@ El frontend solo debe contener una clave pública/anon. Las notas privadas, ruta
 
 - [Arquitectura](ARCHITECTURE.md) y [base de datos](DATABASE.md)
 - [Colección 3D](COLLECTION_3D.md) y [compartir](SOCIAL_ARCHITECTURE.md)
-- [Diseño](DESIGN.md) y [cambios visuales 0.5.2](docs/GALLERY_REVAMP.md)
+- [Diseño](DESIGN.md) y [cambios visuales 0.6.0](docs/GALLERY_REVAMP.md)
 - [Atribución de imágenes y fuentes](docs/ASSETS.md)
 
 Las portadas y los metadatos pertenecen a sus titulares y se obtienen de AniList. El emblema de Nexume procede de los recursos proporcionados para el proyecto. Inter se distribuye localmente, incluidos sus pesos en cursiva, siguiendo la referencia Playful. Android e iOS quedan fuera de esta versión.
 
-## Novedades de 0.5.2
+## Novedades de 0.6.0
+
+- **Animaciones configurables:** en Settings → Animations puedes seguir Windows, activar todas las animaciones o reducir el movimiento. El ajuste se aplica a Collection, ruleta y cambios de pantalla.
+- **Perfil:** buscador al elegir favoritos, avatar más grande y encuadre de fotos con posición horizontal, vertical y zoom.
+- **Calendario:** vistas semanal y mensual, navegación entre periodos, día actual destacado y episodios con horario local. Consulta las emisiones de los animes de Watching, Rewatching y Watchlist. Sin conexión conserva las fechas conocidas.
+- **Home:** emisiones del día, animes que estás viendo, temporada y recomendaciones basadas en géneros y puntuaciones.
+- **Diary:** resumen de actividad y tarjetas con acentos según el tipo de evento.
+- **Discover:** filtros de nota mínima, máximo de episodios, título y ordenación.
+
+Los horarios completos y el catálogo dependen de AniList. El ordenador de destino puede tener una configuración de accesibilidad distinta: selecciona **Full animations** si quieres activar las animaciones dentro de Nexume aunque Windows solicite reducir movimiento.
 
 Las portadas priorizan la resolución original disponible, incluso para animes guardados. Los fondos usan banners panorámicos y evitan ampliar una portada vertical a toda la ficha. Las estrellas de la ficha aumentan a 24 píxeles, conservando las medias estrellas y los atajos de teclado.
 
@@ -120,3 +129,6 @@ Ruleta visual de portadas, colección con fondo claro y controles laterales sepa
 
 ![Ficha de anime con imagen de fondo](docs/images/anime-detail.png)
 ![Estadísticas de la colección](docs/images/statistics.png)
+
+![Calendario mensual](docs/images/calendar-month.png)
+![Encuadre de foto de perfil](docs/images/avatar-crop.png)

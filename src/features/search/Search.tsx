@@ -184,7 +184,10 @@ export function SearchDialog({
                     onClick={() => open(a)}
                     onFocus={() => setActive(i)}
                   >
-                    <Artwork src={a.coverLarge || a.coverImage} title={a.english ?? a.romaji} />
+                    <Artwork
+                      src={a.coverLarge || a.coverImage}
+                      title={a.english ?? a.romaji}
+                    />
                     <span>
                       <strong>{a.english ?? a.romaji}</strong>
                       <small>
@@ -267,11 +270,14 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
           ...options,
           page,
           sort:
-            category === "Highest rated"
-              ? "SCORE_DESC"
-              : category === "Popular"
-                ? "POPULARITY_DESC"
-                : "TRENDING_DESC",
+            options.sort ||
+            (options.query
+              ? "SEARCH_MATCH"
+              : category === "Highest rated"
+                ? "SCORE_DESC"
+                : category === "Popular"
+                  ? "POPULARITY_DESC"
+                  : "TRENDING_DESC"),
           adult: data.preferences.adultContent,
         },
         c.signal,
@@ -299,6 +305,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
     return () => c.abort();
   }, [category, options, page, data.preferences.adultContent, retry]);
   const change = (v: SearchOptions) => {
+    setItems([]);
     setPage(1);
     setOptions((o) => ({ ...o, ...v }));
   };
@@ -386,6 +393,52 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
             "HIATUS",
           ]}
         />
+      </div>
+      <div className="filters discover-extra-filters">
+        <label className="field">
+          Title
+          <input
+            type="search"
+            placeholder="Find a title"
+            value={options.query ?? ""}
+            onChange={(e) => change({ query: e.target.value })}
+          />
+        </label>
+        <SelectField
+          label="Minimum score"
+          value={String(options.minScore ?? "")}
+          onChange={(v) => change({ minScore: Number(v) || undefined })}
+          options={["50", "60", "70", "80", "90"]}
+        />
+        <SelectField
+          label="Maximum episodes"
+          value={String(options.maxEpisodes ?? "")}
+          onChange={(v) => change({ maxEpisodes: Number(v) || undefined })}
+          options={["12", "24", "26", "52", "100"]}
+        />
+        <label className="field">
+          Sort by
+          <select
+            value={options.sort ?? ""}
+            onChange={(e) => change({ sort: e.target.value })}
+          >
+            <option value="">Category default</option>
+            <option value="POPULARITY_DESC">Popularity</option>
+            <option value="SCORE_DESC">Community score</option>
+            <option value="START_DATE_DESC">Newest releases</option>
+            <option value="TRENDING_DESC">Trending</option>
+          </select>
+        </label>
+        <button
+          className="text-button"
+          onClick={() => {
+            setOptions({});
+            setPage(1);
+            setItems([]);
+          }}
+        >
+          Reset filters
+        </button>
       </div>
       {!navigator.onLine ? (
         <Empty

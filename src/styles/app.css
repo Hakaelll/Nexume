@@ -2396,18 +2396,16 @@ summary {
     font-size: 10px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *:before,
-  *:after {
+html[data-reduced-motion="true"] *,
+  html[data-reduced-motion="true"] *:before,
+  html[data-reduced-motion="true"] *:after {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .splash {
+html[data-reduced-motion="true"] .splash {
     display: none;
   }
-}
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -3129,16 +3127,14 @@ input[type="range"] {
     flex-wrap: wrap;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .main-content,
-  .recommendation-result,
-  .recommendation-orbit {
+html[data-reduced-motion="true"] .main-content,
+  html[data-reduced-motion="true"] .recommendation-result,
+  html[data-reduced-motion="true"] .recommendation-orbit {
     animation: none !important;
   }
-  .histogram-track i {
+html[data-reduced-motion="true"] .histogram-track i {
     transition: none;
   }
-}
 
 /* Search suggestions sit above the scrolling scene, within the compact header. */
 .topbar {
@@ -3300,12 +3296,10 @@ input[type="range"] {
 .library-table tbody tr:hover td {
   background: #9c86e00b;
 }
-@media (prefers-reduced-motion: reduce) {
-  .header-suggestions,
-  .search-spinner {
+html[data-reduced-motion="true"] .header-suggestions,
+  html[data-reduced-motion="true"] .search-spinner {
     animation: none;
   }
-}
 .app-shell[data-reduced-motion="true"] .header-suggestions,
 .app-shell[data-reduced-motion="true"] .search-spinner {
   animation: none;
@@ -3331,14 +3325,16 @@ input[type="range"] {
     transform: translateY(-4px);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
+html[data-reduced-motion="true"]::view-transition-group(*),
+  html[data-reduced-motion="true"]::view-transition-old(*),
+  html[data-reduced-motion="true"]::view-transition-new(*) {
     animation: none;
   }
-}
 
 .discover-page .poster-grid > div { display: flex; flex-direction: column; }
 .discover-page .anime-card { flex: 1; }
 .discover-page .card-title { min-height: 39px; }
+/* Public/standalone views still honor the OS before an app preference exists. */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-reduced-motion]) *, html:not([data-reduced-motion]) *::before, html:not([data-reduced-motion]) *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}
