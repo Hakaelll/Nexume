@@ -25,10 +25,12 @@ export default function Detail({
   anime,
   onBack,
   quick = false,
+  backLabel = "Back to collection",
 }: {
   anime: Anime;
   onBack: () => void;
   quick?: boolean;
+  backLabel?: string;
 }) {
   const store = useApp();
   const entry = store.data.entries.find((e) => e.anilistId === anime.anilistId);
@@ -92,10 +94,10 @@ export default function Detail({
           />
           <button className="back-button" onClick={onBack}>
             <ArrowLeft size={16} />
-            Back to collection
+            {backLabel}
           </button>
           <div className="detail-heading">
-            <div className="detail-cover">
+            <div className="detail-cover" data-detail-cover>
               <Artwork
                 src={cover}
                 fallbackSrc={entry?.coverImage || m.coverImage}

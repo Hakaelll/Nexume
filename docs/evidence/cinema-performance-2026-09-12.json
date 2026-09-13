@@ -1,0 +1,64 @@
+{
+  "after": [
+    {
+      "count": 10,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "133.5 ms · 20 draws · 19 textures · 10 cases · 24.5 MB textures (est.) · 23 MB heap",
+      "meanFrameMs": 16.676363636363632,
+      "p95FrameMs": 16.800000000000182
+    },
+    {
+      "count": 100,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "16.8 ms · 34 draws · 21 textures · 21 cases · 6.5 MB textures (est.) · 25 MB heap",
+      "meanFrameMs": 16.681818181818176,
+      "p95FrameMs": 16.800000000000182
+    },
+    {
+      "count": 500,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "16.7 ms · 34 draws · 19 textures · 21 cases · 5.0 MB textures (est.) · 25 MB heap",
+      "meanFrameMs": 16.681818181818183,
+      "p95FrameMs": 16.800000000000182
+    },
+    {
+      "count": 1000,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "100.1 ms · 34 draws · 19 textures · 21 cases · 5.0 MB textures (est.) · 75 MB heap",
+      "meanFrameMs": 16.681818181818183,
+      "p95FrameMs": 16.800000000000182
+    }
+  ],
+  "before": [
+    {
+      "count": 10,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "16.7 ms · 20 draws · 10 textures · 10 cases · 0.0 MB textures (est.) · 22 MB heap",
+      "meanFrameMs": 16.685454545454558,
+      "p95FrameMs": 16.800000000000182
+    },
+    {
+      "count": 100,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "16.6 ms · 42 draws · 27 textures · 21 cases · 11.0 MB textures (est.) · 27 MB heap",
+      "meanFrameMs": 16.685454545454544,
+      "p95FrameMs": 16.90000000000009
+    },
+    {
+      "count": 500,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "16.6 ms · 42 draws · 23 textures · 21 cases · 5.0 MB textures (est.) · 25 MB heap",
+      "meanFrameMs": 16.683636363636364,
+      "p95FrameMs": 16.800000000000182
+    },
+    {
+      "count": 1000,
+      "device": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "metrics": "16.7 ms · 42 draws · 24 textures · 21 cases · 5.5 MB textures (est.) · 33 MB heap",
+      "meanFrameMs": 16.681818181818183,
+      "p95FrameMs": 16.90000000000009
+    }
+  ],
+  "date": "2026-09-12",
+  "description": "Same-machine browser samples before renderer changes and after, with no Rust build running during the final measurement. Not a sustained or cross-device benchmark."
+}

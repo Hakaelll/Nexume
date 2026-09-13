@@ -8,6 +8,19 @@ Nexume es una aplicación de escritorio para Windows que convierte tu historial 
 
 ![Selector de anime de Nexume](docs/images/gallery-random.png)
 
+## Novedades de la versión 0.7.0
+
+- Home destaca el anime que estás viendo, con acceso a la ficha y registro de episodios. Las emisiones del día se limitan a tres, con acceso al calendario completo.
+- La navegación conserva búsquedas, filtros, resultados, desplazamiento y foco durante la sesión. Las fichas indican la sección a la que volver.
+- Las portadas DOM conectan tarjeta y ficha con una transición; Collection incorpora miniaturas de navegación y se pausa fuera de pantalla. Los efectos respetan el ajuste de animaciones existente.
+- **What fits tonight?** compara hasta tres animes de tu colección según tiempo disponible, progreso y prioridad. Las películas deben caber completas. **Start watching** cambia el estado sin registrar episodios.
+- Watchlist transmite su género al selector. **Skip animation** revela el mismo ganador de la ruleta, sin repetir el sorteo.
+- La portada protagonista de Home es más grande, con progreso gráfico, episodio destacado y respuesta suave al pasar el cursor.
+- **Airing today** sigue una franja móvil: últimos 30 minutos y próximas 3 horas; fuera de ella muestra las siguientes emisiones o las últimas del día.
+- Library mejora la nitidez en Balanced y High. Las listas permiten subir una portada JPG, PNG o WebP, previsualizarla y quitarla.
+
+Estos cambios no requieren migración ni cuenta. Los candidatos y el contexto del selector son temporales y no forman parte de los backups. Los paquetes históricos de `release/` no se sustituyen con esta compilación.
+
 ## Una colección que apetece abrir
 
 - **Biblioteca en tres vistas:** colección espacial con Three.js, cuadrícula de portadas y tabla configurable.
@@ -27,13 +40,13 @@ Nexume es un organizador de anime; no reproduce ni descarga episodios.
 
 ## Probar en Windows
 
-La versión de prueba actual es **0.6.1**, para Windows 10/11 de 64 bits. Los paquetes generados localmente están en `release/`:
+La versión de prueba actual es **0.7.0**, para Windows 10/11 de 64 bits. Los paquetes generados localmente están en `release/`:
 
 | Archivo | Uso |
 | --- | --- |
-| `Nexume-0.6.1-windows-x64-setup.exe` | Instalador para el usuario actual |
-| `Nexume-0.6.1-windows-x64.exe` | Ejecutable sin instalación; necesita WebView2 |
-| `SHA256SUMS-0.6.1.txt` | Huellas SHA-256 de ambos paquetes |
+| `Nexume-0.7.0-windows-x64-setup.exe` | Instalador para el usuario actual |
+| `Nexume-0.7.0-windows-x64.exe` | Ejecutable sin instalación; necesita WebView2 |
+| `SHA256SUMS-0.7.0.txt` | Huellas SHA-256 de ambos paquetes |
 
 La carpeta `release/` no se versiona en Git. Estos archivos deben adjuntarse a una publicación de GitHub Releases para distribuirlos; todavía no hay una publicación creada por este cambio. Los paquetes de desarrollo no están firmados. La interfaz de la aplicación está en inglés; el instalador permite español e inglés.
 
@@ -112,7 +125,7 @@ El frontend solo debe contener una clave pública/anon. Las notas privadas, ruta
 
 Las portadas y los metadatos pertenecen a sus titulares y se obtienen de AniList. El emblema de Nexume procede de los recursos proporcionados para el proyecto. Inter se distribuye localmente, incluidos sus pesos en cursiva, siguiendo la referencia Playful. Android e iOS quedan fuera de esta versión.
 
-## Novedades de 0.6.1
+## Novedades de 0.7.0
 
 - Recorte de avatar sobre la imagen completa, con círculo desplazable, zoom y ajuste con las flechas del teclado.
 - Buscador de los seis favoritos enfocado al abrir y sin filtros anteriores.

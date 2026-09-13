@@ -10,6 +10,7 @@ import "@fontsource/inter/700-italic.css";
 import "@fontsource/inter/900-italic.css";
 import "./styles/app.css";
 import "./styles/playful.css";
+import "./styles/cinema.css";
 import App from "./app/App";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

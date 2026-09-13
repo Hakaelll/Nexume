@@ -10,7 +10,7 @@ import { navigate } from "../../graphics/layout";
 import { type Entry } from "../../domain/model";
 import { useApp } from "../../app/store";
 import { cachedImage } from "../../core/platform";
-import { Stars } from "../../components/ui";
+import { Stars, Artwork } from "../../components/ui";
 export default function Collection({
   entries,
   onOpen,
@@ -144,7 +144,11 @@ export default function Collection({
             ?.focus();
       }}
     >
-      <div className="collection-heading" aria-live="polite">
+      <div
+        className="collection-heading"
+        key={`heading-${selected.localId}`}
+        aria-live="polite"
+      >
         <p className="eyebrow">
           {selected.personalStatus.toUpperCase()} <span className="dot">·</span>{" "}
           {selected.cachedMetadata.year ?? "UNDATED"}
@@ -206,6 +210,26 @@ export default function Collection({
         >
           <ArrowRight size={18} />
         </button>
+      </div>
+      <div className="collection-filmstrip" aria-label="Jump to anime">
+        {entries
+          .slice(Math.max(0, index - 4), Math.min(entries.length, index + 5))
+          .map((e) => (
+            <button
+              key={e.localId}
+              className="filmstrip-item"
+              aria-label={`Select ${e.preferredTitle}`}
+              aria-pressed={e.localId === selected.localId}
+              onClick={() => void prefs({ selectedId: e.localId })}
+            >
+              <Artwork
+                src={animeCover(e.cachedMetadata, e.coverImage)}
+                fallbackSrc={e.coverImage}
+                title=""
+              />
+              <span>{e.preferredTitle}</span>
+            </button>
+          ))}
       </div>
       <div className="collection-hint">
         <span>SCROLL TO EXPLORE</span>

@@ -52,6 +52,8 @@ export class CollectionRenderer {
   private textures = new ResourceCache<THREE.Texture>(48);
   private loading = new Map<string, Promise<THREE.Texture | null>>();
   private observer: ResizeObserver;
+  private intersection: IntersectionObserver;
+  private visible = true;
   private frame = 0;
   private last = 0;
   private lastMetrics = 0;
@@ -77,7 +79,13 @@ export class CollectionRenderer {
     this.renderer.setClearColor(0xf6f2ee);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, budgets[config.quality].pixelRatio),
+      Math.min(
+        Math.max(
+          window.devicePixelRatio,
+          budgets[config.quality].minPixelRatio,
+        ),
+        budgets[config.quality].pixelRatio,
+      ),
     );
     this.camera.position.set(0, 0.05, 8.4);
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
@@ -99,13 +107,18 @@ export class CollectionRenderer {
     );
     this.observer = new ResizeObserver(this.resize);
     this.observer.observe(host);
+    this.intersection = new IntersectionObserver(([entry]) => {
+      this.visible = entry.isIntersecting;
+      this.visibility();
+    });
+    this.intersection.observe(host);
     document.addEventListener("visibilitychange", this.visibility);
     this.update(config);
     this.resize();
     this.schedule();
   }
   private schedule = () => {
-    if (!this.frame && !this.disposed && !document.hidden)
+    if (!this.frame && !this.disposed && !document.hidden && this.visible)
       this.frame = requestAnimationFrame(this.animate);
   };
   private resize = () => {
@@ -214,15 +227,21 @@ export class CollectionRenderer {
         });
         if (this.disposed) return null;
         const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = Math.round(size * 1.5);
-        canvas
-          .getContext("2d")!
-          .drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Keep source detail without allocating enlarged, interpolated textures.
+        const scale = Math.min(
+          1,
+          size / img.naturalWidth,
+          (size * 1.5) / img.naturalHeight,
+        );
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const context = canvas.getContext("2d")!;
+        context.imageSmoothingQuality = "high";
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.anisotropy = Math.min(
-          4,
+          8,
           this.renderer.capabilities.getMaxAnisotropy(),
         );
         this.textures.set(
@@ -245,7 +264,10 @@ export class CollectionRenderer {
     this.schedule();
     const budget = budgets[config.quality];
     this.renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, budget.pixelRatio),
+      Math.min(
+        Math.max(window.devicePixelRatio, budget.minPixelRatio),
+        budget.pixelRatio,
+      ),
     );
     const range = visibleRange(
       config.selected,
@@ -293,7 +315,9 @@ export class CollectionRenderer {
       o.index = index;
       o.front.userData.index = index;
       const size =
-        Math.abs(index - config.selected) <= 2 ? budget.texture : 256;
+        Math.abs(index - config.selected) <= 2
+          ? budget.texture
+          : budget.peripheralTexture;
       const coverKey = `${item.cover}|${size}`;
       if (item.cover && o.cover !== coverKey) {
         o.cover = coverKey;
@@ -323,7 +347,7 @@ export class CollectionRenderer {
   }
   private animate = (time: number) => {
     this.frame = 0;
-    if (this.disposed || document.hidden) return;
+    if (this.disposed || document.hidden || !this.visible) return;
     const dt = this.last ? (time - this.last) / 1000 : 1 / 60;
     this.last = time;
     const ease = this.config.reducedMotion ? 1 : interpolation(dt);
@@ -388,6 +412,7 @@ export class CollectionRenderer {
     this.disposed = true;
     cancelAnimationFrame(this.frame);
     this.observer.disconnect();
+    this.intersection.disconnect();
     document.removeEventListener("visibilitychange", this.visibility);
     this.renderer.domElement.removeEventListener("click", this.click);
     this.renderer.domElement.removeEventListener("dblclick", this.doubleClick);

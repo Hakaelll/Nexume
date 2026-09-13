@@ -20,7 +20,8 @@ async function addSample(page: Page) {
     .getByRole("button", { name: "Add sample collection", exact: true })
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(page.locator(".continue-grid .anime-card")).toHaveCount(4);
+  await expect(page.locator(".home-spotlight")).toBeVisible();
+  await expect(page.locator(".continue-grid .anime-card")).toHaveCount(3);
 }
 test("offline-first library, rating, review, lists, profile and reload", async ({
   page,
@@ -160,7 +161,13 @@ test("offline-first library, rating, review, lists, profile and reload", async (
   await expect(page.locator(".profile-favorites .anime-card")).toHaveCount(1);
   for (const name of ["Diary", "Calendar", "Stats", "Settings"]) {
     await page.getByRole("button", { name, exact: true }).click();
-    await expect(page.locator("h1")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: name === "Stats" ? "Statistics" : name,
+        exact: true,
+        level: 1,
+      }),
+    ).toBeVisible();
   }
   await page.context().setOffline(true);
   await page.getByRole("button", { name: "Library", exact: true }).click();

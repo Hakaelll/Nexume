@@ -1,6 +1,8 @@
+import { RetainedPage } from "../components/RetainedPage";
 import { useReducedMotion } from "../core/motion";
 import {
   useEffect,
+  useLayoutEffect,
   useCallback,
   useState,
   useRef,
@@ -32,6 +34,7 @@ import {
 } from "lucide-react";
 import { flushSync } from "react-dom";
 import { useApp } from "./store";
+import { NavIndicator } from "../components/NavIndicator";
 import {
   type Anime,
   type Entry,
@@ -88,13 +91,59 @@ export default function App() {
     },
     [reducedMotion],
   );
+  const content = useRef<HTMLElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const originCover = useRef<HTMLElement | null>(null);
+  const scrollPositions = useRef(new Map<string, number>());
+  const [visited, setVisited] = useState<Preferences["section"][]>([]);
+  useEffect(() => {
+    if (store.ready)
+      setVisited((old) => (old.includes(section) ? old : [...old, section]));
+  }, [section, store.ready]);
   const setDetail = useCallback(
     (anime: Anime | null) => {
+      const focus = document.activeElement as HTMLElement | null;
+      if (anime) {
+        returnFocus.current = focus;
+        scrollPositions.current.set(section, content.current?.scrollTop ?? 0);
+        originCover.current =
+          focus
+            ?.closest("[data-anime-id]")
+            ?.querySelector<HTMLElement>(
+              ".cover-button > .artwork, .spotlight-cover > .artwork, .tonight-cover > .artwork, :scope > .artwork",
+            ) ?? null;
+      }
+      const origin = originCover.current;
+      const detailCover = content.current?.querySelector<HTMLElement>(
+        "[data-detail-cover] > .artwork",
+      );
+      const before = anime ? origin : detailCover;
+      const shared =
+        !!origin &&
+        (anime ? origin.isConnected : true) &&
+        !!before &&
+        before.getBoundingClientRect().height > 0;
+      if (shared && before) before.style.viewTransitionName = "anime-cover";
+      document.documentElement.dataset.detailTransition = "true";
       animateRoute(() => {
+        if (before) before.style.viewTransitionName = "";
         flushSync(() => setDetailState(anime));
+        const after = anime
+          ? content.current?.querySelector<HTMLElement>(
+              "[data-detail-cover] > .artwork",
+            )
+          : origin;
+        if (shared && after) after.style.viewTransitionName = "anime-cover";
+        const transition = routeTransition.current;
+        const cleanup = () => {
+          if (after) after.style.viewTransitionName = "";
+          delete document.documentElement.dataset.detailTransition;
+        };
+        if (transition) void transition.finished.catch(() => {}).then(cleanup);
+        else cleanup();
       });
     },
-    [animateRoute],
+    [animateRoute, section],
   );
   const [quick, setQuick] = useState<Anime | null>(null);
   const [offline, setOffline] = useState(!navigator.onLine);
@@ -109,7 +158,6 @@ export default function App() {
   const [chooseList, setChooseList] = useState<Entry | null>(null);
   const [rating, setRating] = useState<Entry | null>(null);
   const [splash, setSplash] = useState(true);
-  const content = useRef<HTMLElement>(null);
   const contextEntry = store.data.entries.find(
     (e) => e.localId === context?.entryId,
   );
@@ -133,12 +181,27 @@ export default function App() {
     const timer = setInterval(() => void flushQueue(), 30000);
     return () => clearInterval(timer);
   }, [store.ready, offline]);
-  useEffect(() => {
-    if (content.current) content.current.scrollTop = 0;
+  useLayoutEffect(() => {
+    if (content.current)
+      content.current.scrollTop = detail
+        ? 0
+        : (scrollPositions.current.get(section) ?? 0);
+    if (detail)
+      content.current
+        ?.querySelector<HTMLElement>(".back-button")
+        ?.focus({ preventScroll: true });
+    else if (
+      returnFocus.current?.isConnected &&
+      !returnFocus.current.closest("[hidden]")
+    ) {
+      returnFocus.current.focus({ preventScroll: true });
+      returnFocus.current = null;
+    }
   }, [section, detail]);
   const open = (entry: Entry) => setDetail(entry.cachedMetadata);
   const go = (to: Preferences["section"]) => {
     if (to === section && !detail) return;
+    returnFocus.current = null;
     animateRoute(async () => {
       flushSync(() => {
         setDetailState(null);
@@ -258,10 +321,11 @@ export default function App() {
           <span className="rail-wordmark">Nexume</span>
         </button>
         <nav aria-label="Main navigation">
+          <NavIndicator section={section} />
           {sections.map(([name, Icon]) => (
             <button
               key={name}
-              className={`${section === name && !detail ? "active" : ""} ${name === "Settings" ? "settings-nav" : ""}`}
+              className={`${section === name ? "active" : ""} ${name === "Settings" ? "settings-nav" : ""}`}
               aria-label={name}
               aria-current={section === name ? "page" : undefined}
               onClick={() => go(name)}
@@ -316,7 +380,13 @@ export default function App() {
           </div>
         </header>
         <main
-          key={`${section}-${detail?.anilistId ?? "index"}`}
+          onScroll={(event) => {
+            if (!detail)
+              scrollPositions.current.set(
+                section,
+                event.currentTarget.scrollTop,
+              );
+          }}
           id="main"
           tabIndex={-1}
           ref={content}
@@ -328,49 +398,77 @@ export default function App() {
                 <div className="scene-loading">Opening your collection…</div>
               }
             >
-              {detail ? (
-                <Detail anime={detail} onBack={() => setDetail(null)} />
-              ) : section === "Home" ? (
-                <Home
-                  onOpen={open}
-                  onSearch={() => setSearch(true)}
-                  onSample={() => setSample(true)}
-                  onAnime={setDetail}
+              {detail && (
+                <Detail
+                  key={detail.anilistId}
+                  anime={detail}
+                  backLabel={`Back to ${section}`}
+                  onBack={() => setDetail(null)}
                 />
-              ) : section === "Library" ? (
-                <Library
-                  onSample={() => setSample(true)}
-                  onOpen={open}
-                  onSearch={() => setSearch(true)}
-                  onQuick={(e) => setQuick(e.cachedMetadata)}
-                  onContext={(e, entry) => {
-                    e.preventDefault();
-                    setContext({
-                      x: Math.min(e.clientX, window.innerWidth - 260),
-                      y: Math.min(e.clientY, window.innerHeight - 480),
-                      entryId: entry.localId,
-                    });
-                  }}
-                />
-              ) : section === "Discover" ? (
-                <Discover onOpen={setDetail} />
-              ) : section === "Watchlist" ? (
-                <Watchlist onOpen={open} onSearch={() => setSearch(true)} />
-              ) : section === "Recommend" ? (
-                <Recommend onOpen={setDetail} />
-              ) : section === "Diary" ? (
-                <Diary onOpen={open} onSearch={() => setSearch(true)} />
-              ) : section === "Calendar" ? (
-                <Calendar onOpen={open} />
-              ) : section === "Stats" ? (
-                <Stats />
-              ) : section === "Lists" ? (
-                <Lists onOpen={open} />
-              ) : section === "Profile" ? (
-                <Profile onOpen={open} />
-              ) : (
-                <Settings onSample={() => setSample(true)} />
               )}
+              {[...new Set([...visited, section])].map((panel) => (
+                <RetainedPage key={panel} active={!detail && panel === section}>
+                  <ErrorBoundary>
+                    <Suspense
+                      fallback={
+                        <div className="scene-loading" role="status">
+                          Opening {panel}…
+                          <div className="skeleton-grid" aria-hidden="true">
+                            <div />
+                            <div />
+                            <div />
+                          </div>
+                        </div>
+                      }
+                    >
+                      {panel === "Home" ? (
+                        <Home
+                          onOpen={open}
+                          onSearch={() => setSearch(true)}
+                          onSample={() => setSample(true)}
+                          onAnime={setDetail}
+                        />
+                      ) : panel === "Library" ? (
+                        <Library
+                          onSample={() => setSample(true)}
+                          onOpen={open}
+                          onSearch={() => setSearch(true)}
+                          onQuick={(e) => setQuick(e.cachedMetadata)}
+                          onContext={(e, entry) => {
+                            e.preventDefault();
+                            setContext({
+                              x: Math.min(e.clientX, window.innerWidth - 260),
+                              y: Math.min(e.clientY, window.innerHeight - 480),
+                              entryId: entry.localId,
+                            });
+                          }}
+                        />
+                      ) : panel === "Discover" ? (
+                        <Discover onOpen={setDetail} />
+                      ) : panel === "Watchlist" ? (
+                        <Watchlist
+                          onOpen={open}
+                          onSearch={() => setSearch(true)}
+                        />
+                      ) : panel === "Recommend" ? (
+                        <Recommend onOpen={setDetail} />
+                      ) : panel === "Diary" ? (
+                        <Diary onOpen={open} onSearch={() => setSearch(true)} />
+                      ) : panel === "Calendar" ? (
+                        <Calendar onOpen={open} />
+                      ) : panel === "Stats" ? (
+                        <Stats />
+                      ) : panel === "Lists" ? (
+                        <Lists onOpen={open} />
+                      ) : panel === "Profile" ? (
+                        <Profile onOpen={open} />
+                      ) : (
+                        <Settings onSample={() => setSample(true)} />
+                      )}
+                    </Suspense>
+                  </ErrorBoundary>
+                </RetainedPage>
+              ))}
             </Suspense>
           </ErrorBoundary>
         </main>

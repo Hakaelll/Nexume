@@ -1,8 +1,26 @@
 export type Quality = "High" | "Balanced" | "Low";
 export const budgets = {
-  High: { radius: 10, pixelRatio: 1.75, texture: 768 },
-  Balanced: { radius: 7, pixelRatio: 1.5, texture: 512 },
-  Low: { radius: 4, pixelRatio: 1, texture: 256 },
+  High: {
+    radius: 10,
+    pixelRatio: 2,
+    minPixelRatio: 1.5,
+    texture: 1024,
+    peripheralTexture: 512,
+  },
+  Balanced: {
+    radius: 7,
+    pixelRatio: 2,
+    minPixelRatio: 1.25,
+    texture: 768,
+    peripheralTexture: 384,
+  },
+  Low: {
+    radius: 4,
+    pixelRatio: 1,
+    minPixelRatio: 1,
+    texture: 256,
+    peripheralTexture: 256,
+  },
 };
 export function navigate(index: number, delta: number, count: number) {
   return Math.max(0, Math.min(Math.max(0, count - 1), index + delta));
@@ -27,7 +45,7 @@ export function casePose(offset: number) {
   };
 }
 export function interpolation(dt: number) {
-  return 1 - Math.exp(-Math.min(dt, 0.1) * 7);
+  return 1 - Math.exp(-Math.min(dt, 0.1) * 10);
 }
 export class ResourceCache<T extends { dispose: () => void }> {
   private items = new Map<string, T>();

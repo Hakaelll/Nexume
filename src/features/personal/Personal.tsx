@@ -1,10 +1,12 @@
+import { Spotlight } from "./Spotlight";
+import { recentFirst, homeSpotlight } from "../../domain/tonight";
 import {
   spainDayRange,
   spainTime,
   SPAIN_TIME_ZONE,
 } from "../../core/spainTime";
 import { useAiring, useClock } from "../../core/airing";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ArrowUpRight, ArrowRight, Plus } from "lucide-react";
 import { useApp } from "../../app/store";
 import { type Entry, type Anime } from "../../domain/model";
@@ -28,12 +30,54 @@ export function Home({
   onAnime,
 }: { onSample: () => void; onAnime: (a: Anime) => void } & Props) {
   const { data, prefs } = useApp();
+  const [spotlightId, setSpotlightId] = useState(
+    () => homeSpotlight(data.entries)?.localId,
+  );
+  const wasHome = useRef(false);
+  useEffect(() => {
+    const active = data.preferences.section === "Home";
+    if (active && (!wasHome.current || !spotlightId))
+      setSpotlightId(homeSpotlight(data.entries)?.localId);
+    wasHome.current = active;
+  }, [data.preferences.section, data.entries, spotlightId]);
+  const spotlight =
+    data.entries.find(
+      (e) =>
+        e.localId === spotlightId &&
+        ["Planning", "Watching", "Rewatching"].includes(e.personalStatus),
+    ) ?? homeSpotlight(data.entries);
+  const remainingWatching = data.entries
+    .filter(
+      (e) =>
+        ["Watching", "Rewatching"].includes(e.personalStatus) &&
+        e.localId !== spotlight?.localId,
+    )
+    .sort(recentFirst);
   const now = useClock();
   const [today, tomorrow] = spainDayRange(now);
   const airing = useAiring(today, tomorrow);
-  const watching = data.entries.filter((e) =>
-    ["Watching", "Rewatching"].includes(e.personalStatus),
+  const recentCutoff = now - 30 * 60000;
+  const windowEnd = Math.min(now + 3 * 3600000, tomorrow.getTime());
+  const inWindow = airing.items.filter((anime) => {
+    const time = anime.nextAiringEpisode!.airingAt * 1000;
+    return time >= recentCutoff && time < windowEnd;
+  });
+  const upcoming = airing.items.filter(
+    (anime) => anime.nextAiringEpisode!.airingAt * 1000 >= now,
   );
+  const visibleAirings = inWindow.length
+    ? inWindow.slice(0, 3)
+    : upcoming.length
+      ? upcoming.slice(0, 3)
+      : airing.items.slice(-3).reverse();
+  const airingCaption = inWindow.length
+    ? `Around now · ${spainTime(Math.max(recentCutoff, today.getTime()))}–${spainTime(windowEnd)}`
+    : upcoming.length
+      ? "Up next today"
+      : "Today’s latest emissions · schedule finished";
+  const watching = data.entries
+    .filter((e) => ["Watching", "Rewatching"].includes(e.personalStatus))
+    .sort(recentFirst);
   const [season, setSeason] = useState<Anime[]>([]);
   useEffect(() => {
     const c = new AbortController();
@@ -96,60 +140,83 @@ export function Home({
           <SampleCovers />
         </section>
       )}
-      <section className="home-section today-section">
-        <div className="section-heading">
-          <h2>
-            Airing today{" "}
-            <span className="section-count">{airing.items.length}</span>
-          </h2>
-          <button
-            className="text-button"
-            onClick={() => void prefs({ section: "Calendar" })}
-          >
-            Calendar
-            <ArrowUpRight size={14} />
-          </button>
-        </div>
-        <p className="airing-timezone">
-          España peninsular · Europe/Madrid · Canarias: una hora menos
-        </p>
-        {airing.items.length ? (
-          <div className="today-airing-grid">
-            {airing.items.map((a) => {
-              const air = a.nextAiringEpisode!;
-              return (
-                <button
-                  className="today-airing-card"
-                  key={`${a.anilistId}-${air.episode}`}
-                  onClick={() => onAnime(a)}
-                >
-                  <Artwork
-                    src={a.coverLarge || a.coverImage}
-                    title={a.english ?? a.romaji}
-                  />
-                  <span>
-                    <small>
-                      {spainTime(air.airingAt * 1000)} · EP {air.episode}
-                    </small>
-                    <strong>{a.english ?? a.romaji}</strong>
-                    <em>
-                      {air.airingAt * 1000 < now
-                        ? "Aired today"
-                        : "Later today"}
-                    </em>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="prose muted">
-            {airing.loading
-              ? "Checking today’s schedule…"
-              : airing.error || "No episodes scheduled for today."}
-          </p>
+      <div className="home-opening">
+        {data.entries.length > 0 && (
+          <Spotlight
+            key={spotlight?.localId ?? "empty"}
+            entry={spotlight}
+            onOpen={onOpen}
+          />
         )}
-      </section>
+        <section className="home-section today-section">
+          <div className="section-heading">
+            <h2>
+              Airing today{" "}
+              <span className="section-count">{airing.items.length}</span>
+            </h2>
+            <button
+              className="text-button"
+              onClick={() => void prefs({ section: "Calendar" })}
+            >
+              Calendar
+              <ArrowUpRight size={14} />
+            </button>
+          </div>
+          <p className="airing-timezone">
+            España peninsular · Europe/Madrid · Canarias: una hora menos
+          </p>
+          {airing.items.length > 0 && (
+            <p className="airing-timezone">{airingCaption}</p>
+          )}
+          {airing.items.length ? (
+            <div className="today-airing-grid">
+              {visibleAirings.map((a) => {
+                const air = a.nextAiringEpisode!;
+                return (
+                  <button
+                    className="today-airing-card"
+                    key={`${a.anilistId}-${air.episode}`}
+                    onClick={() => onAnime(a)}
+                  >
+                    <Artwork
+                      src={a.coverLarge || a.coverImage}
+                      title={a.english ?? a.romaji}
+                    />
+                    <span>
+                      <small>
+                        {spainTime(air.airingAt * 1000)} · EP {air.episode}
+                      </small>
+                      <strong>{a.english ?? a.romaji}</strong>
+                      <em>
+                        {air.airingAt * 1000 <= now
+                          ? air.airingAt * 1000 >= recentCutoff
+                            ? "Just aired"
+                            : "Aired today"
+                          : `In ${Math.ceil((air.airingAt * 1000 - now) / 60000)} min`}
+                      </em>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="prose muted">
+              {airing.loading
+                ? "Checking today’s schedule…"
+                : airing.error || "No episodes scheduled for today."}
+            </p>
+          )}
+          {airing.items.length > 3 && (
+            <button
+              className="text-button"
+              onClick={() => void prefs({ section: "Calendar" })}
+            >
+              View all {airing.items.length} emissions{" "}
+              <ArrowUpRight size={14} />
+            </button>
+          )}
+        </section>
+      </div>
       <section className="home-section">
         <div className="section-heading">
           <h2>Continue watching</h2>
@@ -167,9 +234,9 @@ export function Home({
             <ArrowUpRight size={14} />
           </button>
         </div>
-        {watching.length ? (
+        {remainingWatching.length ? (
           <div className="continue-grid">
-            {watching.slice(0, 6).map((e) => (
+            {remainingWatching.slice(0, 6).map((e) => (
               <AnimeCard
                 entry={e}
                 tracking
@@ -180,7 +247,9 @@ export function Home({
           </div>
         ) : (
           <p className="prose muted">
-            Mark an anime as Watching to keep your next episode here.
+            {watching.length
+              ? "Your current anime is ready above."
+              : "Mark an anime as Watching to keep your next episode here."}
           </p>
         )}
       </section>

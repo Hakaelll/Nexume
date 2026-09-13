@@ -1,3 +1,4 @@
+import { openRecommend } from "../../app/session";
 import { useMemo, useState } from "react";
 import { BookmarkPlus, Play, Shuffle, Search } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -80,7 +81,14 @@ export default function Watchlist({
         </select>
         <button
           className="text-button"
-          onClick={() => void store.prefs({ section: "Recommend" })}
+          onClick={() =>
+            openRecommend({
+              source: "Watchlist",
+              genre,
+              guided: true,
+              intent: "start",
+            })
+          }
         >
           <Shuffle size={15} />
           Pick for me

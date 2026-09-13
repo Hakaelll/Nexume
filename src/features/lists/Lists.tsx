@@ -23,6 +23,7 @@ import { Artwork, Empty, Modal, PageTitle, Stars } from "../../components/ui";
 import { social, publicLink } from "../../services/social/provider";
 import { serializeList } from "../../services/social/serialization";
 import { enqueue, flushQueue } from "../../services/social/sync";
+import { loadListCover } from "./cover";
 export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
   const store = useApp();
   const [selected, setSelected] = useState<string | null>(null);
@@ -34,6 +35,8 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
   const [link, setLink] = useState("");
   const [query, setQuery] = useState("");
   const [dragged, setDragged] = useState<string | null>(null);
+  const [coverBusy, setCoverBusy] = useState(false);
+  const [coverError, setCoverError] = useState("");
   const list = store.data.lists.find((l) => l.id === selected);
   const patch = async (p: Partial<AnimeList>) => {
     if (!list) return;
@@ -132,19 +135,88 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                   ))}
                 </select>
               </label>
-              <label className="field">
-                Cover URL <small>optional</small>
-                <input
-                  type="url"
-                  defaultValue={list.coverImage}
-                  placeholder="https://…"
-                  onBlur={(e) => void patch({ coverImage: e.target.value })}
-                />
-              </label>
               <button className="button" onClick={() => setAdding(true)}>
                 <Plus size={15} />
                 Add titles
               </button>
+            </div>
+            <div className="list-cover-editor">
+              {list.coverImage && (
+                <Artwork
+                  src={list.coverImage}
+                  title={`${list.title} cover preview`}
+                  eager
+                />
+              )}
+              <div className="list-cover-fields">
+                <label className="field">
+                  Upload cover photo
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={coverBusy}
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      event.target.value = "";
+                      if (!file) return;
+                      setCoverBusy(true);
+                      setCoverError("");
+                      try {
+                        const coverImage = await loadListCover(file);
+                        await patch({ coverImage });
+                        store.notify("List cover saved.");
+                      } catch (error) {
+                        setCoverError(
+                          error instanceof Error
+                            ? error.message
+                            : "Could not save this image.",
+                        );
+                      } finally {
+                        setCoverBusy(false);
+                      }
+                    }}
+                  />
+                  <small>JPG, PNG or WebP · up to 10 MB</small>
+                </label>
+                <label className="field">
+                  Cover URL <small>optional</small>
+                  <input
+                    key={`${list.id}:${list.coverImage}`}
+                    type="url"
+                    disabled={coverBusy}
+                    defaultValue={
+                      list.coverImage.startsWith("data:") ? "" : list.coverImage
+                    }
+                    placeholder="https://…"
+                    onBlur={(event) => {
+                      const value = event.target.value.trim();
+                      if (!value && list.coverImage.startsWith("data:")) return;
+                      if (value === list.coverImage) return;
+                      void patch({ coverImage: value }).catch(() =>
+                        setCoverError(
+                          "Could not save this cover URL. Use an HTTPS image URL.",
+                        ),
+                      );
+                    }}
+                  />
+                </label>
+                {list.coverImage && (
+                  <button
+                    className="text-button"
+                    disabled={coverBusy}
+                    onClick={() => {
+                      setCoverError("");
+                      void patch({ coverImage: "" }).catch(() =>
+                        setCoverError("Could not remove this cover."),
+                      );
+                    }}
+                  >
+                    <Trash2 size={14} /> Remove cover
+                  </button>
+                )}
+                {coverBusy && <p role="status">Saving cover…</p>}
+                {coverError && <p role="alert">{coverError}</p>}
+              </div>
             </div>
           </div>
           {list.entryIds.length ? (

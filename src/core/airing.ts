@@ -4,8 +4,18 @@ import { anilist } from "../services/anilist/provider";
 export function useClock() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60000);
-    return () => clearInterval(id);
+    const refresh = () => setNow(Date.now());
+    const onVisible = () => {
+      if (!document.hidden) refresh();
+    };
+    const id = setInterval(refresh, 60000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
   return now;
 }

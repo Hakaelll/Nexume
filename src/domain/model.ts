@@ -95,7 +95,13 @@ export const listSchema = z.object({
   publicId: z.string().uuid(),
   title: text(200).min(1),
   description: text(5000),
-  coverImage: remoteImage,
+  coverImage: z.union([
+    remoteImage,
+    z
+      .string()
+      .max(200000)
+      .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/),
+  ]),
   entryIds: z.array(z.string().uuid()).max(10000),
   ranked: z.boolean(),
   privacy: z.enum(privacyValues),

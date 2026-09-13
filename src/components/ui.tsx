@@ -234,6 +234,12 @@ export function AnimeCard({
     ) ?? suppliedEntry;
   const [ratingOpen, setRatingOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = setTimeout(() => setFeedback(""), 2000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
   const m = entry?.cachedMetadata ?? anime!;
   const title = entry?.preferredTitle ?? m.english ?? m.romaji;
   const act = async (patch?: Partial<Entry>) => {
@@ -245,6 +251,16 @@ export function AnimeCard({
         .getState()
         .data.entries.find((e) => e.anilistId === m.anilistId);
       if (saved && patch) await store.edit(saved.localId, patch);
+      if (!useApp.getState().error)
+        setFeedback(
+          patch?.personalStatus === "Completed"
+            ? "Completed"
+            : patch?.liked !== undefined
+              ? "like"
+              : !patch
+                ? "bookmark"
+                : "",
+        );
     } finally {
       setBusy(false);
     }
@@ -252,12 +268,14 @@ export function AnimeCard({
   return (
     <article
       className={`anime-card ${tracking ? "tracking" : ""}`}
+      data-anime-id={m.anilistId}
+      data-feedback={feedback}
+      onAnimationEnd={() => setFeedback("")}
       onContextMenu={onContext}
     >
       <button
         className="cover-button"
         onClick={onOpen}
-        onDoubleClick={onOpen}
         aria-label={`Open ${title}`}
       >
         <Artwork
@@ -318,6 +336,11 @@ export function AnimeCard({
           <Eye size={15} />
         </button>
       </div>
+      {feedback === "Completed" && (
+        <span className="card-confirmation" role="status">
+          <Check size={14} /> Completed
+        </span>
+      )}
       {ratingOpen && (
         <Modal title={`Rate ${title}`} onClose={() => setRatingOpen(false)}>
           <p className="muted">Your rating · saved to your collection</p>
