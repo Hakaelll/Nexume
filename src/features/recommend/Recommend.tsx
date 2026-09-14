@@ -13,6 +13,7 @@ import {
 } from "../../domain/recommendation";
 import { anilist } from "../../services/anilist/provider";
 import { sampleEntries } from "../../core/sample";
+import { useClock, useRefreshEpisodes } from "../../core/airing";
 const genres = [
   "Action",
   "Adventure",
@@ -35,6 +36,8 @@ export default function Recommend({
 }) {
   const reducedMotion = useReducedMotion();
   const store = useApp();
+  const now = useClock(store.data.preferences.section === "Recommend");
+  useRefreshEpisodes(store.data.preferences.section === "Recommend", now);
   const context = useSession((state) => state.recommend);
   const [guided, setGuided] = useState(context?.guided ?? false);
   const [intent, setIntent] = useState<"start" | "continue">(
@@ -61,10 +64,19 @@ export default function Recommend({
   const [winner, setWinner] = useState<Anime | null>(null);
   const [reel, setReel] = useState<Anime[]>([]);
   const [spinning, setSpinning] = useState(false);
+  const [litId, setLitId] = useState<number | null>(null);
   const pendingWinner = useRef<Anime | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const generation = useRef(0);
   const drawController = useRef<AbortController | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (guided && winner)
+      resultRef.current?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+  }, [guided, winner, reducedMotion]);
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
@@ -184,6 +196,7 @@ export default function Recommend({
     if (!pendingWinner.current) return;
     if (timer.current) clearTimeout(timer.current);
     setWinner(pendingWinner.current);
+    setLitId(pendingWinner.current.anilistId);
     pendingWinner.current = null;
     setReel([]);
     setSpinning(false);
@@ -192,6 +205,7 @@ export default function Recommend({
     if (reducedMotion && pendingWinner.current) {
       if (timer.current) clearTimeout(timer.current);
       setWinner(pendingWinner.current);
+      setLitId(pendingWinner.current.anilistId);
       pendingWinner.current = null;
       setReel([]);
       setSpinning(false);
@@ -204,6 +218,7 @@ export default function Recommend({
     if (timer.current) clearTimeout(timer.current);
     setSpinning(false);
     setWinner(null);
+    setLitId(null);
     setReel([]);
     return () => {
       // This ref is a cancellation counter, not a DOM node.
@@ -263,6 +278,25 @@ export default function Recommend({
     const reduced = reducedMotion;
     if (reduced) {
       revealWinner();
+      return;
+    }
+    if (guided) {
+      const target = candidates.findIndex(
+        (a) => a.anilistId === chosen.anilistId,
+      );
+      const steps = candidates.length * 4 + target;
+      let step = 0;
+      const illuminate = () => {
+        if (token !== generation.current) return;
+        setLitId(candidates[step % candidates.length].anilistId);
+        if (step === steps) {
+          timer.current = setTimeout(revealWinner, 500);
+          return;
+        }
+        step++;
+        timer.current = setTimeout(illuminate, 90 + 230 * (step / steps) ** 2);
+      };
+      illuminate();
       return;
     }
     setSpinning(true);
@@ -464,10 +498,32 @@ export default function Recommend({
               unknown. Choose No time limit to include them.
             </p>
           )}
-          <div className="tonight-candidates">
+          <div className="tonight-draw-controls">
+            <button
+              className="button primary"
+              onClick={() => void spin()}
+              disabled={spinning || !pool.length}
+            >
+              <Shuffle size={17} />
+              {spinning
+                ? "Choosing…"
+                : winner
+                  ? "Pick another"
+                  : "Pick an anime"}
+            </button>
+            {spinning && (
+              <>
+                <span role="status">Finding tonight’s story…</span>
+                <button className="button" onClick={revealWinner}>
+                  Skip animation
+                </button>
+              </>
+            )}
+          </div>
+          <div className="tonight-candidates" aria-busy={spinning}>
             {tonight.candidates.map((c) => (
               <article
-                className="tonight-candidate"
+                className={`tonight-candidate ${litId === c.entry.anilistId ? "is-lit" : ""} ${spinning ? "is-selecting" : ""}`}
                 key={c.entry.localId}
                 data-anime-id={c.entry.anilistId}
               >
@@ -553,171 +609,194 @@ export default function Recommend({
           )}
         </section>
       )}
-      <div className="recommendation-layout">
-        {!guided && filters}
-        <section
-          className={`recommendation-stage ${spinning ? "is-spinning" : ""}`}
-          aria-busy={spinning}
-        >
-          {spinning ? (
-            <div
-              className="recommendation-roulette"
-              role="status"
-              aria-label="Drawing an anime"
-            >
-              <div className="roulette-pointer" aria-hidden="true" />
-              <div className="roulette-window" aria-hidden="true">
-                <div
-                  className={`roulette-track ${reel.length ? "is-running" : "is-loading"}`}
-                >
-                  {reel.length
-                    ? reel.map((anime, index) => (
-                        <div
-                          className="roulette-card"
-                          key={index}
-                          data-anime-id={anime.anilistId}
-                        >
-                          <Artwork
-                            src={animeCover(anime)}
-                            title={anime.english ?? anime.romaji}
-                            eager
-                          />
-                          <span>{anime.english ?? anime.romaji}</span>
-                        </div>
-                      ))
-                    : Array.from({ length: 7 }, (_, index) => (
-                        <div
-                          className="roulette-card roulette-placeholder"
-                          key={index}
-                        >
-                          <Shuffle size={32} />
-                        </div>
-                      ))}
-                </div>
-              </div>
-              {pendingWinner.current && (
-                <button
-                  className="button skip-animation"
-                  onClick={revealWinner}
-                >
-                  Skip animation
-                </button>
-              )}
-              <p className="roulette-caption">
-                {reel.length
-                  ? "Finding your next watch"
-                  : "Exploring the catalog"}
-              </p>
-            </div>
-          ) : shown ? (
-            <div
-              data-anime-id={shown.anilistId}
-              className={`recommendation-result ${winner ? "is-revealed" : ""}`}
-              key={shown.anilistId}
-            >
-              <Artwork
-                src={animeCover(shown)}
-                title={shown.english ?? shown.romaji}
-                eager
-              />
-              <div
-                className="recommendation-copy"
-                aria-live={spinning ? "off" : "polite"}
-              >
-                <h2>
-                  {spinning ? "Choosing…" : (shown.english ?? shown.romaji)}
-                </h2>
-                <p>
-                  {shown.year ?? "—"} · {shown.format ?? "Anime"} ·{" "}
-                  {shown.episodes ?? "?"} episodes
-                </p>
-                {winner && (
-                  <>
-                    <div className="genre-chips">
-                      {shown.genres.slice(0, 3).map((g) => (
-                        <span key={g}>{g}</span>
-                      ))}
-                    </div>
-                    <div className="welcome-actions">
-                      <button className="button" onClick={() => onOpen(shown)}>
-                        View anime
-                        <ArrowUpRight size={14} />
-                      </button>
-                      {existing?.personalStatus === "Planning" && (
-                        <button
-                          className="button primary"
-                          disabled={store.saving}
-                          onClick={() =>
-                            void store.edit(existing.localId, {
-                              personalStatus: "Watching",
-                            })
-                          }
-                        >
-                          Start watching
-                        </button>
-                      )}
-                      <button
-                        className="button"
-                        disabled={!!existing}
-                        onClick={() => void store.add(shown)}
-                      >
-                        <BookmarkPlus size={15} />
-                        {existing ? "In your library" : "Add to Watchlist"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="recommendation-empty">
-              <h2>
-                {spinning ? (
-                  "Exploring the catalog…"
-                ) : pool.length || (!guided && source === "AniList") ? (
-                  <>
-                    What to
-                    <br />
-                    <em>watch?</em>
-                  </>
-                ) : loading ? (
-                  "Finding anime…"
-                ) : (
-                  "No matching anime"
-                )}
-              </h2>
-              {!spinning && pool.length > 0 && (
-                <div className="recommendation-fan" aria-hidden="true">
-                  {pool.slice(0, 5).map((anime) => (
-                    <div key={anime.anilistId}>
-                      <Artwork
-                        src={animeCover(anime)}
-                        title={anime.english ?? anime.romaji}
-                        eager
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-              {!pool.length && (guided || source !== "AniList") && !loading && (
-                <p>Try different filters or another source.</p>
-              )}
-            </div>
-          )}
-          <button
-            className="button primary recommendation-spin"
-            onClick={() => void spin()}
-            disabled={
-              (!guided && loading) ||
-              spinning ||
-              ((guided || source !== "AniList") && !pool.length)
-            }
+      {(!guided || shown) && (
+        <div className="recommendation-layout">
+          {!guided && filters}
+          <section
+            className={`recommendation-stage ${spinning ? "is-spinning" : ""}`}
+            aria-busy={spinning}
           >
-            <Shuffle size={17} />
-            {spinning ? "Choosing…" : winner ? "Pick another" : "Pick an anime"}
-          </button>
-        </section>
-      </div>
+            {spinning ? (
+              <div
+                className="recommendation-roulette"
+                role="status"
+                aria-label="Drawing an anime"
+              >
+                <div className="roulette-pointer" aria-hidden="true" />
+                <div className="roulette-window" aria-hidden="true">
+                  <div
+                    className={`roulette-track ${reel.length ? "is-running" : "is-loading"}`}
+                  >
+                    {reel.length
+                      ? reel.map((anime, index) => (
+                          <div
+                            className="roulette-card"
+                            key={index}
+                            data-anime-id={anime.anilistId}
+                          >
+                            <Artwork
+                              src={animeCover(anime)}
+                              title={anime.english ?? anime.romaji}
+                              eager
+                            />
+                            <span>{anime.english ?? anime.romaji}</span>
+                          </div>
+                        ))
+                      : Array.from({ length: 7 }, (_, index) => (
+                          <div
+                            className="roulette-card roulette-placeholder"
+                            key={index}
+                          >
+                            <Shuffle size={32} />
+                          </div>
+                        ))}
+                  </div>
+                </div>
+                {pendingWinner.current && (
+                  <button
+                    className="button skip-animation"
+                    onClick={revealWinner}
+                  >
+                    Skip animation
+                  </button>
+                )}
+                <p className="roulette-caption">
+                  {reel.length
+                    ? "Finding your next watch"
+                    : "Exploring the catalog"}
+                </p>
+              </div>
+            ) : shown ? (
+              <div
+                data-anime-id={shown.anilistId}
+                className={`recommendation-result ${winner ? "is-revealed" : ""}`}
+                key={shown.anilistId}
+                ref={resultRef}
+              >
+                <Artwork
+                  src={animeCover(shown)}
+                  title={shown.english ?? shown.romaji}
+                  eager
+                />
+                <div
+                  className="recommendation-copy"
+                  aria-live={spinning ? "off" : "polite"}
+                >
+                  <h2>
+                    {spinning ? "Choosing…" : (shown.english ?? shown.romaji)}
+                  </h2>
+                  <p>
+                    {shown.year ?? "—"} · {shown.format ?? "Anime"} ·{" "}
+                    {shown.episodes ?? "?"} episodes
+                  </p>
+                  {guided && (
+                    <p className="tonight-synopsis">{shown.description}</p>
+                  )}
+                  {guided &&
+                    tonight.candidates
+                      .find((c) => c.entry.anilistId === shown.anilistId)
+                      ?.reasons.map((reason) => (
+                        <p key={reason} className="tonight-reason">
+                          {reason}
+                        </p>
+                      ))}
+                  {winner && (
+                    <>
+                      <div className="genre-chips">
+                        {shown.genres.slice(0, 3).map((g) => (
+                          <span key={g}>{g}</span>
+                        ))}
+                      </div>
+                      <div className="welcome-actions">
+                        <button
+                          className="button"
+                          onClick={() => onOpen(shown)}
+                        >
+                          View anime
+                          <ArrowUpRight size={14} />
+                        </button>
+                        {existing?.personalStatus === "Planning" && (
+                          <button
+                            className="button primary"
+                            disabled={store.saving}
+                            onClick={() =>
+                              void store.edit(existing.localId, {
+                                personalStatus: "Watching",
+                              })
+                            }
+                          >
+                            Start watching
+                          </button>
+                        )}
+                        <button
+                          className="button"
+                          disabled={!!existing}
+                          onClick={() => void store.add(shown)}
+                        >
+                          <BookmarkPlus size={15} />
+                          {existing ? "In your library" : "Add to Watchlist"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="recommendation-empty">
+                <h2>
+                  {spinning ? (
+                    "Exploring the catalog…"
+                  ) : pool.length || (!guided && source === "AniList") ? (
+                    <>
+                      What to
+                      <br />
+                      <em>watch?</em>
+                    </>
+                  ) : loading ? (
+                    "Finding anime…"
+                  ) : (
+                    "No matching anime"
+                  )}
+                </h2>
+                {!spinning && pool.length > 0 && (
+                  <div className="recommendation-fan" aria-hidden="true">
+                    {pool.slice(0, 5).map((anime) => (
+                      <div key={anime.anilistId}>
+                        <Artwork
+                          src={animeCover(anime)}
+                          title={anime.english ?? anime.romaji}
+                          eager
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!pool.length &&
+                  (guided || source !== "AniList") &&
+                  !loading && <p>Try different filters or another source.</p>}
+              </div>
+            )}
+            {!guided && (
+              <button
+                className="button primary recommendation-spin"
+                onClick={() => void spin()}
+                disabled={
+                  (!guided && loading) ||
+                  spinning ||
+                  ((guided || source !== "AniList") && !pool.length)
+                }
+              >
+                <Shuffle size={17} />
+                {spinning
+                  ? "Choosing…"
+                  : winner
+                    ? "Pick another"
+                    : "Pick an anime"}
+              </button>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }

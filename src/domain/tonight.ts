@@ -8,15 +8,48 @@ export function recentFirst(a: Entry, b: Entry) {
     a.preferredTitle.localeCompare(b.preferredTitle)
   );
 }
-export function homeSpotlight(entries: Entry[]) {
+// Never extrapolate a weekly schedule: only count episodes confirmed by metadata.
+export function availableEpisodes(entry: Entry, now = Date.now()) {
+  const m = entry.cachedMetadata;
+  const total = m.format === "MOVIE" ? 1 : (entry.totalEpisodes ?? Infinity);
+  if (m.status === "FINISHED")
+    return Math.max(0, total - entry.watchedEpisodes);
+  const air = m.nextAiringEpisode;
+  if (air) {
+    const aired = air.episode - (air.airingAt * 1000 > now ? 1 : 0);
+    return Math.max(0, Math.min(total, aired) - entry.watchedEpisodes);
+  }
+  if (
+    m.status === "NOT_YET_RELEASED" ||
+    m.status === "RELEASING" ||
+    m.status === "HIATUS"
+  )
+    return 0;
+  return Math.max(0, total - entry.watchedEpisodes);
+}
+export function homeSpotlight(
+  entries: Entry[],
+  now = Date.now(),
+  previousId?: string,
+) {
+  const watching = entries
+    .filter(
+      (e) =>
+        ["Watching", "Rewatching"].includes(e.personalStatus) &&
+        availableEpisodes(e, now) > 0,
+    )
+    .sort(recentFirst);
+  const planned = entries
+    .filter(
+      (e) => e.personalStatus === "Planning" && availableEpisodes(e, now) > 0,
+    )
+    .sort((a, b) => b.priority - a.priority || recentFirst(a, b));
+  const candidates = watching.length ? watching : planned;
   return (
-    entries
-      .filter((e) => ["Watching", "Rewatching"].includes(e.personalStatus))
-      .sort(recentFirst)[0] ??
-    entries
-      .filter((e) => e.personalStatus === "Planning")
-      .sort((a, b) => b.priority - a.priority || recentFirst(a, b))[0] ??
-    null
+    candidates[
+      (candidates.findIndex((e) => e.localId === previousId) + 1) %
+        candidates.length
+    ] ?? null
   );
 }
 export interface TonightOptions {
@@ -64,12 +97,7 @@ export function evaluateTonight(entries: Entry[], options: TonightOptions) {
       (options.genre && !m.genres.includes(options.genre))
     )
       continue;
-    const remaining =
-      m.format === "MOVIE"
-        ? Math.max(0, 1 - entry.watchedEpisodes)
-        : entry.totalEpisodes === null
-          ? Infinity
-          : Math.max(0, entry.totalEpisodes - entry.watchedEpisodes);
+    const remaining = availableEpisodes(entry);
     if (!remaining) continue;
     const duration = m.duration && m.duration > 0 ? m.duration : null;
     if (options.minutes !== null && duration === null) {

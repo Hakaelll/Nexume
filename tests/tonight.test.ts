@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { createEntry } from "../src/domain/model";
 import { mapAnime, type AniListDTO } from "../src/services/anilist/provider";
-import { evaluateTonight, homeSpotlight } from "../src/domain/tonight";
+import {
+  availableEpisodes,
+  evaluateTonight,
+  homeSpotlight,
+} from "../src/domain/tonight";
 const sample = JSON.parse(
   readFileSync("public/demo/anime.json", "utf8"),
 ) as AniListDTO[];
@@ -21,6 +25,53 @@ const options = {
   adult: false,
 };
 describe("tonight selection", () => {
+  it("waits for the next broadcast and never extrapolates stale weekly dates", () => {
+    const e = entry();
+    e.personalStatus = "Watching";
+    e.cachedMetadata.status = "RELEASING";
+    e.watchedEpisodes = 6;
+    const saturday = Date.parse("2026-09-19T18:00:00Z");
+    e.cachedMetadata.nextAiringEpisode = {
+      episode: 7,
+      airingAt: saturday / 1000,
+    };
+    expect(availableEpisodes(e, saturday - 1)).toBe(0);
+    expect(homeSpotlight([e], saturday - 1)).toBeNull();
+    expect(availableEpisodes(e, saturday)).toBe(1);
+    e.watchedEpisodes = 7;
+    expect(availableEpisodes(e, saturday + 14 * 86400000)).toBe(0);
+    e.cachedMetadata.nextAiringEpisode = null;
+    expect(homeSpotlight([e], saturday)).toBeNull();
+    e.cachedMetadata.status = "FINISHED";
+    expect(availableEpisodes(e, saturday)).toBe(5);
+  });
+  it("rotates eligible titles, excludes unaired Planning entries and caps tonight by aired progress", () => {
+    const a = entry(),
+      b = entry(1),
+      upcoming = entry(2);
+    a.personalStatus = b.personalStatus = "Watching";
+    upcoming.cachedMetadata.status = "NOT_YET_RELEASED";
+    upcoming.cachedMetadata.nextAiringEpisode = null;
+    expect(homeSpotlight([upcoming])).toBeNull();
+    const first = homeSpotlight([a, b])!;
+    expect(homeSpotlight([a, b], Date.now(), first.localId)?.localId).not.toBe(
+      first.localId,
+    );
+    a.cachedMetadata.status = "RELEASING";
+    a.watchedEpisodes = 5;
+    a.cachedMetadata.nextAiringEpisode = {
+      episode: 7,
+      airingAt: Math.floor(Date.now() / 1000) + 86400,
+    };
+    expect(
+      evaluateTonight([a], { ...options, intent: "continue", minutes: 90 })
+        .candidates[0].episodes,
+    ).toBe(1);
+    a.watchedEpisodes = 6;
+    expect(
+      evaluateTonight([a], { ...options, intent: "continue" }).candidates,
+    ).toEqual([]);
+  });
   it("fits the exact boundary and caps episodes by remaining progress", () => {
     const e = entry();
     e.watchedEpisodes = 11;

@@ -253,6 +253,49 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
+  const [addingSeason, setAddingSeason] = useState(false);
+  const [seasonMessage, setSeasonMessage] = useState("");
+  const seasonController = useRef<AbortController | null>(null);
+  useEffect(() => () => seasonController.current?.abort(), []);
+  const addSeason = async () => {
+    if (seasonController.current) return;
+    const controller = new AbortController();
+    seasonController.current = controller;
+    const selectedSeason = seasonNow(category === "Next season" ? 1 : 0);
+    setAddingSeason(true);
+    setSeasonMessage("Fetching the complete season…");
+    try {
+      const all: Anime[] = [];
+      for (let page = 1; ; page++) {
+        const result = await anilist.search(
+          { ...selectedSeason, adult: data.preferences.adultContent, page },
+          controller.signal,
+        );
+        if (controller.signal.aborted) return;
+        all.push(...result.items);
+        setSeasonMessage(
+          `Fetching the complete season · ${all.length} titles found…`,
+        );
+        if (!result.hasNextPage) break;
+      }
+      await useApp.getState().addMany(all);
+      if (controller.signal.aborted) return;
+      if (useApp.getState().error) throw new Error(useApp.getState().error);
+      setSeasonMessage(
+        `${selectedSeason.season} ${selectedSeason.year} added to your Watchlist. Existing entries kept. Announced episodes appear in Calendar.`,
+      );
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setSeasonMessage(
+          error instanceof Error
+            ? error.message
+            : "Could not add this season. Please retry.",
+        );
+    } finally {
+      seasonController.current = null;
+      if (!controller.signal.aborted) setAddingSeason(false);
+    }
+  };
   useEffect(() => {
     const c = new AbortController();
     setLoading(true);
@@ -312,6 +355,25 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
   return (
     <div className="page discover-page">
       <PageTitle title="Discover" />
+      {(category === "This season" || category === "Next season") && (
+        <div className="season-bulk-actions">
+          <button
+            className="button primary"
+            disabled={addingSeason || !navigator.onLine}
+            onClick={() => void addSeason()}
+          >
+            <Plus size={16} />
+            {addingSeason
+              ? "Adding season…"
+              : `Add all ${category === "This season" ? "current" : "next"} season anime to Watchlist`}
+          </button>
+          <p className="muted">
+            Includes the complete season, regardless of the filters below.
+            Scheduled episodes will appear in Calendar.
+          </p>
+        </div>
+      )}
+      {seasonMessage && <p role="status">{seasonMessage}</p>}
       <div className="discover-tabs">
         {[
           "Trending",

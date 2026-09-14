@@ -1,13 +1,24 @@
 import { Spotlight } from "./Spotlight";
-import { recentFirst, homeSpotlight } from "../../domain/tonight";
+import { useReducedMotion } from "../../core/motion";
+import {
+  recentFirst,
+  homeSpotlight,
+  availableEpisodes,
+} from "../../domain/tonight";
 import {
   spainDayRange,
   spainTime,
   SPAIN_TIME_ZONE,
 } from "../../core/spainTime";
-import { useAiring, useClock } from "../../core/airing";
+import { useAiring, useClock, useRefreshEpisodes } from "../../core/airing";
 import { useEffect, useState, useRef } from "react";
-import { ArrowUpRight, ArrowRight, Plus } from "lucide-react";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useApp } from "../../app/store";
 import { type Entry, type Anime } from "../../domain/model";
 import {
@@ -30,6 +41,10 @@ export function Home({
   onAnime,
 }: { onSample: () => void; onAnime: (a: Anime) => void } & Props) {
   const { data, prefs } = useApp();
+  const now = useClock(data.preferences.section === "Home");
+  const reducedMotion = useReducedMotion();
+  useRefreshEpisodes(data.preferences.section === "Home", now);
+  const rail = useRef<HTMLDivElement>(null);
   const [spotlightId, setSpotlightId] = useState(
     () => homeSpotlight(data.entries)?.localId,
   );
@@ -37,25 +52,43 @@ export function Home({
   useEffect(() => {
     const active = data.preferences.section === "Home";
     if (active && (!wasHome.current || !spotlightId))
-      setSpotlightId(homeSpotlight(data.entries)?.localId);
+      setSpotlightId(
+        homeSpotlight(data.entries, Date.now(), spotlightId)?.localId,
+      );
     wasHome.current = active;
   }, [data.preferences.section, data.entries, spotlightId]);
+  useEffect(() => {
+    if (data.preferences.section !== "Home") return;
+    const timer = setInterval(() => {
+      if (
+        document.hidden ||
+        rail.current
+          ?.closest(".home-page")
+          ?.querySelector(".home-spotlight")
+          ?.matches(":hover, :focus-within")
+      )
+        return;
+      setSpotlightId(
+        (previous) =>
+          homeSpotlight(data.entries, Date.now(), previous)?.localId,
+      );
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [data.entries, data.preferences.section]);
   const spotlight =
     data.entries.find(
       (e) =>
         e.localId === spotlightId &&
-        ["Planning", "Watching", "Rewatching"].includes(e.personalStatus),
-    ) ?? homeSpotlight(data.entries);
-  const remainingWatching = data.entries
-    .filter(
-      (e) =>
-        ["Watching", "Rewatching"].includes(e.personalStatus) &&
-        e.localId !== spotlight?.localId,
-    )
-    .sort(recentFirst);
-  const now = useClock();
+        ["Planning", "Watching", "Rewatching"].includes(e.personalStatus) &&
+        availableEpisodes(e, now) > 0,
+    ) ?? homeSpotlight(data.entries, now);
   const [today, tomorrow] = spainDayRange(now);
-  const airing = useAiring(today, tomorrow);
+  const airing = useAiring(
+    today,
+    tomorrow,
+    false,
+    data.preferences.section === "Home",
+  );
   const recentCutoff = now - 30 * 60000;
   const windowEnd = Math.min(now + 3 * 3600000, tomorrow.getTime());
   const inWindow = airing.items.filter((anime) => {
@@ -76,7 +109,11 @@ export function Home({
       ? "Up next today"
       : "Today’s latest emissions · schedule finished";
   const watching = data.entries
-    .filter((e) => ["Watching", "Rewatching"].includes(e.personalStatus))
+    .filter(
+      (e) =>
+        ["Watching", "Rewatching"].includes(e.personalStatus) ||
+        (e.personalStatus === "Paused" && e.watchedEpisodes > 0),
+    )
     .sort(recentFirst);
   const [season, setSeason] = useState<Anime[]>([]);
   useEffect(() => {
@@ -220,6 +257,32 @@ export function Home({
       <section className="home-section">
         <div className="section-heading">
           <h2>Continue watching</h2>
+          <div className="continue-controls">
+            <button
+              className="icon-button"
+              aria-label="Scroll anime left"
+              onClick={() =>
+                rail.current?.scrollBy({
+                  left: -rail.current.clientWidth * 0.85,
+                  behavior: reducedMotion ? "auto" : "smooth",
+                })
+              }
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Scroll anime right"
+              onClick={() =>
+                rail.current?.scrollBy({
+                  left: rail.current.clientWidth * 0.85,
+                  behavior: reducedMotion ? "auto" : "smooth",
+                })
+              }
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
           <button
             className="text-button"
             onClick={() =>
@@ -234,9 +297,15 @@ export function Home({
             <ArrowUpRight size={14} />
           </button>
         </div>
-        {remainingWatching.length ? (
-          <div className="continue-grid">
-            {remainingWatching.slice(0, 6).map((e) => (
+        {watching.length ? (
+          <div
+            className="continue-grid"
+            ref={rail}
+            tabIndex={0}
+            role="region"
+            aria-label="Continue watching anime"
+          >
+            {watching.map((e) => (
               <AnimeCard
                 entry={e}
                 tracking
@@ -449,5 +518,3 @@ export function Diary({ onOpen, onSearch }: Props) {
     </div>
   );
 }
-export { default as Calendar } from "./Calendar";
-export { default as Stats } from "./Statistics";

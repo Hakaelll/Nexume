@@ -110,10 +110,103 @@ html[data-detail-transition="true"]::view-transition-old(scene) {
 .scene-loading::after {
   content: "";
   display: block;
-  height: 240px;
+  height: 4px;
   margin-top: 24px;
   border-radius: 16px;
   background: #e8e5e0;
+}
+
+/* A horizontal shelf keeps every in-progress title within reach. */
+.home-page .continue-grid {
+  display: grid;
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(160px, 18vw, 220px);
+  gap: 24px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+  padding: 12px 4px 24px;
+  scrollbar-width: thin;
+}
+.continue-grid > * {
+  scroll-snap-align: start;
+}
+.continue-controls {
+  display: flex;
+  margin-left: auto;
+  gap: 6px;
+}
+.route-loading {
+  min-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  color: var(--muted, #777);
+  animation: cinema-fade 180ms ease both;
+}
+.route-loading-orbit {
+  width: 36px;
+  height: 36px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  animation: route-orbit 1.2s linear infinite;
+}
+@keyframes route-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.tonight-candidate {
+  transition:
+    opacity 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+.tonight-candidate.is-selecting {
+  animation: none;
+  opacity: 0.5;
+}
+.tonight-candidate.is-lit {
+  opacity: 1;
+  border-color: #cf833b;
+  box-shadow:
+    0 0 0 2px #cf833b,
+    0 0 26px #cf833b55;
+}
+.tonight-synopsis {
+  white-space: pre-line;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.tonight-draw-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+.season-bulk-actions {
+  margin: 16px 0;
+}
+html[data-reduced-motion="true"] .route-loading-orbit {
+  animation: none;
+}
+html[data-reduced-motion="true"] .tonight-candidate {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-orbit {
+    animation: none;
+  }
+  .tonight-candidate {
+    transition: none;
+  }
 }
 @keyframes cinema-fade {
   from {

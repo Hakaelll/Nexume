@@ -25,6 +25,7 @@ type Store = {
   mutate: (fn: (data: AppData) => AppData) => Promise<void>;
   prefs: (p: Partial<Preferences>) => Promise<void>;
   add: (anime: Anime) => Promise<void>;
+  addMany: (anime: Anime[]) => Promise<void>;
   edit: (id: string, patch: Partial<Entry>) => Promise<void>;
   episodes: (id: string, n: number) => Promise<void>;
   adjustEpisodes: (id: string, delta: number) => Promise<void>;
@@ -35,6 +36,8 @@ type Store = {
 };
 let chain: Promise<void> = Promise.resolve();
 let initPromise: Promise<void> | null = null;
+let preferenceRevision = 0;
+const preferenceChanges = new Map<keyof Preferences, number>();
 export const useApp = create<Store>((set, get) => ({
   data: emptyData(),
   ready: false,
@@ -58,9 +61,22 @@ export const useApp = create<Store>((set, get) => ({
     const job = chain.then(async () => {
       if (!get().ready) throw new Error("Your collection is not ready.");
       set({ saving: true });
+      const previousRevision = preferenceRevision;
       const data = stateSchema.parse(reconcilePublications(fn(get().data)));
       await repository.save(data);
-      set({ data, saving: false, error: "" });
+      const concurrentPreferences = Object.fromEntries(
+        [...preferenceChanges]
+          .filter(([, revision]) => revision > previousRevision)
+          .map(([key]) => [key, get().data.preferences[key]]),
+      );
+      set({
+        data: {
+          ...data,
+          preferences: { ...data.preferences, ...concurrentPreferences },
+        },
+        saving: false,
+        error: "",
+      });
     });
     chain = job.catch((e) => {
       set({
@@ -71,14 +87,16 @@ export const useApp = create<Store>((set, get) => ({
     return chain;
   },
   prefs: (p) => {
+    if (!get().ready) return Promise.resolve();
+    const preferences = preferencesSchema.parse({
+      ...get().data.preferences,
+      ...p,
+    });
+    for (const key of Object.keys(p) as (keyof Preferences)[])
+      preferenceChanges.set(key, ++preferenceRevision);
+    set({ data: { ...get().data, preferences } });
     const job = chain.then(async () => {
-      if (!get().ready) return;
-      const preferences = preferencesSchema.parse({
-        ...get().data.preferences,
-        ...p,
-      });
-      await repository.savePreferences(preferences);
-      set({ data: { ...get().data, preferences } });
+      await repository.savePreferences(get().data.preferences);
     });
     chain = job.catch((e) =>
       set({ error: `Preferences were not saved. ${String(e)}` }),
@@ -91,6 +109,18 @@ export const useApp = create<Store>((set, get) => ({
         ? d
         : { ...d, entries: [createEntry(anime), ...d.entries] },
     ),
+  addMany: (anime) =>
+    get().mutate((d) => {
+      const seen = new Set(d.entries.map((e) => e.anilistId));
+      const added = anime
+        .filter((a) => {
+          if (seen.has(a.anilistId)) return false;
+          seen.add(a.anilistId);
+          return true;
+        })
+        .map((a) => createEntry(a));
+      return { ...d, entries: [...added, ...d.entries] };
+    }),
   edit: (entryId, patch) =>
     get().mutate((d) => {
       const old = d.entries.find((e) => e.localId === entryId);

@@ -26,7 +26,7 @@ export function Progress({
   entry: Entry;
   compact?: boolean;
 }) {
-  const store = useApp();
+  const store = useApp.getState();
   const [draft, setDraft] = useState(String(entry.watchedEpisodes));
   useEffect(
     () => setDraft(String(entry.watchedEpisodes)),
@@ -214,6 +214,15 @@ export function PageTitle({
     </div>
   );
 }
+const entryIndexes = new WeakMap<Entry[], Map<number, Entry>>();
+function indexEntries(entries: Entry[]) {
+  let index = entryIndexes.get(entries);
+  if (!index) {
+    index = new Map(entries.map((entry) => [entry.anilistId, entry]));
+    entryIndexes.set(entries, index);
+  }
+  return index;
+}
 export function AnimeCard({
   entry: suppliedEntry,
   anime,
@@ -227,10 +236,12 @@ export function AnimeCard({
   onContext?: (e: React.MouseEvent) => void;
   tracking?: boolean;
 }) {
-  const store = useApp();
+  const store = useApp.getState();
   const entry =
-    store.data.entries.find(
-      (e) => e.anilistId === (suppliedEntry?.anilistId ?? anime?.anilistId),
+    useApp((state) =>
+      indexEntries(state.data.entries).get(
+        suppliedEntry?.anilistId ?? anime!.anilistId,
+      ),
     ) ?? suppliedEntry;
   const [ratingOpen, setRatingOpen] = useState(false);
   const [busy, setBusy] = useState(false);

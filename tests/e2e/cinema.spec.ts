@@ -79,7 +79,9 @@ test("Library returns to the same scrolled card", async ({ page }) => {
   const card = page.locator(".anime-card .cover-button").last();
   await card.scrollIntoViewIfNeeded();
   await card.focus();
-  const scroll = await page.locator(".library-results").evaluate((e) => e.scrollTop);
+  const scroll = await page
+    .locator(".library-results")
+    .evaluate((e) => e.scrollTop);
   expect(scroll).toBeGreaterThan(0);
   await page.keyboard.press("Enter");
   await expect(
@@ -138,7 +140,7 @@ test("failed episode saves leave the protagonist unchanged and show no success",
     "Changes were not saved",
   );
   await expect(page.locator(".spotlight-copy")).toContainText(
-    "Episode 1 of 12",
+    "0 episodes watched",
   );
   await expect(page.locator(".spotlight-feedback")).toHaveText("");
 });
@@ -156,14 +158,18 @@ test("guided recommendations fit time, preserve the drawn winner on skip, and st
     path: "test-results/cinema-tonight.png",
     fullPage: true,
   });
+  await page.evaluate(() => {
+    Math.random = () => 0;
+  });
+  const winner = await page
+    .locator(".tonight-candidate")
+    .first()
+    .getAttribute("data-anime-id");
   await page
     .getByRole("button", { name: "Pick an anime", exact: true })
     .click();
-  await expect(page.locator(".roulette-card")).toHaveCount(26);
-  const winner = await page
-    .locator(".roulette-card")
-    .nth(22)
-    .getAttribute("data-anime-id");
+  await expect(page.locator(".roulette-card")).toHaveCount(0);
+  await expect(page.locator(".tonight-candidate.is-lit")).toHaveCount(1);
   await page.getByRole("button", { name: "Skip animation" }).click();
   await expect(page.locator(".recommendation-result")).toHaveAttribute(
     "data-anime-id",

@@ -44,7 +44,7 @@ import {
 import { Artwork, Modal, Stars } from "../components/ui";
 import { HeaderSearch } from "../features/search/HeaderSearch";
 import { SearchDialog, Discover } from "../features/search/Search";
-import { Home, Diary, Calendar, Stats } from "../features/personal/Personal";
+import { Home, Diary } from "../features/personal/Personal";
 import Detail from "../features/anime-detail/Detail";
 import { anilist } from "../services/anilist/provider";
 import { addSample, sampleEntries } from "../core/sample";
@@ -55,6 +55,8 @@ const Profile = lazy(() => import("../features/profile/Profile"));
 const Settings = lazy(() => import("../features/settings/Settings"));
 const Watchlist = lazy(() => import("../features/watchlist/Watchlist"));
 const Recommend = lazy(() => import("../features/recommend/Recommend"));
+const Calendar = lazy(() => import("../features/personal/Calendar"));
+const Stats = lazy(() => import("../features/personal/Statistics"));
 const sections = [
   ["Home", HomeIcon],
   ["Library", LibraryIcon],
@@ -96,9 +98,13 @@ export default function App() {
   const originCover = useRef<HTMLElement | null>(null);
   const scrollPositions = useRef(new Map<string, number>());
   const [visited, setVisited] = useState<Preferences["section"][]>([]);
+  // Bound detached DOM, subscriptions and graphics resources while retaining
+  // nearby navigation state. Older pages rebuild from the persisted store.
   useEffect(() => {
     if (store.ready)
-      setVisited((old) => (old.includes(section) ? old : [...old, section]));
+      setVisited((old) =>
+        [...old.filter((panel) => panel !== section), section].slice(-3),
+      );
   }, [section, store.ready]);
   const setDetail = useCallback(
     (anime: Anime | null) => {
@@ -202,12 +208,12 @@ export default function App() {
   const go = (to: Preferences["section"]) => {
     if (to === section && !detail) return;
     returnFocus.current = null;
-    animateRoute(async () => {
+    animateRoute(() => {
       flushSync(() => {
         setDetailState(null);
         setQuick(null);
+        void store.prefs({ section: to });
       });
-      await store.prefs({ section: to });
     });
   };
   useEffect(() => {
@@ -411,13 +417,14 @@ export default function App() {
                   <ErrorBoundary>
                     <Suspense
                       fallback={
-                        <div className="scene-loading" role="status">
-                          Opening {panel}…
-                          <div className="skeleton-grid" aria-hidden="true">
-                            <div />
-                            <div />
-                            <div />
-                          </div>
+                        <div className="route-loading" role="status">
+                          <span
+                            className="route-loading-orbit"
+                            aria-hidden="true"
+                          />
+                          <span>
+                            Opening {panel === "Stats" ? "Statistics" : panel}…
+                          </span>
                         </div>
                       }
                     >

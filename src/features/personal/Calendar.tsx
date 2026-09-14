@@ -11,14 +11,19 @@ export default function Calendar({
   onOpen: (entry: Entry) => void;
 }) {
   const { data } = useApp();
-  const now = useClock(),
+  const now = useClock(data.preferences.section === "Calendar"),
     today = new Date(now);
   const [mode, setMode] = useState<"week" | "month">("week");
   const [cursor, setCursor] = useState(() => new Date());
   const days = calendarDays(cursor, mode),
     last = days[days.length - 1];
   const end = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
-  const { items, loading, error } = useAiring(days[0], end, true);
+  const { items, loading, error } = useAiring(
+    days[0],
+    end,
+    true,
+    data.preferences.section === "Calendar",
+  );
   const shift = (amount: number) =>
     setCursor((d) =>
       mode === "month"
