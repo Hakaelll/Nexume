@@ -1,154 +1,50 @@
 # Nexume
 
-### Tu anime, tus recuerdos.
+**Your anime, remembered.**
 
-Nexume es una aplicación de escritorio para Windows que convierte tu historial de anime en una colección personal. Organiza lo que quieres ver, registra episodios, puntúa tus series y películas y conserva tus impresiones en un espacio propio.
+Nexume is a Windows desktop app for building a personal anime collection. Track your progress, discover your next series, and keep ratings, reviews, and watchlists in one place—with no account required for local features.
 
-**Sin cuenta obligatoria. Datos locales. Compartir es opcional.**
+[Releases](https://github.com/Hakaelll/Nexume/releases) · [Latest version: 0.8.0](docs/RELEASE-0.8.0.md)
 
-![Selector de anime de Nexume](docs/images/gallery-random.png)
+![Nexume anime collection](docs/images/gallery-discover.png)
 
-## Novedades de la versión 0.7.0
+## Features
 
-- Home destaca el anime que estás viendo, con acceso a la ficha y registro de episodios. Las emisiones del día se limitan a tres, con acceso al calendario completo.
-- La navegación conserva búsquedas, filtros, resultados, desplazamiento y foco durante la sesión. Las fichas indican la sección a la que volver.
-- Las portadas DOM conectan tarjeta y ficha con una transición; Collection incorpora miniaturas de navegación y se pausa fuera de pantalla. Los efectos respetan el ajuste de animaciones existente.
-- **What fits tonight?** compara hasta tres animes de tu colección según tiempo disponible, progreso y prioridad. Las películas deben caber completas. **Start watching** cambia el estado sin registrar episodios.
-- Watchlist transmite su género al selector. **Skip animation** revela el mismo ganador de la ruleta, sin repetir el sorteo.
-- La portada protagonista de Home es más grande, con progreso gráfico, episodio destacado y respuesta suave al pasar el cursor.
-- **Airing today** sigue una franja móvil: últimos 30 minutos y próximas 3 horas; fuera de ella muestra las siguientes emisiones o las últimas del día.
-- Library mejora la nitidez en Balanced y High. Las listas permiten subir una portada JPG, PNG o WebP, previsualizarla y quitarla.
+- **Your collection, your view.** Browse anime in an interactive 3D collection, poster grid, or compact table.
+- **Progress that stays with you.** Track episodes, rewatches, ratings, favorites, and personal reviews. Explore your viewing diary and statistics.
+- **A useful Home.** Rotate between anime with aired episodes left to watch and browse every ongoing title in a horizontal Continue watching shelf.
+- **Find something for tonight.** Match anime to your available time, then watch the candidates light up before your pick is revealed. Explore the broader catalog with a separate shuffle mode.
+- **Follow the season.** Discover anime through AniList, add an entire current or upcoming season to Watchlist, and see announced episodes in Calendar.
+- **Make it personal.** Create custom lists with cover images, customize your profile, and choose full or reduced animations.
 
-Estos cambios no requieren migración ni cuenta. Los candidatos y el contexto del selector son temporales y no forman parte de los backups. Los paquetes históricos de `release/` no se sustituyen con esta compilación.
+## Latest version — 0.8.0
 
-## Una colección que apetece abrir
+This update adds episode-aware Home rotation, horizontal browsing, illuminated tonight picks, complete season imports, and lighter navigation with a new loading indicator.
 
-- **Biblioteca en tres vistas:** colección espacial con Three.js, cuadrícula de portadas y tabla configurable.
-- **Acciones rápidas:** añade a Watchlist, da me gusta, puntúa con medias estrellas y marca como visto desde las tarjetas, sin abrir la ficha. Las notas y los cambios de estado se integran en el diario.
-- **Seguimiento:** progreso por episodios, estados de visionado, revisiones, favoritos independientes de los me gusta y prioridades de Watchlist.
-- **Descubrimiento:** búsqueda en AniList con sugerencias y teclado, filtros y exploración por temporada, popularidad o tendencias.
-- **Anime aleatorio:** elige desde Watchlist, tu biblioteca, una muestra sin conexión o todo el catálogo de AniList, con filtros de género, formato, año y duración y una ruleta de portadas que frena sobre el resultado.
-- **Perfil personal:** carga una foto JPG, PNG o WebP desde tu equipo, previsualízala o usa una URL. La imagen se recorta al centro y se guarda localmente a 256 × 256 píxeles.
-- **Fichas panorámicas:** imagen de fondo visible, degradado de lectura y controles de seguimiento integrados.
-- **Tu memoria de anime:** reseñas con control de spoilers, pensamientos breves, listas ordenadas, perfil, calendario y estadísticas.
-- **Diseño editorial:** fondo crema, titulares Inter en negrita cursiva, tarjetas suaves, portadas en color y acciones en magenta. Animaciones compatibles con movimiento reducido.
-- **Copias de seguridad:** exportación JSON y CSV, restauración validada y combinación de colecciones.
+Windows x64 packages:
 
-![Catálogo y acciones rápidas](docs/images/gallery-discover.png)
+- `Nexume-0.8.0-windows-x64-setup.exe` — installer with English and Spanish language options.
+- `Nexume-0.8.0-windows-x64.exe` — standalone executable using the same Windows app data location.
 
-Nexume es un organizador de anime; no reproduce ni descarga episodios.
+See the [release notes](docs/RELEASE-0.8.0.md) for packaging details. Published downloads are listed on the [GitHub Releases page](https://github.com/Hakaelll/Nexume/releases). Microsoft Edge WebView2 is required; builds are currently unsigned.
 
-## Probar en Windows
+## Data and privacy
 
-La versión de prueba actual es **0.7.0**, para Windows 10/11 de 64 bits. Los paquetes generados localmente están en `release/`:
+Your desktop collection is stored locally in SQLite. JSON backups let you export and restore it. Online discovery and airing schedules use AniList; broadcast times do not guarantee availability on streaming services.
 
-| Archivo | Uso |
-| --- | --- |
-| `Nexume-0.7.0-windows-x64-setup.exe` | Instalador para el usuario actual |
-| `Nexume-0.7.0-windows-x64.exe` | Ejecutable sin instalación; necesita WebView2 |
-| `SHA256SUMS-0.7.0.txt` | Huellas SHA-256 de ambos paquetes |
+Optional sharing uses Supabase and requires configuration. Keep local configuration in `.env.local`; use only a public/anon key in the frontend, never a service-role key. Desktop and browser preview collections are stored separately.
 
-La carpeta `release/` no se versiona en Git. Estos archivos deben adjuntarse a una publicación de GitHub Releases para distribuirlos; todavía no hay una publicación creada por este cambio. Los paquetes de desarrollo no están firmados. La interfaz de la aplicación está en inglés; el instalador permite español e inglés.
+## Development
 
-Empieza con **Add anime**, usa el buscador superior o pulsa **Try a sample** para cargar 12 animes con progreso y notas de ejemplo. La muestra es opcional y conserva las entradas existentes.
+Built with **Tauri 2, Rust, React, TypeScript, Zustand, SQLite, Three.js, and Vite**.
 
-## Cómo funciona el sorteo
+Requires Node.js 22.18+, pnpm, Rust with the MSVC toolchain, Visual Studio C++ Build Tools, and the Windows SDK.
 
-En **Recommend → Choose from**, selecciona **All anime · AniList** para descubrir títulos fuera de los resultados populares. Cada tirada toma una nueva muestra de identificadores de todo el rango del catálogo, aplica los filtros y elige un candidato al azar. No descarga la base de datos completa ni usa IA.
-
-Los filtros muy restrictivos pueden dejar una tirada sin coincidencias: vuelve a intentar o amplía los filtros. Esto no significa que no existan animes que cumplan esos criterios. El acceso al catálogo requiere conexión y depende de la disponibilidad y los límites de AniList. Watchlist, Library y Sample catalog permiten sorteos locales.
-
-## Datos y privacidad
-
-La aplicación Windows guarda tu colección en SQLite (`nexume.db`) bajo `%APPDATA%/app.nexume.desktop`. Las imágenes se almacenan en una caché separada. La versión del navegador usa almacenamiento local: **las colecciones del navegador y de Windows son independientes**. Puedes transferirlas mediante un backup JSON.
-
-Los fallos de lectura o guardado se muestran sin reiniciar silenciosamente tu colección. Restaurar una copia valida su estructura, ofrece combinar o reemplazar y solicita una copia previa. Los backups no incluyen sesiones, propiedad de publicaciones ni subidas pendientes. Restaurar no publica contenido automáticamente.
-
-## Desarrollo
-
-Stack: **Tauri 2 · Rust · React 19 · TypeScript · Zustand · SQLite · Three.js · Vite**. Metadatos de AniList; Supabase solo para compartir opcionalmente.
-
-Requisitos: Node.js 22.18 o superior, pnpm, Rust estable con MSVC, Visual Studio C++ Build Tools, Windows SDK y Microsoft Edge WebView2.
-
-```powershell
-corepack pnpm install --frozen-lockfile
-npm run dev
+```sh
+pnpm install --frozen-lockfile
+pnpm dev          # Browser preview
+pnpm tauri dev    # Desktop development
+pnpm tauri build  # Windows installer
 ```
 
-La vista web se abre en `http://127.0.0.1:1420`. Para ejecutar la aplicación nativa:
-
-```powershell
-npm run tauri dev
-```
-
-Validación y compilación:
-
-```powershell
-npm run lint
-npm run typecheck
-npm test
-npm run test:e2e
-npm run build
-npm run tauri build
-```
-
-Playwright utiliza Microsoft Edge instalado. Las pruebas de catálogo usan respuestas controladas y las de privacidad ejecutan el esquema PostgreSQL real mediante PGlite. Los resultados y límites de la verificación se documentan en [VERIFICATION.md](docs/VERIFICATION.md).
-
-## Compartir opcionalmente
-
-1. Crea un proyecto Supabase y aplica `supabase/schema.sql`.
-2. Copia `.env.example` a `.env.local` y configura `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` y `VITE_PUBLIC_VIEWER_URL`.
-3. Usa como URL del visor tu dirección HTTPS real, terminada en `viewer.html`, y compila la aplicación con esos valores.
-4. Aloja `dist/` en un servidor estático e inicia sesión desde Settings.
-5. Elige la visibilidad de una lista, perfil o reseña y publícala explícitamente.
-
-El frontend solo debe contener una clave pública/anon. Las notas privadas, rutas del dispositivo e historial no forman parte de los datos públicos. Las publicaciones Unlisted son accesibles a quien tenga el enlace; no tienen contraseña. Sin configuración, todas las funciones locales siguen disponibles.
-
-## Atajos
-
-| Acción | Atajo |
-| --- | --- |
-| Buscar anime | Ctrl+K |
-| Biblioteca / Inicio / Ajustes | Ctrl+L / Ctrl+H / Ctrl+, |
-| Mover selección en Collection | Flechas o rueda |
-| Abrir ficha / Vista rápida en Collection | Enter / Espacio |
-| Cerrar o volver | Escape |
-| Me gusta / Puntuar en la ficha | F / R |
-| Ajustar una puntuación enfocada | Flechas, Inicio, Fin; Supr para borrar |
-
-## Documentación y créditos
-
-- [Arquitectura](ARCHITECTURE.md) y [base de datos](DATABASE.md)
-- [Colección 3D](COLLECTION_3D.md) y [compartir](SOCIAL_ARCHITECTURE.md)
-- [Diseño](DESIGN.md) y [cambios visuales 0.6.0](docs/GALLERY_REVAMP.md)
-- [Atribución de imágenes y fuentes](docs/ASSETS.md)
-
-Las portadas y los metadatos pertenecen a sus titulares y se obtienen de AniList. El emblema de Nexume procede de los recursos proporcionados para el proyecto. Inter se distribuye localmente, incluidos sus pesos en cursiva, siguiendo la referencia Playful. Android e iOS quedan fuera de esta versión.
-
-## Novedades de 0.7.0
-
-- Recorte de avatar sobre la imagen completa, con círculo desplazable, zoom y ajuste con las flechas del teclado.
-- Buscador de los seis favoritos enfocado al abrir y sin filtros anteriores.
-- Home usa explícitamente Europe/Madrid para las emisiones del día y sus horas, con cambios de horario automáticos. Canarias tiene una hora menos. Son horarios de emisión de AniList, no de disponibilidad en plataformas españolas.
-- Investigación de la alerta de Defender en el instalador 0.6.0 de otro equipo con Windows 10: [resultados y límites](docs/DEFENDER-0.6.0.md). La detección no está confirmada como falso positivo.
-
-## Novedades de 0.6.0
-
-- **Animaciones configurables:** en Settings → Animations puedes seguir Windows, activar todas las animaciones o reducir el movimiento. El ajuste se aplica a Collection, ruleta y cambios de pantalla.
-- **Perfil:** buscador al elegir favoritos, avatar más grande y encuadre de fotos con posición horizontal, vertical y zoom.
-- **Calendario:** vistas semanal y mensual, navegación entre periodos, día actual destacado y episodios con horario local. Consulta las emisiones de los animes de Watching, Rewatching y Watchlist. Sin conexión conserva las fechas conocidas.
-- **Home:** emisiones del día, animes que estás viendo, temporada y recomendaciones basadas en géneros y puntuaciones.
-- **Diary:** resumen de actividad y tarjetas con acentos según el tipo de evento.
-- **Discover:** filtros de nota mínima, máximo de episodios, título y ordenación.
-
-Los horarios completos y el catálogo dependen de AniList. El ordenador de destino puede tener una configuración de accesibilidad distinta: selecciona **Full animations** si quieres activar las animaciones dentro de Nexume aunque Windows solicite reducir movimiento.
-
-Las portadas priorizan la resolución original disponible, incluso para animes guardados. Los fondos usan banners panorámicos y evitan ampliar una portada vertical a toda la ficha. Las estrellas de la ficha aumentan a 24 píxeles, conservando las medias estrellas y los atajos de teclado.
-
-Ruleta visual de portadas, colección con fondo claro y controles laterales separados del borde, búsqueda por relevancia, fichas con imagen panorámica y estadísticas con color. En **Profile → Edit profile → Upload profile photo** puedes elegir una foto local (JPG, PNG o WebP, hasta 10 MB), previsualizarla y guardarla.
-
-![Ficha de anime con imagen de fondo](docs/images/anime-detail.png)
-![Estadísticas de la colección](docs/images/statistics.png)
-
-![Calendario mensual](docs/images/calendar-month.png)
-![Encuadre de foto de perfil](docs/images/avatar-crop.png)
+For optional sharing, copy [`.env.example`](.env.example) to `.env.local` and follow the [sharing architecture](SOCIAL_ARCHITECTURE.md). See [Architecture](ARCHITECTURE.md) for implementation details and [Assets](docs/ASSETS.md) for artwork and font credits.
