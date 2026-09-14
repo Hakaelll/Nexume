@@ -5,11 +5,7 @@ import {
   homeSpotlight,
   availableEpisodes,
 } from "../../domain/tonight";
-import {
-  spainDayRange,
-  spainTime,
-  SPAIN_TIME_ZONE,
-} from "../../core/spainTime";
+import { localDayRange, localTime, localTimeZone } from "../../core/localTime";
 import { useAiring, useClock, useRefreshEpisodes } from "../../core/airing";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -82,7 +78,7 @@ export function Home({
         ["Planning", "Watching", "Rewatching"].includes(e.personalStatus) &&
         availableEpisodes(e, now) > 0,
     ) ?? homeSpotlight(data.entries, now);
-  const [today, tomorrow] = spainDayRange(now);
+  const [today, tomorrow] = localDayRange(now);
   const airing = useAiring(
     today,
     tomorrow,
@@ -104,7 +100,7 @@ export function Home({
       ? upcoming.slice(0, 3)
       : airing.items.slice(-3).reverse();
   const airingCaption = inWindow.length
-    ? `Around now · ${spainTime(Math.max(recentCutoff, today.getTime()))}–${spainTime(windowEnd)}`
+    ? `Around now · ${localTime(Math.max(recentCutoff, today.getTime()))}–${localTime(windowEnd)}`
     : upcoming.length
       ? "Up next today"
       : "Today’s latest emissions · schedule finished";
@@ -153,7 +149,6 @@ export function Home({
       <PageTitle
         title="Home"
         subtitle={today.toLocaleDateString("en", {
-          timeZone: SPAIN_TIME_ZONE,
           weekday: "long",
           month: "long",
           day: "numeric",
@@ -199,9 +194,7 @@ export function Home({
               <ArrowUpRight size={14} />
             </button>
           </div>
-          <p className="airing-timezone">
-            España peninsular · Europe/Madrid · Canarias: una hora menos
-          </p>
+          <p className="airing-timezone">Local time · {localTimeZone()}</p>
           {airing.items.length > 0 && (
             <p className="airing-timezone">{airingCaption}</p>
           )}
@@ -221,7 +214,7 @@ export function Home({
                     />
                     <span>
                       <small>
-                        {spainTime(air.airingAt * 1000)} · EP {air.episode}
+                        {localTime(air.airingAt * 1000)} · EP {air.episode}
                       </small>
                       <strong>{a.english ?? a.romaji}</strong>
                       <em>

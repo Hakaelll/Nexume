@@ -24,13 +24,13 @@ This update adds episode-aware Home rotation, horizontal browsing, illuminated t
 Windows x64 packages:
 
 - `Nexume-0.8.0-windows-x64-setup.exe` — installer with English and Spanish language options.
-- `Nexume-0.8.0-windows-x64.exe` — standalone executable using the same Windows app data location.
+- `Nexume-0.8.0-windows-x64-local-time.exe` — standalone executable using the same Windows app data location.
 
 See the [release notes](docs/RELEASE-0.8.0.md) for packaging details. Published downloads are listed on the [GitHub Releases page](https://github.com/Hakaelll/Nexume/releases). Microsoft Edge WebView2 is required; builds are currently unsigned.
 
 ## Data and privacy
 
-Your desktop collection is stored locally in SQLite. JSON backups let you export and restore it. Online discovery and airing schedules use AniList; broadcast times do not guarantee availability on streaming services.
+Your desktop collection is stored locally in SQLite. JSON backups let you export and restore it. Online discovery and airing schedules use AniList. Times and daily schedules follow your computer's timezone; broadcast times do not guarantee availability on streaming services.
 
 Optional sharing uses Supabase and requires configuration. Keep local configuration in `.env.local`; use only a public/anon key in the frontend, never a service-role key. Desktop and browser preview collections are stored separately.
 
@@ -48,3 +48,4 @@ pnpm tauri build  # Windows installer
 ```
 
 For optional sharing, copy [`.env.example`](.env.example) to `.env.local` and follow the [sharing architecture](SOCIAL_ARCHITECTURE.md). See [Architecture](ARCHITECTURE.md) for implementation details and [Assets](docs/ASSETS.md) for artwork and font credits.
+

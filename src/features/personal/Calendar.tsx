@@ -4,6 +4,7 @@ import { useApp } from "../../app/store";
 import { type Entry } from "../../domain/model";
 import { Artwork, PageTitle } from "../../components/ui";
 import { animeCover } from "../../domain/artwork";
+import { localTime, localTimeZone } from "../../core/localTime";
 import { calendarDays, useAiring, useClock } from "../../core/airing";
 export default function Calendar({
   onOpen,
@@ -34,7 +35,7 @@ export default function Calendar({
     <div className="page calendar-page">
       <PageTitle
         title="Calendar"
-        subtitle="Your upcoming episodes · local time"
+        subtitle={`Your upcoming episodes · ${localTimeZone()}`}
       />
       <div className="calendar-toolbar">
         <div className="calendar-period">
@@ -135,11 +136,7 @@ export default function Calendar({
                             anime.romaji}
                         </strong>
                         <small>
-                          EP {air.episode} ·{" "}
-                          {new Date(air.airingAt * 1000).toLocaleTimeString(
-                            [],
-                            { hour: "2-digit", minute: "2-digit" },
-                          )}
+                          EP {air.episode} · {localTime(air.airingAt * 1000)}
                         </small>
                         <em>
                           {air.airingAt * 1000 < now ? "Aired" : "Upcoming"}

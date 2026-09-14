@@ -67,7 +67,9 @@ test("calendar modes, today episodes, favorite search, avatar framing and discov
   await expect(
     page.getByRole("heading", { name: "Continue watching" }),
   ).toBeVisible();
-  await expect(page.locator(".airing-timezone")).toContainText("Europe/Madrid");
+  await expect(page.locator(".airing-timezone").first()).toContainText(
+    "Local time",
+  );
   await page.screenshot({ path: "test-results/home-today.png" });
   await page.getByRole("button", { name: "Diary", exact: true }).click();
   await expect(page.locator(".diary-event")).toHaveCount(3);
@@ -193,11 +195,10 @@ test("full animation override works when Windows requests reduced motion", async
   );
 });
 
-test("Home uses Spain's day and time on a computer in another timezone", async ({
-  browser,
-}) => {
+test("Home uses the computer's local day and time", async ({ browser }) => {
   const context = await browser.newContext({
     timezoneId: "America/Los_Angeles",
+    locale: "en-US",
   });
   const page = await context.newPage();
   try {
@@ -233,14 +234,14 @@ test("Home uses Spain's day and time on a computer in another timezone", async (
       });
     });
     await page.goto("/");
-    await expect(page.locator(".today-airing-card")).toContainText("01:00");
-    await expect(page.locator(".airing-timezone")).toContainText(
-      "Europe/Madrid",
+    await expect(page.locator(".today-airing-card")).toContainText("04:00");
+    await expect(page.locator(".airing-timezone").first()).toContainText(
+      "America/Los_Angeles",
     );
     await expect
       .poll(() =>
         Object.values(bounds).includes(
-          Date.parse("2026-07-10T22:00:00Z") / 1000 - 1,
+          Date.parse("2026-07-10T07:00:00Z") / 1000 - 1,
         ),
       )
       .toBe(true);
