@@ -7,7 +7,7 @@
 - Home rota el destacado cada 30 segundos cuando está activo, pausando el cambio mientras se interactúa con él. Solo propone episodios confirmados como emitidos y pendientes de ver.
 - Se actualizan los metadatos antiguos de animes en emisión y próximos estrenos.
 - Continue watching muestra Watching, Rewatching y títulos Paused con progreso en una fila horizontal con flechas y acceso por teclado.
-- What fits tonight ilumina sucesivamente sus candidatos, desacelera y muestra el elegido en grande con sinopsis, información y acciones. Permite saltar la animación y respeta movimiento reducido.
+- What fits tonight muestra todos los animes que encajan con los filtros en una cuadrícula desplazable. Ilumina sucesivamente sus candidatos y muestra el elegido en grande con sinopsis, información y acciones. La duración de la animación se mantiene limitada incluso con colecciones grandes; permite saltarla y respeta movimiento reducido.
 - Discover añade la temporada actual o siguiente completa a Watchlist, recorriendo todas las páginas y conservando el progreso de los animes existentes. Las emisiones aparecen en Calendar cuando AniList anuncia sus fechas.
 - Indicador neutral de carga; Statistics y Calendar se cargan bajo demanda.
 - Navegación inmediata con guardado asíncrono, conservación de cambios concurrentes de preferencias y consultas de tarjetas indexadas.

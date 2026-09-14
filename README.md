@@ -13,7 +13,7 @@ Nexume is a Windows desktop app for building a personal anime collection. Track 
 - **Your collection, your view.** Browse anime in an interactive 3D collection, poster grid, or compact table.
 - **Progress that stays with you.** Track episodes, rewatches, ratings, favorites, and personal reviews. Explore your viewing diary and statistics.
 - **A useful Home.** Rotate between anime with aired episodes left to watch and browse every ongoing title in a horizontal Continue watching shelf.
-- **Find something for tonight.** Match anime to your available time, then watch the candidates light up before your pick is revealed. Explore the broader catalog with a separate shuffle mode.
+- **Find something for tonight.** Browse every anime that fits your available time in a scrollable grid, then watch the candidates light up before your pick is revealed. Explore the broader catalog with a separate shuffle mode.
 - **Follow the season.** Discover anime through AniList, add an entire current or upcoming season to Watchlist, and see announced episodes in Calendar.
 - **Make it personal.** Create custom lists with cover images, customize your profile, and choose full or reduced animations.
 

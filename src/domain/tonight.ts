@@ -65,7 +65,11 @@ export interface TonightCandidate {
   minutes: number | null;
   reasons: string[];
 }
-export function evaluateTonight(entries: Entry[], options: TonightOptions) {
+export function evaluateTonight(
+  entries: Entry[],
+  options: TonightOptions,
+  now = Date.now(),
+) {
   const affinity = new Set(
     entries
       .filter(
@@ -97,7 +101,7 @@ export function evaluateTonight(entries: Entry[], options: TonightOptions) {
       (options.genre && !m.genres.includes(options.genre))
     )
       continue;
-    const remaining = availableEpisodes(entry);
+    const remaining = availableEpisodes(entry, now);
     if (!remaining) continue;
     const duration = m.duration && m.duration > 0 ? m.duration : null;
     if (options.minutes !== null && duration === null) {
@@ -146,5 +150,5 @@ export function evaluateTonight(entries: Entry[], options: TonightOptions) {
       score(b.entry) - score(a.entry) ||
       a.entry.preferredTitle.localeCompare(b.entry.preferredTitle),
   );
-  return { candidates: candidates.slice(0, 3), unknownDuration };
+  return { candidates, unknownDuration };
 }

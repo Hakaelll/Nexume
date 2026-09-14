@@ -70,6 +70,17 @@ export default function Recommend({
   const generation = useRef(0);
   const drawController = useRef<AbortController | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const candidatesRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!spinning || litId === null) return;
+    const container = candidatesRef.current;
+    const card = container?.querySelector<HTMLElement>(
+      `[data-anime-id="${litId}"]`,
+    );
+    if (container && card)
+      container.scrollTop =
+        card.offsetTop - (container.clientHeight - card.offsetHeight) / 2;
+  }, [spinning, litId]);
   useEffect(() => {
     if (guided && winner)
       resultRef.current?.scrollIntoView({
@@ -170,25 +181,52 @@ export default function Recommend({
     minutes === "any"
       ? null
       : Number(minutes === "custom" ? customMinutes : minutes);
-  const eligibleIds = new Set(
-    filterRecommendations(
-      store.data.entries.map((e) => e.cachedMetadata),
-      {
-        genre,
-        format,
-        minYear: Number(minYear),
-        maxEpisodes: Number(maxEpisodes),
-        adult: store.data.preferences.adultContent,
-      },
-    ).map((a) => a.anilistId),
+  const eligibleIds = useMemo(
+    () =>
+      new Set(
+        filterRecommendations(
+          store.data.entries.map((e) => e.cachedMetadata),
+          {
+            genre,
+            format,
+            minYear: Number(minYear),
+            maxEpisodes: Number(maxEpisodes),
+            adult: store.data.preferences.adultContent,
+          },
+        ).map((a) => a.anilistId),
+      ),
+    [
+      store.data.entries,
+      genre,
+      format,
+      minYear,
+      maxEpisodes,
+      store.data.preferences.adultContent,
+    ],
   );
-  const tonight = evaluateTonight(store.data.entries, {
-    minutes: budget,
-    intent,
-    genre,
-    adult: store.data.preferences.adultContent,
-    eligibleIds,
-  });
+  const tonight = useMemo(
+    () =>
+      evaluateTonight(
+        store.data.entries,
+        {
+          minutes: budget,
+          intent,
+          genre,
+          adult: store.data.preferences.adultContent,
+          eligibleIds,
+        },
+        now,
+      ),
+    [
+      store.data.entries,
+      budget,
+      intent,
+      genre,
+      store.data.preferences.adultContent,
+      eligibleIds,
+      now,
+    ],
+  );
   const pool = guided
     ? tonight.candidates.map((c) => c.entry.cachedMetadata)
     : catalogPool;
@@ -284,11 +322,17 @@ export default function Recommend({
       const target = candidates.findIndex(
         (a) => a.anilistId === chosen.anilistId,
       );
-      const steps = candidates.length * 4 + target;
+      const steps =
+        candidates.length === 1
+          ? 0
+          : Math.min(18, candidates.length * 4 + target);
+      const start =
+        (target - (steps % candidates.length) + candidates.length) %
+        candidates.length;
       let step = 0;
       const illuminate = () => {
         if (token !== generation.current) return;
-        setLitId(candidates[step % candidates.length].anilistId);
+        setLitId(candidates[(start + step) % candidates.length].anilistId);
         if (step === steps) {
           timer.current = setTimeout(revealWinner, 500);
           return;
@@ -444,7 +488,7 @@ export default function Recommend({
           <div>
             <p className="eyebrow">A little time. A good story.</p>
             <h2>What fits tonight?</h2>
-            <p>Three picks from your collection, with time to enjoy them.</p>
+            <p>All the anime in your collection that fit your time tonight.</p>
           </div>
           <div className="tonight-controls">
             <label className="field">
@@ -520,7 +564,15 @@ export default function Recommend({
               </>
             )}
           </div>
-          <div className="tonight-candidates" aria-busy={spinning}>
+          <p className="muted">{tonight.candidates.length} matching anime</p>
+          <div
+            className="tonight-candidates"
+            aria-busy={spinning}
+            ref={candidatesRef}
+            tabIndex={0}
+            role="region"
+            aria-label="Tonight candidates"
+          >
             {tonight.candidates.map((c) => (
               <article
                 className={`tonight-candidate ${litId === c.entry.anilistId ? "is-lit" : ""} ${spinning ? "is-selecting" : ""}`}

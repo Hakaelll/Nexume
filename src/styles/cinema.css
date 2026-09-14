@@ -568,9 +568,15 @@ html[data-reduced-motion="true"] .filmstrip-item {
   max-width: 140px;
 }
 .tonight-candidates {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 4px;
+  scrollbar-width: thin;
 }
 .tonight-candidate {
   min-width: 0;

@@ -130,11 +130,14 @@ describe("tonight selection", () => {
     adult.cachedMetadata.isAdult = true;
     expect(evaluateTonight([adult], options).candidates).toEqual([]);
   });
-  it("prioritizes pending entries and returns at most three unique candidates", () => {
+  it("prioritizes pending entries and returns every matching candidate", () => {
     const es = [0, 1, 2, 3].map(entry);
     es[3].priority = 3;
     const result = evaluateTonight(es, options).candidates;
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(4);
+    expect(new Set(result.map((c) => c.entry.localId))).toEqual(
+      new Set(es.map((e) => e.localId)),
+    );
     expect(result[0].entry.localId).toBe(es[3].localId);
     expect(result[0].reasons).toContain("You marked it Top priority");
   });
