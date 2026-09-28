@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
 import { Clock3, Clapperboard, Star, CheckCircle2 } from "lucide-react";
 import { useApp } from "../../app/store";
 import { PageTitle } from "../../components/ui";
@@ -46,13 +46,26 @@ function HorizontalChart({
     </section>
   );
 }
-export default function Statistics() {
-  const { data } = useApp();
-  const stats = statistics(data);
+export default memo(function Statistics() {
+  const entries = useApp((state) => state.data.entries);
+  const history = useApp((state) => state.data.history);
+  const stats = useMemo(
+    () => statistics({ entries, history }),
+    [entries, history],
+  );
   const [range, setRange] = useState(12);
+  const activityByMonth = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const event of history) {
+      const date = new Date(event.at);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      totals.set(key, (totals.get(key) ?? 0) + Math.max(0, event.episodeDelta));
+    }
+    return totals;
+  }, [history]);
   const distribution = statuses.map((status, i) => ({
     status,
-    count: data.entries.filter((e) => e.personalStatus === status).length,
+    count: entries.filter((e) => e.personalStatus === status).length,
     color: colors[i],
   }));
   const circumference = 2 * Math.PI * 72;
@@ -63,14 +76,10 @@ export default function Statistics() {
     date.setHours(0, 0, 0, 0);
     date.setMonth(date.getMonth() - range + 1 + i);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const next = new Date(date);
-    next.setMonth(next.getMonth() + 1);
     return {
       key,
       label: date.toLocaleDateString("en", { month: "short" }),
-      count: data.history
-        .filter((h) => new Date(h.at) >= date && new Date(h.at) < next)
-        .reduce((sum, h) => sum + Math.max(0, h.episodeDelta), 0),
+      count: activityByMonth.get(key) ?? 0,
     };
   });
   const maxActivity = Math.max(
@@ -285,4 +294,4 @@ export default function Statistics() {
       </p>
     </div>
   );
-}
+});

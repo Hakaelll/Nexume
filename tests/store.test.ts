@@ -21,6 +21,47 @@ beforeEach(() => {
 });
 
 describe("batched additions and responsive preferences", () => {
+  it("collapses a burst of preferences into one write", async () => {
+    const writes = Array.from({ length: 50 }, (_, i) =>
+      useApp.getState().prefs({ scrollTop: i * 10 }),
+    );
+    expect(useApp.getState().data.preferences.scrollTop).toBe(490);
+    await Promise.all(writes);
+    expect(repository.savePreferences).toHaveBeenCalledTimes(1);
+    expect(repository.savePreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ scrollTop: 490 }),
+    );
+  });
+
+  it("persists changes arriving during an in-flight preference write", async () => {
+    let finish!: () => void;
+    vi.mocked(repository.savePreferences).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const first = useApp.getState().prefs({ search: "a" });
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
+    const second = useApp.getState().prefs({ search: "anime" });
+    finish();
+    await Promise.all([first, second]);
+    expect(repository.savePreferences).toHaveBeenCalledTimes(2);
+    expect(repository.savePreferences).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: "anime" }),
+    );
+  });
+
+  it("does not rewrite the collection for an unchanged mutation", async () => {
+    await useApp.getState().add(sample[0]);
+    const data = useApp.getState().data;
+    vi.mocked(repository.save).mockClear();
+    await useApp.getState().add(sample[0]);
+    await useApp.getState().episodes(data.entries[0].localId, 0);
+    expect(repository.save).not.toHaveBeenCalled();
+    expect(useApp.getState().data).toBe(data);
+  });
+
   it("saves a season once and leaves existing progress intact", async () => {
     await useApp.getState().add(sample[0]);
     const existing = useApp.getState().data.entries[0];
@@ -79,16 +120,14 @@ describe("batched additions and responsive preferences", () => {
           finish = resolve;
         }),
     );
-    const save = useApp
-      .getState()
-      .mutate((data) => ({
-        ...data,
-        preferences: {
-          ...data.preferences,
-          section: "Watchlist",
-          motionMode: "reduced",
-        },
-      }));
+    const save = useApp.getState().mutate((data) => ({
+      ...data,
+      preferences: {
+        ...data.preferences,
+        section: "Watchlist",
+        motionMode: "reduced",
+      },
+    }));
     await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
     const navigate = useApp.getState().prefs({ section: "Home" });
     finish();

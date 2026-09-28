@@ -11,19 +11,22 @@ export default function Watchlist({
   onOpen: (e: Entry) => void;
   onSearch: () => void;
 }) {
-  const store = useApp();
+  const libraryEntries = useApp((state) => state.data.entries);
+  const edit = useApp((state) => state.edit);
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
   const [sort, setSort] = useState("added");
-  const planned = store.data.entries.filter(
-    (e) => e.personalStatus === "Planning",
+  const planned = useMemo(
+    () => libraryEntries.filter((e) => e.personalStatus === "Planning"),
+    [libraryEntries],
   );
-  const genres = [
-    ...new Set(planned.flatMap((e) => e.cachedMetadata.genres)),
-  ].sort();
+  const genres = useMemo(
+    () => [...new Set(planned.flatMap((e) => e.cachedMetadata.genres))].sort(),
+    [planned],
+  );
   const entries = useMemo(
     () =>
-      store.data.entries
+      libraryEntries
         .filter(
           (e) =>
             e.personalStatus === "Planning" &&
@@ -37,7 +40,7 @@ export default function Watchlist({
               ? b.priority - a.priority
               : b.addedDate.localeCompare(a.addedDate),
         ),
-    [store.data.entries, query, genre, sort],
+    [libraryEntries, query, genre, sort],
   );
   return (
     <div className="page watchlist-page">
@@ -103,7 +106,7 @@ export default function Watchlist({
                 <button
                   className="button"
                   onClick={() =>
-                    void store.edit(e.localId, { personalStatus: "Watching" })
+                    void edit(e.localId, { personalStatus: "Watching" })
                   }
                 >
                   <Play size={13} />
@@ -113,7 +116,7 @@ export default function Watchlist({
                   aria-label={`Priority for ${e.preferredTitle}`}
                   value={e.priority}
                   onChange={(event) =>
-                    void store.edit(e.localId, {
+                    void edit(e.localId, {
                       priority: Number(event.target.value) as Entry["priority"],
                     })
                   }

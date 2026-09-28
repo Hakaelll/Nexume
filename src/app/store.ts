@@ -2,15 +2,17 @@ import { create } from "zustand";
 import { reconcilePublications } from "../services/social/reconcile";
 import { repository } from "../core/database/repository";
 import {
+  validateSnapshot,
+  validatePreferences,
+} from "../core/database/validation";
+import {
   type AppData,
   type Anime,
   type Entry,
   type Preferences,
   emptyData,
   createEntry,
-  stateSchema,
   entrySchema,
-  preferencesSchema,
   now,
   id,
 } from "../domain/model";
@@ -35,6 +37,7 @@ type Store = {
   notify: (message: string) => void;
 };
 let chain: Promise<void> = Promise.resolve();
+let pendingPreferences: Promise<void> | null = null;
 let initPromise: Promise<void> | null = null;
 let preferenceRevision = 0;
 const preferenceChanges = new Map<keyof Preferences, number>();
@@ -58,11 +61,15 @@ export const useApp = create<Store>((set, get) => ({
     return initPromise;
   },
   mutate: (fn) => {
+    // A collection mutation is an ordering boundary for preference writes.
+    pendingPreferences = null;
     const job = chain.then(async () => {
       if (!get().ready) throw new Error("Your collection is not ready.");
+      const next = fn(get().data);
+      if (next === get().data) return;
       set({ saving: true });
       const previousRevision = preferenceRevision;
-      const data = stateSchema.parse(reconcilePublications(fn(get().data)));
+      const data = validateSnapshot(reconcilePublications(next));
       await repository.save(data);
       const concurrentPreferences = Object.fromEntries(
         [...preferenceChanges]
@@ -88,20 +95,25 @@ export const useApp = create<Store>((set, get) => ({
   },
   prefs: (p) => {
     if (!get().ready) return Promise.resolve();
-    const preferences = preferencesSchema.parse({
+    const preferences = validatePreferences({
       ...get().data.preferences,
       ...p,
     });
     for (const key of Object.keys(p) as (keyof Preferences)[])
       preferenceChanges.set(key, ++preferenceRevision);
     set({ data: { ...get().data, preferences } });
+    // Keep navigation immediate, but collapse queued writes to the latest state.
+    if (pendingPreferences) return pendingPreferences;
     const job = chain.then(async () => {
+      if (pendingPreferences === saved) pendingPreferences = null;
       await repository.savePreferences(get().data.preferences);
     });
-    chain = job.catch((e) =>
+    const saved = job.catch((e) =>
       set({ error: `Preferences were not saved. ${String(e)}` }),
     );
-    return chain;
+    pendingPreferences = saved;
+    chain = saved;
+    return saved;
   },
   add: (anime) =>
     get().mutate((d) =>

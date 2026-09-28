@@ -4,7 +4,7 @@
 
 Nexume is a Windows desktop app for building a personal anime collection. Track your progress, discover your next series, and keep ratings, reviews, and watchlists in one place—with no account required for local features.
 
-[Releases](https://github.com/Hakaelll/Nexume/releases) · [Latest version: 0.8.0](docs/RELEASE-0.8.0.md)
+[Releases](https://github.com/Hakaelll/Nexume/releases) · [Version 0.8.1](docs/RELEASE-0.8.1.md)
 
 ![Nexume anime collection](docs/images/gallery-discover.png)
 
@@ -17,16 +17,15 @@ Nexume is a Windows desktop app for building a personal anime collection. Track 
 - **Follow the season.** Discover anime through AniList, add an entire current or upcoming season to Watchlist, and see announced episodes in Calendar.
 - **Make it personal.** Create custom lists with cover images, customize your profile, and choose full or reduced animations.
 
-## Latest version — 0.8.0
+## Version 0.8.1 — Performance
 
-This update adds episode-aware Home rotation, horizontal browsing, illuminated tonight picks, complete season imports, and lighter navigation with a new loading indicator.
+This update reduces large-library rendering work, bounds artwork loading, reuses validated data, and saves only changed SQLite rows. Focus, open editors, artwork quality, and existing collection features are preserved. See the [performance review](docs/PERFORMANCE-REVIEW.md) for measurements and validation.
 
-Windows x64 packages:
+Windows x64 package:
 
-- `Nexume-0.8.0-windows-x64-setup.exe` — installer with English and Spanish language options.
-- `Nexume-0.8.0-windows-x64-local-time.exe` — standalone executable using the same Windows app data location.
+- `Nexume-0.8.1-windows-x64-setup.exe` — installer with English and Spanish language options, available in the local `release` directory after packaging.
 
-See the [release notes](docs/RELEASE-0.8.0.md) for packaging details. Published downloads are listed on the [GitHub Releases page](https://github.com/Hakaelll/Nexume/releases). Microsoft Edge WebView2 is required; builds are currently unsigned.
+See the [release notes](docs/RELEASE-0.8.1.md) for packaging details. Published downloads are listed on the [GitHub Releases page](https://github.com/Hakaelll/Nexume/releases). Microsoft Edge WebView2 is required; builds are currently unsigned.
 
 ## Data and privacy
 

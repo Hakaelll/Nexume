@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, X } from "lucide-react";
+import { whenNearViewport } from "../core/viewport";
 const passthrough = (url: string) => Promise.resolve(url);
 export function Artwork({
   src,
@@ -32,20 +33,12 @@ export function Artwork({
           if (active) setUrl(u);
         });
     };
-    const observer = new IntersectionObserver(
-      (records) => {
-        if (records.some((r) => r.isIntersecting)) {
-          load();
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "400px" },
-    );
+    let stop: (() => void) | undefined;
     if (eager) load();
-    else if (ref.current) observer.observe(ref.current);
+    else if (ref.current) stop = whenNearViewport(ref.current, load);
     return () => {
       active = false;
-      observer.disconnect();
+      stop?.();
     };
   }, [src, fallbackSrc, eager, resolveImage]);
   return (
@@ -55,6 +48,7 @@ export function Artwork({
           src={url}
           alt={title}
           loading={eager ? "eager" : "lazy"}
+          decoding="async"
           onError={() => {
             // A cached native asset can become unavailable after cache eviction.
             attempted.current.add(url);

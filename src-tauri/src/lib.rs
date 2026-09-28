@@ -1,8 +1,11 @@
+mod image_cache;
+mod persistence;
+use persistence::save_snapshot;
 use reqwest::Url;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::{Connection, SqliteConnection};
-use std::{path::PathBuf, time::Duration};
+use std::time::Duration;
 use tauri::Manager;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
@@ -36,121 +39,6 @@ async fn save_state(app: tauri::AppHandle, state: Value) -> Result<(), String> {
         .await
         .map_err(err)?;
     save_snapshot(&mut db, &state).await
-}
-
-async fn save_snapshot(db: &mut SqliteConnection, state: &Value) -> Result<(), String> {
-    let mut tx = db.begin().await.map_err(err)?;
-    for table in [
-        "custom_list_entries",
-        "ratings",
-        "reviews",
-        "watch_history",
-        "custom_lists",
-        "library_entries",
-        "anime_metadata",
-        "profile",
-        "preferences",
-        "sync_queue",
-        "search_history",
-    ] {
-        sqlx::query(&format!("DELETE FROM {table}"))
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-    }
-    for e in array(state, "entries")? {
-        let entry_id = field(e, "localId")?;
-        let aid = e["anilistId"].as_i64().ok_or("Invalid AniList ID")?;
-        sqlx::query("INSERT INTO anime_metadata VALUES (?, ?)")
-            .bind(aid)
-            .bind(e["cachedMetadata"].to_string())
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-        sqlx::query("INSERT INTO library_entries VALUES (?, ?, ?, ?, ?, ?)")
-            .bind(entry_id)
-            .bind(aid)
-            .bind(field(e, "personalStatus")?)
-            .bind(e["watchedEpisodes"].as_i64().ok_or("Invalid progress")?)
-            .bind(e["totalEpisodes"].as_i64())
-            .bind(e.to_string())
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-        if let Some(rating) = e["personalRating"].as_i64() {
-            sqlx::query("INSERT INTO ratings VALUES (?, ?)")
-                .bind(entry_id)
-                .bind(rating)
-                .execute(&mut *tx)
-                .await
-                .map_err(err)?;
-        }
-        sqlx::query("INSERT INTO reviews VALUES (?, ?, ?, ?)")
-            .bind(entry_id)
-            .bind(field(e, "review")?)
-            .bind(e["reviewContainsSpoilers"].as_bool().unwrap_or(false))
-            .bind(field(e, "reviewPrivacy")?)
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-    }
-    for l in array(state, "lists")? {
-        sqlx::query("INSERT INTO custom_lists VALUES (?, ?, ?)")
-            .bind(field(l, "id")?)
-            .bind(field(l, "publicId")?)
-            .bind(l.to_string())
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-        for (position, item) in array(l, "entryIds")?.iter().enumerate() {
-            sqlx::query("INSERT INTO custom_list_entries VALUES (?, ?, ?)")
-                .bind(field(l, "id")?)
-                .bind(item.as_str().ok_or("Invalid list member")?)
-                .bind(position as i64)
-                .execute(&mut *tx)
-                .await
-                .map_err(err)?;
-        }
-    }
-    for h in array(state, "history")? {
-        sqlx::query("INSERT INTO watch_history VALUES (?, ?, ?, ?)")
-            .bind(field(h, "id")?)
-            .bind(field(h, "entryId")?)
-            .bind(field(h, "at")?)
-            .bind(h.to_string())
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-    }
-    sqlx::query("INSERT INTO profile VALUES (?, ?)")
-        .bind(field(&state["profile"], "localId")?)
-        .bind(state["profile"].to_string())
-        .execute(&mut *tx)
-        .await
-        .map_err(err)?;
-    sqlx::query("INSERT INTO preferences VALUES ('app', ?)")
-        .bind(state["preferences"].to_string())
-        .execute(&mut *tx)
-        .await
-        .map_err(err)?;
-    for q in array(state, "queue")? {
-        sqlx::query("INSERT INTO sync_queue VALUES (?, ?, ?)")
-            .bind(field(q, "id")?)
-            .bind(field(q, "publicId")?)
-            .bind(q.to_string())
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-    }
-    for (i, q) in array(state, "searchHistory")?.iter().enumerate() {
-        sqlx::query("INSERT INTO search_history VALUES (?, ?)")
-            .bind(i as i64)
-            .bind(serde_json::json!({"query":q}).to_string())
-            .execute(&mut *tx)
-            .await
-            .map_err(err)?;
-    }
-    tx.commit().await.map_err(err)
 }
 
 #[tauri::command]
@@ -187,30 +75,12 @@ fn image_url(raw: &str) -> Result<Url, String> {
     }
     Ok(url)
 }
-async fn trim_cache(dir: &PathBuf) -> Result<(), String> {
-    let mut files = tokio::fs::read_dir(dir).await.map_err(err)?;
-    let mut items = Vec::new();
-    let mut total = 0;
-    while let Some(file) = files.next_entry().await.map_err(err)? {
-        let m = file.metadata().await.map_err(err)?;
-        if m.is_file() {
-            total += m.len();
-            items.push((m.modified().ok(), m.len(), file.path()));
-        }
-    }
-    items.sort_by_key(|i| i.0);
-    for (_, len, path) in items {
-        if total <= 256 * 1024 * 1024 {
-            break;
-        }
-        if tokio::fs::remove_file(path).await.is_ok() {
-            total -= len;
-        }
-    }
-    Ok(())
-}
 #[tauri::command]
-async fn cache_image(app: tauri::AppHandle, url: String) -> Result<String, String> {
+async fn cache_image(
+    app: tauri::AppHandle,
+    cache: tauri::State<'_, image_cache::ImageCache>,
+    url: String,
+) -> Result<String, String> {
     let url = image_url(&url)?;
     let dir = app.path().app_cache_dir().map_err(err)?.join("images");
     tokio::fs::create_dir_all(&dir).await.map_err(err)?;
@@ -219,11 +89,7 @@ async fn cache_image(app: tauri::AppHandle, url: String) -> Result<String, Strin
     if tokio::fs::try_exists(&path).await.map_err(err)? {
         return Ok(path.to_string_lossy().into());
     }
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(20))
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .map_err(err)?;
+    let client = image_cache::client()?;
     let mut response = client
         .get(url)
         .send()
@@ -247,10 +113,7 @@ async fn cache_image(app: tauri::AppHandle, url: String) -> Result<String, Strin
     {
         return Err("Unsupported artwork format".into());
     }
-    let temp = dir.join(format!("{key}.tmp"));
-    tokio::fs::write(&temp, &bytes).await.map_err(err)?;
-    tokio::fs::rename(&temp, &path).await.map_err(err)?;
-    trim_cache(&dir).await?;
+    let path = cache.commit(&dir, &key, &bytes, 256 * 1024 * 1024).await?;
     Ok(path.to_string_lossy().into())
 }
 #[tauri::command]
@@ -293,6 +156,7 @@ async fn read_backup() -> Result<Option<String>, String> {
 }
 pub fn run() {
     tauri::Builder::default()
+        .manage(image_cache::ImageCache::default())
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.unminimize();
@@ -330,6 +194,161 @@ mod tests {
     use super::*;
     fn fixture_state() -> Value {
         serde_json::json!({"entries":[{"localId":"entry-1","anilistId":1,"personalStatus":"Watching","watchedEpisodes":3,"totalEpisodes":26,"personalRating":9,"review":"A review","reviewContainsSpoilers":true,"reviewPrivacy":"Private","privateNotes":"Stay local","cachedMetadata":{"anilistId":1,"romaji":"Cowboy Bebop"}}],"lists":[{"id":"list-1","publicId":"public-1","entryIds":["entry-1"]}],"profile":{"localId":"profile-1","displayName":"Collector"},"preferences":{"view":"Collection"},"history":[{"id":"event-1","entryId":"entry-1","at":"2026-09-09","kind":"episode"}],"queue":[{"id":"job-1","publicId":"public-1"}],"searchHistory":["Cowboy Bebop"]})
+    }
+    #[tokio::test]
+    async fn incremental_save_only_writes_changed_rows_in_a_large_collection() {
+        let mut db = SqliteConnection::connect("sqlite::memory:").await.unwrap();
+        sqlx::raw_sql(SCHEMA).execute(&mut db).await.unwrap();
+        let mut state = fixture_state();
+        let template = state["entries"][0].clone();
+        state["entries"] = (0..500)
+            .map(|i| {
+                let mut entry = template.clone();
+                entry["localId"] = serde_json::json!(format!("entry-{}", i + 1));
+                entry["anilistId"] = serde_json::json!(i + 1);
+                entry["cachedMetadata"]["anilistId"] = serde_json::json!(i + 1);
+                entry
+            })
+            .collect();
+        let started = std::time::Instant::now();
+        save_snapshot(&mut db, &state).await.unwrap();
+        let initial_ms = started.elapsed().as_millis();
+        sqlx::query("CREATE TEMP TABLE write_audit (table_name TEXT, operation TEXT)")
+            .execute(&mut db)
+            .await
+            .unwrap();
+        for table in [
+            "anime_metadata",
+            "library_entries",
+            "ratings",
+            "reviews",
+            "watch_history",
+            "custom_lists",
+            "custom_list_entries",
+            "profile",
+            "preferences",
+            "sync_queue",
+            "search_history",
+        ] {
+            for operation in ["INSERT", "UPDATE", "DELETE"] {
+                sqlx::raw_sql(&format!("CREATE TEMP TRIGGER audit_{table}_{operation} AFTER {operation} ON main.{table} BEGIN INSERT INTO write_audit VALUES ('{table}', '{operation}'); END;"))
+                    .execute(&mut db).await.unwrap();
+            }
+        }
+        save_snapshot(&mut db, &state).await.unwrap();
+        let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM write_audit")
+            .fetch_one(&mut db)
+            .await
+            .unwrap();
+        assert_eq!(
+            count.0, 0,
+            "unchanged snapshots must not rewrite any persistent row"
+        );
+        state["entries"][0]["watchedEpisodes"] = serde_json::json!(4);
+        let started = std::time::Instant::now();
+        save_snapshot(&mut db, &state).await.unwrap();
+        let writes: Vec<(String, String)> =
+            sqlx::query_as("SELECT table_name, operation FROM write_audit")
+                .fetch_all(&mut db)
+                .await
+                .unwrap();
+        assert_eq!(writes, vec![("library_entries".into(), "UPDATE".into())]);
+        eprintln!("500 entries: initial snapshot {initial_ms} ms, incremental episode {} ms, persistent writes {}", started.elapsed().as_millis(), writes.len());
+        // Removing a rating also updates its normalized table, without losing review data.
+        state["entries"][0]["personalRating"] = Value::Null;
+        state["entries"][0]["review"] = serde_json::json!("Updated words");
+        state["history"] = serde_json::json!([]);
+        state["queue"] = serde_json::json!([]);
+        state["searchHistory"] = serde_json::json!([]);
+        save_snapshot(&mut db, &state).await.unwrap();
+        let ratings: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM ratings")
+            .fetch_one(&mut db)
+            .await
+            .unwrap();
+        assert_eq!(ratings.0, 499);
+        let review: (String,) = sqlx::query_as("SELECT body FROM reviews WHERE entry_id='entry-1'")
+            .fetch_one(&mut db)
+            .await
+            .unwrap();
+        assert_eq!(review.0, "Updated words");
+        for table in ["watch_history", "sync_queue", "search_history"] {
+            let count: (i64,) = sqlx::query_as(&format!("SELECT COUNT(*) FROM {table}"))
+                .fetch_one(&mut db)
+                .await
+                .unwrap();
+            assert_eq!(count.0, 0);
+        }
+    }
+    #[tokio::test]
+    async fn restores_reorder_lists_swap_identities_delete_and_reject_duplicates_atomically() {
+        let mut db = SqliteConnection::connect("sqlite::memory:").await.unwrap();
+        sqlx::raw_sql(SCHEMA).execute(&mut db).await.unwrap();
+        let mut state = fixture_state();
+        let mut second = state["entries"][0].clone();
+        second["localId"] = serde_json::json!("entry-2");
+        second["anilistId"] = serde_json::json!(2);
+        state["entries"].as_array_mut().unwrap().push(second);
+        state["lists"][0]["entryIds"] = serde_json::json!(["entry-1", "entry-2"]);
+        save_snapshot(&mut db, &state).await.unwrap();
+        state["lists"][0]["entryIds"] = serde_json::json!(["entry-2", "entry-1"]);
+        save_snapshot(&mut db, &state).await.unwrap();
+        let members: Vec<(String,)> =
+            sqlx::query_as("SELECT entry_id FROM custom_list_entries ORDER BY position")
+                .fetch_all(&mut db)
+                .await
+                .unwrap();
+        assert_eq!(members, vec![("entry-2".into(),), ("entry-1".into(),)]);
+        state["entries"][0]["anilistId"] = serde_json::json!(2);
+        state["entries"][1]["anilistId"] = serde_json::json!(1);
+        state["lists"][0]["publicId"] = serde_json::json!("restored-public-id");
+        save_snapshot(&mut db, &state).await.unwrap();
+        let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM watch_history")
+            .fetch_one(&mut db)
+            .await
+            .unwrap();
+        assert_eq!(
+            count.0, 1,
+            "cascaded history must be restored after identity changes"
+        );
+        let mut broken = state.clone();
+        let duplicate = broken["entries"][0].clone();
+        broken["entries"].as_array_mut().unwrap().push(duplicate);
+        assert!(save_snapshot(&mut db, &broken).await.is_err());
+        let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM library_entries")
+            .fetch_one(&mut db)
+            .await
+            .unwrap();
+        assert_eq!(count.0, 2);
+        state["entries"].as_array_mut().unwrap().reverse();
+        save_snapshot(&mut db, &state).await.unwrap();
+        let order: (String,) =
+            sqlx::query_as("SELECT data FROM preferences WHERE key='collection_order'")
+                .fetch_one(&mut db)
+                .await
+                .unwrap();
+        assert_eq!(
+            serde_json::from_str::<Value>(&order.0).unwrap()["library_entries"],
+            serde_json::json!(["entry-2", "entry-1"])
+        );
+        for key in ["entries", "lists", "history", "queue", "searchHistory"] {
+            state[key] = serde_json::json!([]);
+        }
+        save_snapshot(&mut db, &state).await.unwrap();
+        for table in [
+            "library_entries",
+            "anime_metadata",
+            "ratings",
+            "reviews",
+            "custom_lists",
+            "custom_list_entries",
+            "watch_history",
+        ] {
+            let count: (i64,) = sqlx::query_as(&format!("SELECT COUNT(*) FROM {table}"))
+                .fetch_one(&mut db)
+                .await
+                .unwrap();
+            assert_eq!(count.0, 0);
+        }
     }
     #[tokio::test]
     async fn snapshot_roundtrip_and_failed_restore_are_atomic() {

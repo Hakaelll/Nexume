@@ -77,7 +77,7 @@ test("Library returns to the same scrolled card", async ({ page }) => {
   await seed(page, "Library");
   await page.setViewportSize({ width: 960, height: 640 });
   const card = page.locator(".anime-card .cover-button").last();
-  await card.scrollIntoViewIfNeeded();
+  await page.locator(".library-card-slot").last().scrollIntoViewIfNeeded();
   await card.focus();
   const scroll = await page
     .locator(".library-results")
@@ -149,7 +149,8 @@ test("guided recommendations fit time, preserve the drawn winner on skip, and st
 }) => {
   await seed(page);
   await page.getByRole("button", { name: "Pick for me" }).click();
-  await expect(page.locator(".tonight-candidate")).toHaveCount(3);
+  // Every matching title is shown in the scrollable candidates grid.
+  await expect(page.locator(".tonight-candidate")).toHaveCount(6);
   await page.getByLabel("Time available").selectOption("50");
   await expect(page.locator(".tonight-candidate").first()).toContainText(
     "2 episodes fit in 50 minutes",

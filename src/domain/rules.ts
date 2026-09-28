@@ -48,7 +48,24 @@ export function event(
 export function ratingLabel(value: number | null) {
   return value === null ? "Not rated" : `${value / 2} / 5`;
 }
-export function filterEntries(data: AppData): Entry[] {
+export type LibraryFilters = Pick<
+  AppData["preferences"],
+  | "search"
+  | "filter"
+  | "year"
+  | "genre"
+  | "format"
+  | "studio"
+  | "season"
+  | "tag"
+  | "minRating"
+  | "sort"
+  | "descending"
+>;
+export function filterEntries(data: {
+  entries: Entry[];
+  preferences: LibraryFilters;
+}): Entry[] {
   const p = data.preferences;
   const query = p.search.toLocaleLowerCase().trim();
   return data.entries
@@ -106,7 +123,7 @@ export function filterEntries(data: AppData): Entry[] {
       return (p.descending ? -1 : 1) * c || a.localId.localeCompare(b.localId);
     });
 }
-export function statistics(data: AppData) {
+export function statistics(data: Pick<AppData, "entries" | "history">) {
   const es = data.entries;
   const rated = es.filter((e) => e.personalRating !== null);
   const count = (values: string[]) =>

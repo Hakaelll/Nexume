@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { flushSync } from "react-dom";
 import { useApp } from "./store";
+import { useShallow } from "zustand/react/shallow";
 import { NavIndicator } from "../components/NavIndicator";
 import {
   type Anime,
@@ -70,7 +71,21 @@ const sections = [
   ["Settings", SettingsIcon],
 ] as const;
 export default function App() {
-  const store = useApp();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      ready: state.ready,
+      error: state.error,
+      notice: state.notice,
+      init: state.init,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      notify: state.notify,
+      edit: state.edit,
+      adjustEpisodes: state.adjustEpisodes,
+      remove: state.remove,
+    })),
+  );
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = String(reducedMotion);
@@ -204,7 +219,24 @@ export default function App() {
       returnFocus.current = null;
     }
   }, [section, detail]);
-  const open = (entry: Entry) => setDetail(entry.cachedMetadata);
+  const open = useCallback(
+    (entry: Entry) => setDetail(entry.cachedMetadata),
+    [setDetail],
+  );
+  const openContext = useCallback(
+    (
+      e: Pick<MouseEvent, "clientX" | "clientY" | "preventDefault">,
+      entry: Entry,
+    ) => {
+      e.preventDefault();
+      setContext({
+        x: Math.min(e.clientX, window.innerWidth - 260),
+        y: Math.min(e.clientY, window.innerHeight - 480),
+        entryId: entry.localId,
+      });
+    },
+    [],
+  );
   const go = (to: Preferences["section"]) => {
     if (to === section && !detail) return;
     returnFocus.current = null;
@@ -441,14 +473,7 @@ export default function App() {
                           onOpen={open}
                           onSearch={() => setSearch(true)}
                           onQuick={(e) => setQuick(e.cachedMetadata)}
-                          onContext={(e, entry) => {
-                            e.preventDefault();
-                            setContext({
-                              x: Math.min(e.clientX, window.innerWidth - 260),
-                              y: Math.min(e.clientY, window.innerHeight - 480),
-                              entryId: entry.localId,
-                            });
-                          }}
+                          onContext={openContext}
                         />
                       ) : panel === "Discover" ? (
                         <Discover onOpen={setDetail} />
@@ -497,11 +522,7 @@ export default function App() {
           {store.notice}
         </div>
       )}
-      {store.saving && (
-        <span className="saving-status" role="status">
-          Saving…
-        </span>
-      )}
+      <SavingStatus />
       {search && (
         <SearchDialog
           initialQuery={headerQuery}
@@ -719,6 +740,14 @@ export default function App() {
       )}
     </>
   );
+}
+function SavingStatus() {
+  const saving = useApp((state) => state.saving);
+  return saving ? (
+    <span className="saving-status" role="status">
+      Saving…
+    </span>
+  ) : null;
 }
 class ErrorBoundary extends Component<
   { children: ReactNode },

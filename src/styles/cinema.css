@@ -55,6 +55,11 @@ html[data-detail-transition="true"]::view-transition-old(scene) {
 .anime-card {
   transition: transform var(--motion-ui) var(--ease-cinema);
 }
+.library-rating-placeholder {
+  display: inline-block;
+  height: 16px;
+  width: 120px;
+}
 @media (hover: hover) {
   .anime-card:hover {
     transform: translateY(-4px);

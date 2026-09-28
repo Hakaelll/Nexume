@@ -33,18 +33,38 @@ export async function readBackupFile(): Promise<string | null> {
   });
 }
 const imageCache = new Map<string, Promise<string>>();
+const pendingImages = new Map<string, Promise<string>>();
+const imageWaiters: (() => void)[] = [];
+let activeImages = 0;
+async function resolveCachedImage(url: string) {
+  if (activeImages >= 4)
+    await new Promise<void>((resolve) => imageWaiters.push(resolve));
+  else activeImages++;
+  try {
+    return convertFileSrc(await invoke<string>("cache_image", { url }));
+  } finally {
+    const next = imageWaiters.shift();
+    if (next) next();
+    else activeImages--;
+  }
+}
 export function cachedImage(url: string): Promise<string> {
   if (!url) return Promise.resolve("");
-  if (!native || url.startsWith("/") || url.startsWith("data:image/")) return Promise.resolve(url);
+  if (!native || url.startsWith("/") || url.startsWith("data:image/"))
+    return Promise.resolve(url);
+  const pending = pendingImages.get(url);
+  if (pending) return pending;
   const known = imageCache.get(url);
   if (known) return known;
-  const job = invoke<string>("cache_image", { url })
-    .then(convertFileSrc)
-    .catch(() => {
-      imageCache.delete(url);
-      return url;
-    });
-  imageCache.set(url, job);
-  if (imageCache.size > 128) imageCache.delete(imageCache.keys().next().value!);
+  const job = resolveCachedImage(url)
+    .then((resolved) => {
+      imageCache.set(url, Promise.resolve(resolved));
+      if (imageCache.size > 128)
+        imageCache.delete(imageCache.keys().next().value!);
+      return resolved;
+    })
+    .catch(() => url)
+    .finally(() => pendingImages.delete(url));
+  pendingImages.set(url, job);
   return job;
 }

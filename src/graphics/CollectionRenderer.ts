@@ -22,7 +22,7 @@ export interface RendererConfig {
   onOpen: (index: number) => void;
   onContext?: (index: number, event: MouseEvent) => void;
   onFailure: () => void;
-  onMetrics: (metrics: {
+  onMetrics?: (metrics: {
     frameMs: number;
     drawCalls: number;
     textures: number;
@@ -386,7 +386,7 @@ export class CollectionRenderer {
     );
     this.camera.lookAt(0, 0, 0);
     this.renderer.render(this.scene, this.camera);
-    if (time - this.lastMetrics > 1000) {
+    if (this.config.onMetrics && time - this.lastMetrics > 1000) {
       this.config.onMetrics({
         frameMs: dt * 1000,
         drawCalls: this.renderer.info.render.calls,

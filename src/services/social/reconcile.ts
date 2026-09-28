@@ -42,10 +42,12 @@ export function reconcilePublications(
   time = Date.now(),
 ): AppData {
   let queue = data.queue;
+  let changed = false;
   const publications = data.preferences.publications.map((publication) => {
     const content = publicationContent(data, publication);
     const signature = JSON.stringify(content);
     if (signature === publication.signature) return publication;
+    changed = true;
     const revision = Math.max(time, publication.revision + 1);
     const job: SyncJob = {
       id: id(),
@@ -62,5 +64,7 @@ export function reconcilePublications(
     queue = coalesce(queue, job);
     return { ...publication, signature, revision };
   });
-  return { ...data, queue, preferences: { ...data.preferences, publications } };
+  return changed
+    ? { ...data, queue, preferences: { ...data.preferences, publications } }
+    : data;
 }

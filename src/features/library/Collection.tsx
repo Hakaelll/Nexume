@@ -25,8 +25,9 @@ export default function Collection({
     entry: Entry,
   ) => void;
 }) {
-  const { data, prefs, edit } = useApp();
-  const p = data.preferences;
+  const p = useApp((state) => state.data.preferences);
+  const prefs = useApp((state) => state.prefs);
+  const edit = useApp((state) => state.edit);
   const index = Math.max(
     0,
     entries.findIndex((e) => e.localId === p.selectedId),
@@ -67,7 +68,7 @@ export default function Collection({
         .getState()
         .notify("Graphics unavailable. Your collection is ready in Grid view.");
     },
-    onMetrics: setMetrics,
+    onMetrics: p.diagnostics ? setMetrics : undefined,
   };
   const configRef = useRef(config);
   configRef.current = config;
@@ -88,7 +89,7 @@ export default function Collection({
   }, []);
   useEffect(() => {
     renderer.current?.update(configRef.current);
-  }, [items, index, p.quality, reducedMotion]);
+  }, [items, index, p.quality, p.diagnostics, reducedMotion]);
   const move = (delta: number) => {
     const next = navigate(index, delta, entries.length);
     if (next !== index) void prefs({ selectedId: entries[next].localId });

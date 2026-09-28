@@ -1,0 +1,58 @@
+perf: improve large-library responsiveness and ship Nexume 0.8.1
+
+Reduce intermittent stalls when opening the library grid, loading artwork,
+scrolling large collections, navigating between screens, and saving progress.
+Preserve existing actions, artwork resolution, keyboard access, editor state,
+backup compatibility, and the application's data location.
+
+Library rendering and navigation
+- Mount full cards near the viewport and release distant card content.
+- Keep focused cards, pending actions, feedback, and rating editors mounted.
+- Retain lightweight title placeholders and restore focus after lazy mounting.
+- Share intersection observers and request asynchronous image decoding.
+- Memoize library cards and stabilize open/context-menu callbacks.
+- Refilter and sort only when entries or relevant filter fields change.
+- Isolate saving-status subscriptions and narrow expensive view subscriptions.
+- Memoize statistics and aggregate diary activity by local month in one pass.
+- Cancel scroll persistence timers when their owning view unmounts.
+
+Validation and persistence
+- Cache deeply frozen, schema-validated objects without trusting arbitrary input.
+- Preserve unchanged references and keep cross-record validation enabled.
+- Reuse validated snapshots across the store and repository save boundary.
+- Cache browser snapshots while observing external changes and failed writes.
+- Coalesce queued preferences without losing concurrent edits or crossing
+  collection-mutation ordering boundaries.
+- Skip unchanged mutations and unchanged publication reconciliation.
+- Replace SQLite snapshot deletion/reinsertion with transactional staging and
+  conditional inserts, updates, and deletes.
+- Preserve list reordering, backup identity swaps, rollback, and normalized data.
+- Persist array order separately and support databases without order metadata.
+
+Artwork and graphics resources
+- Bound native image-cache operations to four concurrent requests.
+- Deduplicate queued URLs independently of the completed-image cache.
+- Reuse a single native HTTP client and connection pool.
+- Index the disk cache once and update byte accounting incrementally.
+- Serialize atomic publication and eviction, protect the newest image, ignore
+  temporary downloads, and retain the 256 MiB image budget.
+- Calculate and publish 3D diagnostics only when enabled.
+
+Verification and packaging
+- Cover immutable validation, concurrent preferences, cache failures, native
+  ordering, and legacy database compatibility.
+- Audit SQLite writes: one persistent row update for an episode change in a
+  500-title snapshot, and zero writes for an unchanged snapshot.
+- Exercise the full 500-title grid while bounding mounted cards and preserving
+  open editors, focus, filtering, actions, and navigation return state.
+- Update outdated fixture counts and lazy-grid scrolling assertions.
+- Validate 66 TypeScript tests, 7 Rust tests, and 17 selected Edge scenarios,
+  plus TypeScript, ESLint, formatting, and production compilation.
+- Bump package, Cargo, and Tauri versions to 0.8.1 and build the Windows x64
+  NSIS installer with release notes, performance evidence, and SHA-256 checksum.
+
+Local Edge comparison against 5a7ecfc with 500 titles and local artwork:
+- Initial full cards: 500 -> 10; peak during the complete grid sweep: 15.
+- Initial grid DOM elements: 38,490 -> 7,630.
+- Sample initial load: 3,193 ms -> 1,251 ms.
+These are development measurements, not production latency guarantees.

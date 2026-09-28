@@ -229,12 +229,14 @@ export function AnimeCard({
   onOpen,
   onContext,
   tracking = false,
+  onInteractionChange,
 }: {
   entry?: Entry;
   anime?: Anime;
   onOpen: () => void;
   onContext?: (e: React.MouseEvent) => void;
   tracking?: boolean;
+  onInteractionChange?: (active: boolean) => void;
 }) {
   const store = useApp.getState();
   const entry =
@@ -246,6 +248,9 @@ export function AnimeCard({
   const [ratingOpen, setRatingOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  useEffect(() => {
+    onInteractionChange?.(busy || ratingOpen || !!feedback);
+  }, [busy, ratingOpen, feedback, onInteractionChange]);
   useEffect(() => {
     if (!feedback) return;
     const timer = setTimeout(() => setFeedback(""), 2000);
