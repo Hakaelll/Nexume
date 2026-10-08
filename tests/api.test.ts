@@ -1,5 +1,36 @@
 import { it, expect, vi } from "vitest";
 import { AniListMetadataProvider } from "../src/services/anilist/provider";
+it("shares identical requests while allowing each consumer to cancel independently", async () => {
+  let respond!: (value: Response) => void;
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        respond = resolve;
+      }),
+  );
+  const provider = new AniListMetadataProvider(fetcher);
+  const first = new AbortController();
+  const second = new AbortController();
+  const cancelled = provider
+    .search({ query: "shared" }, first.signal)
+    .catch((error: unknown) => error);
+  const retained = provider.search({ query: "shared" }, second.signal);
+  await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  first.abort();
+  expect(await cancelled).toMatchObject({ name: "AbortError" });
+  expect(fetcher.mock.calls[0][1]?.signal?.aborted).toBe(false);
+  respond(
+    new Response(
+      JSON.stringify({
+        data: {
+          Page: { media: [{ id: 42 }], pageInfo: { hasNextPage: false } },
+        },
+      }),
+    ),
+  );
+  expect((await retained).items[0].anilistId).toBe(42);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
 it("draws across the catalog ID range and paginates candidates with filters", async () => {
   vi.useFakeTimers();
   const response = (media: { id: number }[], hasNextPage = false) =>

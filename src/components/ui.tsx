@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../core/i18n";
 import { animeCover } from "../domain/artwork";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -26,6 +27,7 @@ export function Progress({
   entry: Entry;
   compact?: boolean;
 }) {
+  useLanguage();
   const store = useApp.getState();
   const [draft, setDraft] = useState(String(entry.watchedEpisodes));
   useEffect(
@@ -45,13 +47,16 @@ export function Progress({
     <div className={`episode-control ${compact ? "compact" : ""}`}>
       <div className="episode-line">
         <span className="eyebrow">
-          EPISODE {entry.watchedEpisodes}{" "}
+          {" "}
+          {t("EPISODE")} {entry.watchedEpisodes}{" "}
           <span className="muted">/ {entry.totalEpisodes ?? "?"}</span>
         </span>
         <div className="stepper">
           <button
             className="icon-button"
-            aria-label={`Remove one episode from ${entry.preferredTitle}`}
+            aria-label={t("Remove one episode from {value0}", {
+              value0: entry.preferredTitle,
+            })}
             disabled={entry.watchedEpisodes === 0}
             onClick={() => void store.adjustEpisodes(entry.localId, -1)}
           >
@@ -59,7 +64,7 @@ export function Progress({
           </button>
           {!compact && (
             <input
-              aria-label="Watched episodes"
+              aria-label={t("Watched episodes")}
               inputMode="numeric"
               type="number"
               min="0"
@@ -74,7 +79,9 @@ export function Progress({
           )}
           <button
             className="icon-button plus"
-            aria-label={`Add one episode to ${entry.preferredTitle}`}
+            aria-label={t("Add one episode to {value0}", {
+              value0: entry.preferredTitle,
+            })}
             disabled={
               entry.totalEpisodes !== null &&
               entry.watchedEpisodes >= entry.totalEpisodes
@@ -88,7 +95,7 @@ export function Progress({
       <div className="progress-track">
         <div
           style={{
-            width: `${entry.totalEpisodes ? (entry.watchedEpisodes / entry.totalEpisodes) * 100 : 0}%`,
+            transform: `scaleX(${entry.totalEpisodes ? entry.watchedEpisodes / entry.totalEpisodes : 0})`,
           }}
         />
       </div>
@@ -96,13 +103,15 @@ export function Progress({
         <button
           className="inline-complete"
           onClick={() => {
-            void store.complete(entry.localId);
-            store.notify(
-              "Completed. Add a rating or a thought whenever you like.",
-            );
+            void store.complete(entry.localId).then((result) => {
+              if (result.ok)
+                store.notify(
+                  "Completed. Add a rating or a thought whenever you like.",
+                );
+            });
           }}
         >
-          <Check size={13} /> Mark as completed?
+          <Check size={13} /> {t("Mark as completed?")}{" "}
         </button>
       )}
     </div>
@@ -119,7 +128,31 @@ export function Modal({
   onClose: () => void;
   wide?: boolean;
 }) {
+  useLanguage();
   const ref = useRef<HTMLDialogElement>(null);
+  const exitAnimation = useRef<Animation | null>(null);
+  const close = (immediate = false) => {
+    if (exitAnimation.current) return;
+    const dialog = ref.current;
+    if (
+      immediate ||
+      !dialog ||
+      document.documentElement.dataset.reducedMotion === "true"
+    ) {
+      closeRef.current();
+      return;
+    }
+    exitAnimation.current = dialog.animate(
+      [
+        { opacity: 1, transform: "scale(1)" },
+        { opacity: 0, transform: "scale(.98)" },
+      ],
+      { duration: 160, easing: "cubic-bezier(.23,1,.32,1)", fill: "forwards" },
+    );
+    void exitAnimation.current.finished
+      .then(() => closeRef.current())
+      .catch(() => {});
+  };
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
@@ -127,6 +160,7 @@ export function Modal({
     const previous = document.activeElement as HTMLElement | null;
     dialog?.showModal();
     return () => {
+      exitAnimation.current?.cancel();
       dialog?.close();
       previous?.focus();
     };
@@ -149,7 +183,7 @@ export function Modal({
             e.clientY < r.top ||
             e.clientY > r.bottom
           )
-            onClose();
+            close();
         }
       }}
     >
@@ -158,8 +192,8 @@ export function Modal({
         <button
           autoFocus
           className="icon-button"
-          onClick={onClose}
-          aria-label="Close dialog"
+          onClick={(e) => close(e.detail === 0)}
+          aria-label={t("Close dialog")}
         >
           <X size={20} />
         </button>
@@ -179,10 +213,11 @@ export function Empty({
   action?: string;
   onAction?: () => void;
 }) {
+  useLanguage();
   return (
     <div className="empty">
-      <h2>{title}</h2>
-      <p>{text}</p>
+      <h2>{t(title)}</h2>
+      <p>{t(text)}</p>
       {action && (
         <button className="button primary" onClick={onAction}>
           {action}
@@ -203,6 +238,7 @@ export function PageTitle({
   subtitle?: string;
   children?: ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="page-title">
       <div>
@@ -238,6 +274,7 @@ export function AnimeCard({
   tracking?: boolean;
   onInteractionChange?: (active: boolean) => void;
 }) {
+  useLanguage();
   const store = useApp.getState();
   const entry =
     useApp((state) =>
@@ -261,13 +298,13 @@ export function AnimeCard({
   const act = async (patch?: Partial<Entry>) => {
     setBusy(true);
     try {
-      if (!entry) await store.add(m);
-      if (useApp.getState().error) return;
+      if (!entry && !(await store.add(m)).ok) return;
       const saved = useApp
         .getState()
         .data.entries.find((e) => e.anilistId === m.anilistId);
-      if (saved && patch) await store.edit(saved.localId, patch);
-      if (!useApp.getState().error)
+      if (saved && patch && !(await store.edit(saved.localId, patch)).ok)
+        return;
+      if (saved)
         setFeedback(
           patch?.personalStatus === "Completed"
             ? "Completed"
@@ -292,7 +329,7 @@ export function AnimeCard({
       <button
         className="cover-button"
         onClick={onOpen}
-        aria-label={`Open ${title}`}
+        aria-label={t("Open {value0}", { value0: title })}
       >
         <Artwork
           src={animeCover(m, entry?.coverImage)}
@@ -307,16 +344,21 @@ export function AnimeCard({
             <Heart size={15} fill="currentColor" />
           </span>
         )}
-        {entry && <span className="cover-status">{entry.personalStatus}</span>}
+        {entry && (
+          <span className="cover-status">{t(entry.personalStatus)}</span>
+        )}
       </button>
-      <div className="card-actions" aria-label={`Quick actions for ${title}`}>
+      <div
+        className="card-actions"
+        aria-label={t("Quick actions for {value0}", { value0: title })}
+      >
         <button
           className="icon-button"
           disabled={busy || !!entry}
           aria-label={
             entry ? `${title} is in your library` : `Add ${title} to Watchlist`
           }
-          title={entry ? "In your library" : "Add to Watchlist"}
+          title={entry ? t("In your library") : t("Add to Watchlist")}
           onClick={() => void act()}
         >
           <Bookmark size={15} fill={entry ? "currentColor" : "none"} />
@@ -324,17 +366,17 @@ export function AnimeCard({
         <button
           className="icon-button"
           disabled={busy}
-          aria-label={`Like ${title}`}
+          aria-label={t("Like {value0}", { value0: title })}
           aria-pressed={entry?.liked ?? false}
-          title="Like"
+          title={t("Like")}
           onClick={() => void act({ liked: !entry?.liked })}
         >
           <Heart size={15} fill={entry?.liked ? "currentColor" : "none"} />
         </button>
         <button
           className="icon-button"
-          aria-label={`Rate ${title}`}
-          title="Rate"
+          aria-label={t("Rate {value0}", { value0: title })}
+          title={t("Rate")}
           onClick={() => setRatingOpen(true)}
         >
           <Star
@@ -345,8 +387,8 @@ export function AnimeCard({
         <button
           className="icon-button"
           disabled={busy || entry?.personalStatus === "Completed"}
-          aria-label={`Mark ${title} as watched`}
-          title="Mark as watched"
+          aria-label={t("Mark {value0} as watched", { value0: title })}
+          title={t("Mark as watched")}
           onClick={() => void act({ personalStatus: "Completed" })}
         >
           <Eye size={15} />
@@ -354,12 +396,15 @@ export function AnimeCard({
       </div>
       {feedback === "Completed" && (
         <span className="card-confirmation" role="status">
-          <Check size={14} /> Completed
+          <Check size={14} /> {t("Completed")}{" "}
         </span>
       )}
       {ratingOpen && (
-        <Modal title={`Rate ${title}`} onClose={() => setRatingOpen(false)}>
-          <p className="muted">Your rating · saved to your collection</p>
+        <Modal
+          title={t("Rate {value0}", { value0: title })}
+          onClose={() => setRatingOpen(false)}
+        >
+          <p className="muted">{t("Your rating · saved to your collection")}</p>
           <fieldset className="quick-rating" disabled={busy}>
             <Stars
               value={entry?.personalRating ?? null}
@@ -372,7 +417,7 @@ export function AnimeCard({
         <div className="grid-quick-actions">
           <button
             className="icon-button"
-            aria-label={`Add one episode to ${title}`}
+            aria-label={t("Add one episode to {value0}", { value0: title })}
             disabled={
               entry.totalEpisodes !== null &&
               entry.watchedEpisodes >= entry.totalEpisodes
@@ -386,7 +431,9 @@ export function AnimeCard({
         </div>
       )}
       <div className="card-title">
-        <button onClick={onOpen}>{title}</button>
+        <button onClick={onOpen} title={title}>
+          {title}
+        </button>
         <span>{m.year ?? "TBA"}</span>
       </div>
       {entry ? (
@@ -403,7 +450,8 @@ export function AnimeCard({
               }
             />
             <span>
-              {entry.watchedEpisodes}/{entry.totalEpisodes ?? "?"} ep
+              {entry.watchedEpisodes}/{entry.totalEpisodes ?? "?"}{" "}
+              {t("ep")}{" "}
             </span>
           </div>
         )
@@ -411,10 +459,10 @@ export function AnimeCard({
         <div className="card-meta">
           <span>
             {m.format?.replaceAll("_", " ") ?? "Anime"} · {m.episodes ?? "?"}{" "}
-            episodes
+            {t("episodes")}{" "}
           </span>
           <span>
-            {m.averageScore ?? "—"} <small>AL</small>
+            {m.averageScore ?? "—"} <small>{t("AL")}</small>
           </span>
         </div>
       )}
@@ -434,6 +482,7 @@ export function SelectField({
   options: string[];
   empty?: string;
 }) {
+  useLanguage();
   return (
     <label className="select-field">
       <span>{label}</span>
@@ -441,7 +490,7 @@ export function SelectField({
         <option value="">{empty}</option>
         {options.map((o) => (
           <option key={o} value={o}>
-            {o.replaceAll("_", " ")}
+            {t(o.replaceAll("_", " "))}
           </option>
         ))}
       </select>
@@ -450,8 +499,9 @@ export function SelectField({
 }
 
 export function SampleCovers() {
+  useLanguage();
   return (
-    <div className="sample-covers" aria-label="Sample anime artwork">
+    <div className="sample-covers" aria-label={t("Sample anime artwork")}>
       {[
         [1, "Cowboy Bebop"],
         [30, "Neon Genesis Evangelion"],

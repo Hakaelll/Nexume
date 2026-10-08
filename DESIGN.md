@@ -1,25 +1,24 @@
-# Nexume design system · Playful
+# Nexume design system
 
-The latest [Playful reference](docs/PLAYFUL_STYLE_REFERENCE.md) supersedes Henry and Letter. Existing application functions remain authoritative: sidebar navigation, bottom profile photo, library views, quick actions and local data are retained.
+The six October 7 screenshots and PRODUCT.md define the incumbent visual world. Preserve Inter, italic headings, warm light canvas, magenta actions and colorful covers. Primary surfaces are Operate; Collection adds an Experience surface while retaining tracking controls.
 
-## Tokens
+## Semantic styling
 
-- Canvas #f6f2ee, elevated cards #ffffff, text #111111, supporting text #414040.
-- Hot Magenta #ff2e95 is reserved for primary actions and the wordmark.
-- Borders #e8e5e0 / #e2dcd6. Stone icons; no additional UI accent colors.
-- Inter is bundled locally. Body 400, controls 500/600, display 700/900 italic at 70–79px where space allows.
-- Image radius 16px, feature/card radius 44px, controls 99px.
-- Card elevation uses the reference's 0 32px 80px rgba(0,0,0,.22) plus 0 2px 8px rgba(0,0,0,.08). No shadows on text, buttons or icons.
-- Pink actions use dark text, following the reference's example CTA, for stronger text contrast.
+`tokens.css` defines canvas, panel, soft panel, text, secondary text, border, accent, focus and movement values for light and charcoal dark themes. Structural and Playful rules consume these aliases; `workspace.css` contains responsive refinements shared by both themes. The standalone public viewer retains its own styling.
 
-## Application composition
+- Light: canvas #f6f2ee, panel #ffffff, text #111111.
+- Dark: canvas #181719, panel #242226, text #f6f2ee.
+- Magenta #ff2e95 is shared across themes. Image banners keep white text and a dark scrim.
+- Headings scale with available width. Covers reserve aspect ratios. Grid titles have three lines and a complete accessible title.
+- Home retains two wide columns where space permits, then stacks. Its compact protagonist includes a real banner when available.
+- Collection allocates height from the viewport while preserving navigation and thumbnails. Profile shows existing favorites and one compact add slot, up to six favorites.
 
-Warm canvas and centered content up to 1200px plus padding. Page headings retain their functional section names; no promotional slogans were added. The sidebar uses subdued line icons and a black active state. The lower avatar displays the saved profile photo and is the sole Profile entry.
+## Interaction and motion
 
-Search sits in a white pill. Catalog artwork returns to full color. Discover uses a dark category strip. Recommend has a single soft pink/oat atmospheric section, real candidate artwork and a white result card. Filter and pick behavior is unchanged. Cards are tilted only inside the isolated candidate preview; functional controls never overlap.
+Press 120 ms, menu 180 ms, dialog entrance 220 ms, pointer dismissal 160 ms; keyboard dismissal remains immediate. Cover-to-detail transition may use up to 420 ms. Progress uses scaleX, navigation moves through transform and 3D rendering stops after the scene settles. Reduced motion removes parallax, roulette and decorative travel while preserving brief feedback.
 
-The desktop theme is `src/styles/playful.css`, loaded after the existing structural stylesheet. Profile, lists, review dialogs, settings and statistics use the same surface and control tokens. The standalone public viewer keeps its existing style.
+Keep native scrolling, card-aligned carousel arrows with disabled boundaries, keyboard selection, visible focus and focus restoration. Forms retain drafts on failed persistence. Rewatch resets require explicit confirmation.
 
-## Verification
+## Review
 
-All 11 sections are checked at 960×640 and 1440×1000 for horizontal overflow, navigation boundaries and heading containment. The profile avatar, dialog bounds and recommendation cover/text separation are tested. Existing functional tests exercise search, card actions, backups, diary, ratings, lists, profile, reduced motion and Collection fallback. See [verification](docs/VERIFICATION.md) for the exact build results and limits.
+Use Impeccable, accessibility, frontend architecture and animation guidance, with the approved identity taking priority. Automated layout and behavior checks support the user-requested release review in WebView2.

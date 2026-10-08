@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../../core/i18n";
 import { useState } from "react";
 import { ArrowUpRight, Plus, Shuffle } from "lucide-react";
 import type { Entry } from "../../domain/model";
@@ -13,13 +14,14 @@ export function Spotlight({
   entry: Entry | null;
   onOpen: (entry: Entry) => void;
 }) {
+  useLanguage();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   if (!entry)
     return (
       <section className="home-spotlight">
         <div>
-          <h2>Ready for a new story?</h2>
+          <h2>{t("Ready for a new story?")}</h2>
           <button
             className="button"
             onClick={() =>
@@ -31,8 +33,7 @@ export function Spotlight({
               })
             }
           >
-            <Shuffle size={16} />
-            What fits tonight?
+            <Shuffle size={16} /> {t("What fits tonight?")}{" "}
           </button>
         </div>
       </section>
@@ -47,17 +48,28 @@ export function Spotlight({
   const log = async () => {
     setBusy(true);
     setMessage("");
-    await useApp.getState().adjustEpisodes(entry.localId, 1);
-    if (!useApp.getState().error) setMessage("Episode logged");
+    const result = await useApp.getState().adjustEpisodes(entry.localId, 1);
+    if (result.ok) setMessage("Episode logged");
     setBusy(false);
   };
   return (
-    <section className="home-spotlight" data-anime-id={entry.anilistId}>
+    <section
+      className={`home-spotlight ${entry.bannerImage || entry.cachedMetadata.bannerImage ? "has-backdrop" : ""}`}
+      data-anime-id={entry.anilistId}
+    >
+      {(entry.bannerImage || entry.cachedMetadata.bannerImage) && (
+        <Artwork
+          className="spotlight-backdrop"
+          src={entry.bannerImage || entry.cachedMetadata.bannerImage}
+          title=""
+          eager
+        />
+      )}
       <div className="spotlight-content">
         <button
           className="spotlight-cover"
           onClick={() => onOpen(entry)}
-          aria-label={`Open ${entry.preferredTitle}`}
+          aria-label={t("Open {value0}", { value0: entry.preferredTitle })}
         >
           <Artwork
             src={animeCover(entry.cachedMetadata, entry.coverImage)}
@@ -72,32 +84,35 @@ export function Spotlight({
         <div className="spotlight-copy">
           <p className="eyebrow">
             <span className="spotlight-signal" aria-hidden="true" />
-            {planned ? "Next on your Watchlist" : "Your next episode"}
+            {planned ? t("Next on your Watchlist") : t("Your next episode")}
           </p>
           <h2>{entry.preferredTitle}</h2>
           {!planned && (
             <div className="spotlight-progress">
               <div className="spotlight-progress-caption">
-                <span>{entry.watchedEpisodes} episodes watched</span>
+                <span>
+                  {entry.watchedEpisodes} {t("episodes watched")}
+                </span>
                 {progress !== null && <span>{Math.round(progress)}%</span>}
               </div>
               {progress !== null && (
                 <div
                   className="spotlight-progress-track"
                   role="progressbar"
-                  aria-label="Episodes watched"
+                  aria-label={t("Episodes watched")}
                   aria-valuenow={entry.watchedEpisodes}
                   aria-valuemin={0}
                   aria-valuemax={entry.totalEpisodes!}
                 >
-                  <span style={{ width: `${progress}%` }} />
+                  <span style={{ transform: `scaleX(${progress / 100})` }} />
                 </div>
               )}
             </div>
           )}
           <div className="welcome-actions">
             <button className="button primary" onClick={() => onOpen(entry)}>
-              Open anime <ArrowUpRight size={16} />
+              {" "}
+              {t("Open anime")} <ArrowUpRight size={16} />
             </button>
             {!planned && (
               <button
@@ -106,7 +121,7 @@ export function Spotlight({
                 onClick={() => void log()}
               >
                 <Plus size={16} />
-                {busy ? "Saving…" : "Log episode"}
+                {busy ? t("Saving…") : t("Log episode")}
               </button>
             )}
           </div>
@@ -121,11 +136,10 @@ export function Spotlight({
               })
             }
           >
-            <Shuffle size={15} />
-            What fits tonight?
+            <Shuffle size={15} /> {t("What fits tonight?")}{" "}
           </button>
           <span className="spotlight-feedback" role="status">
-            {message}
+            {t(message)}
           </span>
         </div>
       </div>

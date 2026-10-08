@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../../core/i18n";
 import { useReducedMotion } from "../../core/motion";
 import { animeCover } from "../../domain/artwork";
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -25,6 +26,7 @@ export default function Collection({
     entry: Entry,
   ) => void;
 }) {
+  useLanguage();
   const p = useApp((state) => state.data.preferences);
   const prefs = useApp((state) => state.prefs);
   const edit = useApp((state) => state.edit);
@@ -118,7 +120,9 @@ export default function Collection({
     <section
       className="collection-stage"
       tabIndex={0}
-      aria-label="Spatial collection. Arrow keys select, Enter opens, Space previews."
+      aria-label={t(
+        "Spatial collection. Arrow keys select, Enter opens, Space previews.",
+      )}
       onKeyDown={(e) => {
         if (
           (e.target as HTMLElement).closest(
@@ -151,7 +155,8 @@ export default function Collection({
         aria-live="polite"
       >
         <p className="eyebrow">
-          {selected.personalStatus.toUpperCase()} <span className="dot">·</span>{" "}
+          {t(selected.personalStatus).toUpperCase()}{" "}
+          <span className="dot">·</span>{" "}
           {selected.cachedMetadata.year ?? "UNDATED"}
         </p>
         <h2>{selected.preferredTitle}</h2>
@@ -162,7 +167,7 @@ export default function Collection({
           />
           <button
             className="icon-button"
-            aria-label="Like selected anime"
+            aria-label={t("Like selected anime")}
             aria-pressed={selected.liked}
             onClick={() =>
               void edit(selected.localId, { liked: !selected.liked })
@@ -178,20 +183,21 @@ export default function Collection({
           <blockquote>“{selected.shortOpinion}”</blockquote>
         ) : null}
         <p className="eyebrow">
-          {selected.watchedEpisodes} / {selected.totalEpisodes ?? "?"} EPISODES{" "}
+          {selected.watchedEpisodes} / {selected.totalEpisodes ?? "?"}{" "}
+          {t("EPISODES")}{" "}
           {selected.watchedDate
             ? ` · ${new Date(selected.watchedDate).getFullYear()}`
             : ""}
         </p>
         <button className="text-button" onClick={() => onOpen(selected)}>
-          Explore this anime
-          <ArrowUpRight size={14} />
+          {" "}
+          {t("Explore this anime")} <ArrowUpRight size={14} />
         </button>
       </div>
       <div className="collection-navigation">
         <button
           className="circle-button"
-          aria-label="Previous anime"
+          aria-label={t("Previous anime")}
           disabled={index === 0}
           onClick={() => move(-1)}
         >
@@ -205,21 +211,21 @@ export default function Collection({
         </span>
         <button
           className="circle-button"
-          aria-label="Next anime"
+          aria-label={t("Next anime")}
           disabled={index === entries.length - 1}
           onClick={() => move(1)}
         >
           <ArrowRight size={18} />
         </button>
       </div>
-      <div className="collection-filmstrip" aria-label="Jump to anime">
+      <div className="collection-filmstrip" aria-label={t("Jump to anime")}>
         {entries
           .slice(Math.max(0, index - 4), Math.min(entries.length, index + 5))
           .map((e) => (
             <button
               key={e.localId}
               className="filmstrip-item"
-              aria-label={`Select ${e.preferredTitle}`}
+              aria-label={t("Select {value0}", { value0: e.preferredTitle })}
               aria-pressed={e.localId === selected.localId}
               onClick={() => void prefs({ selectedId: e.localId })}
             >
@@ -233,18 +239,18 @@ export default function Collection({
           ))}
       </div>
       <div className="collection-hint">
-        <span>SCROLL TO EXPLORE</span>
+        <span>{t("SCROLL TO EXPLORE")}</span>
         <span>
-          <kbd>←</kbd> <kbd>→</kbd> SELECT <span className="dot">·</span>{" "}
-          <kbd>↵</kbd> OPEN
+          <kbd>←</kbd> <kbd>→</kbd> {t("SELECT")} <span className="dot">·</span>{" "}
+          <kbd>↵</kbd> {t("OPEN")}{" "}
         </span>
       </div>
       {p.diagnostics && (
         <output className="graphics-metrics">
-          {metrics.frameMs.toFixed(1)} ms · {metrics.drawCalls} draws ·{" "}
-          {metrics.textures} textures · {metrics.activeCases} cases
-          {" · "}
-          {metrics.textureMB.toFixed(1)} MB textures (est.)
+          {metrics.frameMs.toFixed(1)} {t("ms ·")} {metrics.drawCalls}{" "}
+          {t("draws ·")} {metrics.textures} {t("textures ·")}{" "}
+          {metrics.activeCases} {t("cases")} {" · "}
+          {metrics.textureMB.toFixed(1)} {t("MB textures (est.)")}{" "}
           {metrics.heapMB !== null && ` · ${metrics.heapMB.toFixed(0)} MB heap`}
         </output>
       )}

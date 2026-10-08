@@ -62,7 +62,7 @@ export async function enqueue(
     nextAttemptAt: 0,
     error: "",
   };
-  await useApp.getState().mutate((d) => ({
+  const result = await useApp.getState().mutate((d) => ({
     ...d,
     queue: coalesce(d.queue, job),
     preferences: {
@@ -73,6 +73,7 @@ export async function enqueue(
       ],
     },
   }));
+  if (!result.ok) throw new Error(result.error);
 }
 let flushing = false;
 export async function flushQueue(force = false) {

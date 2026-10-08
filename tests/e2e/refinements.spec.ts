@@ -82,6 +82,9 @@ test("relevant search, paper collection, banner, roulette landing and uploaded a
     animations: "disabled",
   });
   await page.getByRole("button", { name: "Recommend", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Explore & shuffle", exact: true })
+    .click();
   await page.getByLabel("Choose from").selectOption("Library");
   await page
     .getByRole("button", { name: "Pick an anime", exact: true })

@@ -1,3 +1,6 @@
+import { usePageActive } from "../../core/activity";
+import { t, useLanguage } from "../../core/i18n";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useRef, useState } from "react";
 import { Search as SearchIcon, Plus, Check, ArrowRight } from "lucide-react";
 import {
@@ -24,9 +27,25 @@ export function SearchDialog({
   onOpen: (a: Anime) => void;
   initialQuery?: string;
 }) {
-  const store = useApp();
+  useLanguage();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      add: state.add,
+      addMany: state.addMany,
+      edit: state.edit,
+      remove: state.remove,
+      episodes: state.episodes,
+      adjustEpisodes: state.adjustEpisodes,
+      complete: state.complete,
+      rewatch: state.rewatch,
+      notify: state.notify,
+    })),
+  );
   const [query, setQuery] = useState(initialQuery);
-  const [items, setItems] = useState<Anime[]>([]);
+  const [remoteItems, setItems] = useState<Anime[]>([]);
   const [page, setPage] = useState(1);
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,6 +62,11 @@ export function SearchDialog({
       setLoading(false);
       setMore(false);
       setError("");
+      return;
+    }
+    if (!navigator.onLine) {
+      setLoading(false);
+      setMore(false);
       return;
     }
     const c = new AbortController();
@@ -82,6 +106,24 @@ export function SearchDialog({
       c.abort();
     };
   }, [query, page, retry, store.data.preferences.adultContent]);
+  const needle = query.trim().toLocaleLowerCase();
+  const localItems = needle
+    ? store.data.entries
+        .filter((e) =>
+          [
+            e.preferredTitle,
+            e.cachedMetadata.romaji,
+            e.cachedMetadata.english,
+            ...(e.cachedMetadata.synonyms ?? []),
+          ].some((title) => title?.toLocaleLowerCase().includes(needle)),
+        )
+        .map((e) => e.cachedMetadata)
+    : [];
+  const localIds = new Set(localItems.map((a) => a.anilistId));
+  const items = [
+    ...localItems,
+    ...remoteItems.filter((a) => !localIds.has(a.anilistId)),
+  ];
   const open = (a: Anime) => {
     void store.mutate((d) => ({
       ...d,
@@ -94,20 +136,20 @@ export function SearchDialog({
     onClose();
   };
   return (
-    <Modal title="Search anime" onClose={onClose} wide>
+    <Modal title={t("Search anime")} onClose={onClose} wide>
       <div className="global-search">
         <SearchIcon size={20} />
         <input
           ref={input}
           role="combobox"
-          aria-label="Search AniList"
+          aria-label={t("Search AniList")}
           aria-autocomplete="list"
           aria-controls="search-results"
           aria-expanded={items.length > 0}
           aria-activedescendant={
             items[active] ? `search-${items[active].anilistId}` : undefined
           }
-          placeholder="Search anime, in any language…"
+          placeholder={t("Search anime, in any language…")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -131,19 +173,21 @@ export function SearchDialog({
             if (e.key === "Enter" && items[active]) open(items[active]);
           }}
         />
-        <kbd>ESC</kbd>
+        <kbd>{t("ESC")}</kbd>
       </div>
-      {!navigator.onLine ? (
+      {!navigator.onLine && !query ? (
         <Empty
-          title="You're offline."
-          text="Your library is still here. Online search will return when you reconnect."
+          title={t("You're offline.")}
+          text={t(
+            "Your library is still here. Online search will return when you reconnect.",
+          )}
         />
       ) : !query ? (
         <div className="search-intro">
-          <p className="prose">Search by anime title.</p>
+          <p className="prose">{t("Search by anime title.")}</p>
           {store.data.searchHistory.length > 0 && (
             <>
-              <p className="eyebrow">RECENT SEARCHES</p>
+              <p className="eyebrow">{t("RECENT SEARCHES")}</p>
               <div className="recent-searches">
                 {store.data.searchHistory.map((q) => (
                   <button
@@ -165,7 +209,7 @@ export function SearchDialog({
             className="search-results"
             id="search-results"
             role="listbox"
-            aria-label="Anime results"
+            aria-label={t("Anime results")}
           >
             {items.map((a, i) => {
               const added = store.data.entries.some(
@@ -192,7 +236,10 @@ export function SearchDialog({
                       <strong>{a.english ?? a.romaji}</strong>
                       <small>
                         {a.year ?? "TBA"} · {a.format ?? "Anime"} ·{" "}
-                        {a.episodes ?? "?"} episodes · AniList{" "}
+                        {a.episodes ?? "?"} {t("episodes")} ·{" "}
+                        {localIds.has(a.anilistId)
+                          ? t("Your library")
+                          : "AniList"}{" "}
                         {a.averageScore ?? "—"}
                       </small>
                     </span>
@@ -215,19 +262,22 @@ export function SearchDialog({
           </div>
           {loading && (
             <div className="search-skeleton" role="status">
-              Searching AniList…
+              {" "}
+              {t("Searching AniList…")}{" "}
             </div>
           )}
           {error && (
             <div role="alert" className="error-inline">
               {error}
-              <button onClick={() => setRetry((v) => v + 1)}>Retry</button>
+              <button onClick={() => setRetry((v) => v + 1)}>
+                {t("Retry")}
+              </button>
             </div>
           )}
           {!loading && !error && !items.length && (
             <Empty
-              title="No titles found."
-              text="Try the original title or a different spelling."
+              title={t("No titles found.")}
+              text={t("Try the original title or a different spelling.")}
             />
           )}
           {more && !loading && (
@@ -235,7 +285,8 @@ export function SearchDialog({
               className="button full"
               onClick={() => setPage((p) => p + 1)}
             >
-              Load more
+              {" "}
+              {t("Load more")}{" "}
             </button>
           )}
         </>
@@ -244,7 +295,10 @@ export function SearchDialog({
   );
 }
 export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
-  const { data, add } = useApp();
+  useLanguage();
+  const pageActive = usePageActive();
+  const data = useApp((state) => state.data);
+  const add = useApp((state) => state.add);
   const [category, setCategory] = useState("Trending");
   const [options, setOptions] = useState<SearchOptions>({});
   const [items, setItems] = useState<Anime[]>([]);
@@ -256,7 +310,13 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
   const [addingSeason, setAddingSeason] = useState(false);
   const [seasonMessage, setSeasonMessage] = useState("");
   const seasonController = useRef<AbortController | null>(null);
-  useEffect(() => () => seasonController.current?.abort(), []);
+  useEffect(() => {
+    if (!pageActive || data.preferences.section !== "Discover") {
+      seasonController.current?.abort();
+      setAddingSeason(false);
+    }
+    return () => seasonController.current?.abort();
+  }, [data.preferences.section, pageActive]);
   const addSeason = async () => {
     if (seasonController.current) return;
     const controller = new AbortController();
@@ -278,9 +338,9 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
         );
         if (!result.hasNextPage) break;
       }
-      await useApp.getState().addMany(all);
+      const saved = await useApp.getState().addMany(all);
       if (controller.signal.aborted) return;
-      if (useApp.getState().error) throw new Error(useApp.getState().error);
+      if (!saved.ok) throw new Error(saved.error);
       setSeasonMessage(
         `${selectedSeason.season} ${selectedSeason.year} added to your Watchlist. Existing entries kept. Announced episodes appear in Calendar.`,
       );
@@ -297,6 +357,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
     }
   };
   useEffect(() => {
+    if (!pageActive || data.preferences.section !== "Discover") return;
     const c = new AbortController();
     setLoading(true);
     setError("");
@@ -346,7 +407,15 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
         if (!c.signal.aborted) setLoading(false);
       });
     return () => c.abort();
-  }, [category, options, page, data.preferences.adultContent, retry]);
+  }, [
+    category,
+    options,
+    page,
+    data.preferences.adultContent,
+    data.preferences.section,
+    pageActive,
+    retry,
+  ]);
   const change = (v: SearchOptions) => {
     setItems([]);
     setPage(1);
@@ -354,7 +423,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
   };
   return (
     <div className="page discover-page">
-      <PageTitle title="Discover" />
+      <PageTitle title={t("Discover")} />
       {(category === "This season" || category === "Next season") && (
         <div className="season-bulk-actions">
           <button
@@ -364,12 +433,14 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
           >
             <Plus size={16} />
             {addingSeason
-              ? "Adding season…"
+              ? t("Adding season…")
               : `Add all ${category === "This season" ? "current" : "next"} season anime to Watchlist`}
           </button>
           <p className="muted">
-            Includes the complete season, regardless of the filters below.
-            Scheduled episodes will appear in Calendar.
+            {" "}
+            {t(
+              "Includes the complete season, regardless of the filters below. Scheduled episodes will appear in Calendar.",
+            )}{" "}
           </p>
         </div>
       )}
@@ -396,7 +467,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
       </div>
       <div className="filters">
         <SelectField
-          label="Year"
+          label={t("Year")}
           value={String(options.year ?? "")}
           onChange={(v) => change({ year: Number(v) || undefined })}
           options={Array.from({ length: 70 }, (_, i) =>
@@ -404,13 +475,13 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
           )}
         />
         <SelectField
-          label="Season"
+          label={t("Season")}
           value={options.season ?? ""}
           onChange={(v) => change({ season: v })}
           options={["WINTER", "SPRING", "SUMMER", "FALL"]}
         />
         <SelectField
-          label="Genre"
+          label={t("Genre")}
           value={options.genre ?? ""}
           onChange={(v) => change({ genre: v })}
           options={[
@@ -430,7 +501,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
           ]}
         />
         <SelectField
-          label="Format"
+          label={t("Format")}
           value={options.format ?? ""}
           onChange={(v) => change({ format: v })}
           options={[
@@ -444,7 +515,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
           ]}
         />
         <SelectField
-          label="Status"
+          label={t("Status")}
           value={options.status ?? ""}
           onChange={(v) => change({ status: v })}
           options={[
@@ -458,37 +529,39 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
       </div>
       <div className="filters discover-extra-filters">
         <label className="field">
-          Title
+          {" "}
+          {t("Title")}{" "}
           <input
             type="search"
-            placeholder="Find a title"
+            placeholder={t("Find a title")}
             value={options.query ?? ""}
             onChange={(e) => change({ query: e.target.value })}
           />
         </label>
         <SelectField
-          label="Minimum score"
+          label={t("Minimum score")}
           value={String(options.minScore ?? "")}
           onChange={(v) => change({ minScore: Number(v) || undefined })}
           options={["50", "60", "70", "80", "90"]}
         />
         <SelectField
-          label="Maximum episodes"
+          label={t("Maximum episodes")}
           value={String(options.maxEpisodes ?? "")}
           onChange={(v) => change({ maxEpisodes: Number(v) || undefined })}
           options={["12", "24", "26", "52", "100"]}
         />
         <label className="field">
-          Sort by
+          {" "}
+          {t("Sort by")}{" "}
           <select
             value={options.sort ?? ""}
             onChange={(e) => change({ sort: e.target.value })}
           >
-            <option value="">Category default</option>
-            <option value="POPULARITY_DESC">Popularity</option>
-            <option value="SCORE_DESC">Community score</option>
-            <option value="START_DATE_DESC">Newest releases</option>
-            <option value="TRENDING_DESC">Trending</option>
+            <option value="">{t("Category default")}</option>
+            <option value="POPULARITY_DESC">{t("Popularity")}</option>
+            <option value="SCORE_DESC">{t("Community score")}</option>
+            <option value="START_DATE_DESC">{t("Newest releases")}</option>
+            <option value="TRENDING_DESC">{t("Trending")}</option>
           </select>
         </label>
         <button
@@ -499,20 +572,25 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
             setItems([]);
           }}
         >
-          Reset filters
+          {" "}
+          {t("Reset filters")}{" "}
         </button>
       </div>
       {!navigator.onLine ? (
         <Empty
-          title="You’re offline"
-          text="Reconnect to explore AniList. Your library remains available."
+          title={t("You’re offline")}
+          text={t(
+            "Reconnect to explore AniList. Your library remains available.",
+          )}
         />
       ) : (
         <>
           {error && (
             <div className="error-inline" role="alert">
               {error}
-              <button onClick={() => setRetry((r) => r + 1)}>Retry</button>
+              <button onClick={() => setRetry((r) => r + 1)}>
+                {t("Retry")}
+              </button>
             </div>
           )}
           <div className="poster-grid">
@@ -528,13 +606,11 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
                 >
                   {data.entries.some((e) => e.anilistId === a.anilistId) ? (
                     <>
-                      <Check size={13} />
-                      In your library
+                      <Check size={13} /> {t("In your library")}{" "}
                     </>
                   ) : (
                     <>
-                      <Plus size={13} />
-                      Add to Watchlist
+                      <Plus size={13} /> {t("Add to Watchlist")}{" "}
                     </>
                   )}
                 </button>
@@ -545,7 +621,7 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
             <div
               className="poster-grid skeleton-grid"
               role="status"
-              aria-label="Loading anime"
+              aria-label={t("Loading anime")}
             >
               {Array.from({ length: 6 }, (_, i) => (
                 <div key={i} />
@@ -554,8 +630,8 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
           )}
           {!loading && !error && !items.length && (
             <Empty
-              title="No anime found."
-              text="Try a different combination of filters."
+              title={t("No anime found.")}
+              text={t("Try a different combination of filters.")}
             />
           )}
           {more && !loading && (
@@ -563,7 +639,8 @@ export function Discover({ onOpen }: { onOpen: (a: Anime) => void }) {
               className="button load-more"
               onClick={() => setPage((p) => p + 1)}
             >
-              Load more anime
+              {" "}
+              {t("Load more anime")}{" "}
             </button>
           )}
         </>

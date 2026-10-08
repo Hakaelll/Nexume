@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../app/store";
 export function useReducedMotion() {
-  const preferences = useApp((state) => state.data.preferences);
+  const motionMode = useApp((state) => state.data.preferences.motionMode);
+  const reducedMotion = useApp((state) => state.data.preferences.reducedMotion);
   const [system, setSystem] = useState(
     () => matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
@@ -11,9 +12,7 @@ export function useReducedMotion() {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
-  return preferences.motionMode === "full"
+  return motionMode === "full"
     ? false
-    : preferences.motionMode === "reduced" ||
-        preferences.reducedMotion ||
-        system;
+    : motionMode === "reduced" || reducedMotion || system;
 }

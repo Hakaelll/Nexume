@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { t, useLanguage } from "../../core/i18n";
+import { useShallow } from "zustand/react/shallow";
+import { useEffect, useState } from "react";
 import {
   Plus,
   ArrowLeft,
@@ -25,7 +27,23 @@ import { serializeList } from "../../services/social/serialization";
 import { enqueue, flushQueue } from "../../services/social/sync";
 import { loadListCover } from "./cover";
 export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
-  const store = useApp();
+  useLanguage();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      add: state.add,
+      addMany: state.addMany,
+      edit: state.edit,
+      remove: state.remove,
+      episodes: state.episodes,
+      adjustEpisodes: state.adjustEpisodes,
+      complete: state.complete,
+      rewatch: state.rewatch,
+      notify: state.notify,
+    })),
+  );
   const [selected, setSelected] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
@@ -38,14 +56,26 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverError, setCoverError] = useState("");
   const list = store.data.lists.find((l) => l.id === selected);
-  const patch = async (p: Partial<AnimeList>) => {
+  const [draft, setDraft] = useState({ title: "", description: "" });
+  useEffect(() => {
+    const selectedList = useApp
+      .getState()
+      .data.lists.find((l) => l.id === selected);
+    setDraft({
+      title: selectedList?.title ?? "",
+      description: selectedList?.description ?? "",
+    });
+  }, [selected]);
+  const patch = async (p: Partial<AnimeList>, throwOnFailure = false) => {
     if (!list) return;
-    await store.mutate((d) => ({
+    const result = await store.mutate((d) => ({
       ...d,
       lists: d.lists.map((l) =>
         l.id === list.id ? { ...l, ...p, updatedAt: now() } : l,
       ),
     }));
+    if (!result.ok && throwOnFailure) throw new Error(result.error);
+    return result;
   };
   const reorder = (from: number, to: number) => {
     if (!list || to < 0 || to >= list.entryIds.length) return;
@@ -77,38 +107,48 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
       {list ? (
         <>
           <button className="back-button" onClick={() => setSelected(null)}>
-            <ArrowLeft size={16} />
-            All lists
+            <ArrowLeft size={16} /> {t("All lists")}{" "}
           </button>
           <PageTitle
-            kicker={`${list.ranked ? "RANKED" : "UNRANKED"} COLLECTION · ${list.privacy.toUpperCase()}`}
+            kicker={t("{value0} COLLECTION · {value1}", {
+              value0: list.ranked ? "RANKED" : "UNRANKED",
+              value1: list.privacy.toUpperCase(),
+            })}
             title={list.title}
-            subtitle={`${list.entryIds.length} titles · Curated by ${store.data.profile.displayName}`}
+            subtitle={t("{value0} titles · Curated by {value1}", {
+              value0: list.entryIds.length,
+              value1: store.data.profile.displayName,
+            })}
           >
             <button className="button" onClick={() => setShare(true)}>
-              <Share2 size={15} />
-              Share
+              <Share2 size={15} /> {t("Share")}{" "}
             </button>
           </PageTitle>
           <div className="list-editor">
             <label className="field">
-              Title
+              {" "}
+              {t("Title")}{" "}
               <input
-                value={list.title}
+                value={draft.title}
                 maxLength={200}
                 onChange={(e) => {
+                  setDraft((d) => ({ ...d, title: e.target.value }));
                   if (e.target.value) void patch({ title: e.target.value });
                 }}
               />
             </label>
             <label className="field">
-              Description
+              {" "}
+              {t("Description")}{" "}
               <textarea
-                value={list.description}
+                value={draft.description}
                 rows={2}
                 maxLength={5000}
-                placeholder="List description"
-                onChange={(e) => void patch({ description: e.target.value })}
+                placeholder={t("List description")}
+                onChange={(e) => {
+                  setDraft((d) => ({ ...d, description: e.target.value }));
+                  void patch({ description: e.target.value });
+                }}
               />
             </label>
             <div className="list-options">
@@ -117,11 +157,12 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                   type="checkbox"
                   checked={list.ranked}
                   onChange={(e) => void patch({ ranked: e.target.checked })}
-                />
-                Ranked list
+                />{" "}
+                {t("Ranked list")}{" "}
               </label>
               <label className="select-field">
-                Visibility
+                {" "}
+                {t("Visibility")}{" "}
                 <select
                   value={list.privacy}
                   onChange={(e) =>
@@ -131,26 +172,28 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                   }
                 >
                   {privacyValues.map((v) => (
-                    <option key={v}>{v}</option>
+                    <option key={v} value={v}>
+                      {t(v)}
+                    </option>
                   ))}
                 </select>
               </label>
               <button className="button" onClick={() => setAdding(true)}>
-                <Plus size={15} />
-                Add titles
+                <Plus size={15} /> {t("Add titles")}{" "}
               </button>
             </div>
             <div className="list-cover-editor">
               {list.coverImage && (
                 <Artwork
                   src={list.coverImage}
-                  title={`${list.title} cover preview`}
+                  title={t("{value0} cover preview", { value0: list.title })}
                   eager
                 />
               )}
               <div className="list-cover-fields">
                 <label className="field">
-                  Upload cover photo
+                  {" "}
+                  {t("Upload cover photo")}{" "}
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -163,7 +206,7 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                       setCoverError("");
                       try {
                         const coverImage = await loadListCover(file);
-                        await patch({ coverImage });
+                        await patch({ coverImage }, true);
                         store.notify("List cover saved.");
                       } catch (error) {
                         setCoverError(
@@ -176,10 +219,11 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                       }
                     }}
                   />
-                  <small>JPG, PNG or WebP · up to 10 MB</small>
+                  <small>{t("JPG, PNG or WebP · up to 10 MB")}</small>
                 </label>
                 <label className="field">
-                  Cover URL <small>optional</small>
+                  {" "}
+                  {t("Cover URL")} <small>{t("optional")}</small>
                   <input
                     key={`${list.id}:${list.coverImage}`}
                     type="url"
@@ -187,12 +231,12 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                     defaultValue={
                       list.coverImage.startsWith("data:") ? "" : list.coverImage
                     }
-                    placeholder="https://…"
+                    placeholder={t("https://…")}
                     onBlur={(event) => {
                       const value = event.target.value.trim();
                       if (!value && list.coverImage.startsWith("data:")) return;
                       if (value === list.coverImage) return;
-                      void patch({ coverImage: value }).catch(() =>
+                      void patch({ coverImage: value }, true).catch(() =>
                         setCoverError(
                           "Could not save this cover URL. Use an HTTPS image URL.",
                         ),
@@ -206,15 +250,15 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                     disabled={coverBusy}
                     onClick={() => {
                       setCoverError("");
-                      void patch({ coverImage: "" }).catch(() =>
+                      void patch({ coverImage: "" }, true).catch(() =>
                         setCoverError("Could not remove this cover."),
                       );
                     }}
                   >
-                    <Trash2 size={14} /> Remove cover
+                    <Trash2 size={14} /> {t("Remove cover")}{" "}
                   </button>
                 )}
-                {coverBusy && <p role="status">Saving cover…</p>}
+                {coverBusy && <p role="status">{t("Saving cover…")}</p>}
                 {coverError && <p role="alert">{coverError}</p>}
               </div>
             </div>
@@ -254,7 +298,9 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                     <Stars value={e.personalRating} />
                     <button
                       className="icon-button"
-                      aria-label={`Move ${e.preferredTitle} up`}
+                      aria-label={t("Move {value0} up", {
+                        value0: e.preferredTitle,
+                      })}
                       disabled={i === 0}
                       onClick={() => reorder(i, i - 1)}
                     >
@@ -262,7 +308,9 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                     </button>
                     <button
                       className="icon-button"
-                      aria-label={`Move ${e.preferredTitle} down`}
+                      aria-label={t("Move {value0} down", {
+                        value0: e.preferredTitle,
+                      })}
                       disabled={i === list.entryIds.length - 1}
                       onClick={() => reorder(i, i + 1)}
                     >
@@ -270,7 +318,9 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                     </button>
                     <button
                       className="icon-button"
-                      aria-label={`Remove ${e.preferredTitle} from list`}
+                      aria-label={t("Remove {value0} from list", {
+                        value0: e.preferredTitle,
+                      })}
                       onClick={() =>
                         void patch({
                           entryIds: list.entryIds.filter(
@@ -287,9 +337,11 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
             </div>
           ) : (
             <Empty
-              title="No anime in this list"
-              text="Choose anime from your library, then arrange them your way."
-              action="Add titles"
+              title={t("No anime in this list")}
+              text={t(
+                "Choose anime from your library, then arrange them your way.",
+              )}
+              action={t("Add titles")}
               onAction={() => setAdding(true)}
             />
           )}
@@ -297,19 +349,17 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
             className="text-button delete-list"
             onClick={() => setConfirmDelete(true)}
           >
-            <Trash2 size={14} />
-            Delete list
+            <Trash2 size={14} /> {t("Delete list")}{" "}
           </button>
         </>
       ) : (
         <>
-          <PageTitle title="Lists">
+          <PageTitle title={t("Lists")}>
             <button
               className="button primary"
               onClick={() => setCreating(true)}
             >
-              <Plus size={15} />
-              Create a list
+              <Plus size={15} /> {t("Create a list")}{" "}
             </button>
           </PageTitle>
           {store.data.lists.length ? (
@@ -337,41 +387,44 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                         );
                       })
                     ) : (
-                      <span className="prose">No cover</span>
+                      <span className="prose">{t("No cover")}</span>
                     )}
                   </div>
                   <span className="eyebrow">
-                    {l.ranked ? "RANKED" : "COLLECTION"} · {l.entryIds.length}{" "}
-                    TITLES
+                    {l.ranked ? t("RANKED") : t("COLLECTION")} ·{" "}
+                    {l.entryIds.length} {t("TITLES")}{" "}
                   </span>
                   <h2>{l.title}</h2>
                   <p>{l.description || ""}</p>
                   <span className="list-privacy">
                     <Lock size={12} />
-                    {l.privacy}
+                    {t(l.privacy)}
                   </span>
                 </button>
               ))}
             </div>
           ) : (
             <Empty
-              title="No lists yet"
-              text="Start a list for a theme, a feeling, or your all-time favorites."
-              action="Create your first list"
+              title={t("No lists yet")}
+              text={t(
+                "Start a list for a theme, a feeling, or your all-time favorites.",
+              )}
+              action={t("Create your first list")}
               onAction={() => setCreating(true)}
             />
           )}
         </>
       )}
       {creating && (
-        <Modal title="Create a list" onClose={() => setCreating(false)}>
+        <Modal title={t("Create a list")} onClose={() => setCreating(false)}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               const l = newList(title.trim());
               void store
                 .mutate((d) => ({ ...d, lists: [l, ...d.lists] }))
-                .then(() => {
+                .then((result) => {
+                  if (!result.ok) return;
                   setCreating(false);
                   setSelected(l.id);
                   setTitle("");
@@ -379,19 +432,21 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
             }}
           >
             <label className="field">
-              List title
+              {" "}
+              {t("List title")}{" "}
               <input
                 autoFocus
                 required
                 maxLength={200}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Anime for quiet nights"
+                placeholder={t("Anime for quiet nights")}
               />
             </label>
             <div className="form-actions">
               <button className="button primary" disabled={!title.trim()}>
-                Create list
+                {" "}
+                {t("Create list")}{" "}
               </button>
             </div>
           </form>
@@ -399,17 +454,18 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
       )}
       {adding && list && (
         <Modal
-          title="Choose from your library"
+          title={t("Choose from your library")}
           onClose={() => setAdding(false)}
           wide
         >
           <label className="field">
-            Find an anime
+            {" "}
+            {t("Find an anime")}{" "}
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search your library"
+              placeholder={t("Search your library")}
             />
           </label>
           <div className="picker-list">
@@ -440,71 +496,91 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
               ))}
           </div>
           <button className="button full" onClick={() => setAdding(false)}>
-            Done
+            {" "}
+            {t("Done")}{" "}
           </button>
         </Modal>
       )}
       {confirmDelete && list && (
         <Modal
-          title={`Delete “${list.title}”?`}
+          title={t("Delete “{value0}”?", { value0: list.title })}
           onClose={() => setConfirmDelete(false)}
         >
           <p className="prose">
-            Your anime stay in your library. If this list was published, its
-            removal is queued automatically.
+            {" "}
+            {t(
+              "Your anime stay in your library. If this list was published, its removal is queued automatically.",
+            )}{" "}
           </p>
           <div className="form-actions">
             <button className="button" onClick={() => setConfirmDelete(false)}>
-              Keep list
+              {" "}
+              {t("Keep list")}{" "}
             </button>
             <button
               className="button"
               onClick={() => {
-                void store.mutate((d) => ({
-                  ...d,
-                  lists: d.lists.filter((l) => l.id !== list.id),
-                }));
-                setConfirmDelete(false);
-                setSelected(null);
+                void store
+                  .mutate((d) => ({
+                    ...d,
+                    lists: d.lists.filter((l) => l.id !== list.id),
+                  }))
+                  .then((result) => {
+                    if (!result.ok) return;
+                    setConfirmDelete(false);
+                    setSelected(null);
+                  });
               }}
             >
-              Delete local list
+              {" "}
+              {t("Delete local list")}{" "}
             </button>
           </div>
         </Modal>
       )}
       {share && list && (
-        <Modal title="Share this collection" onClose={() => setShare(false)}>
+        <Modal
+          title={t("Share this collection")}
+          onClose={() => setShare(false)}
+        >
           <p className="prose">
-            Publish only what you choose. Private notes are always excluded.
+            {" "}
+            {t(
+              "Publish only what you choose. Private notes are always excluded.",
+            )}{" "}
           </p>
           <label className="check-field">
             <input
               type="checkbox"
               checked={list.shareThoughts}
               onChange={(e) => void patch({ shareThoughts: e.target.checked })}
-            />
-            Include quick thoughts in this shared list
+            />{" "}
+            {t("Include quick thoughts in this shared list")}{" "}
           </label>
           <p className="muted">
-            Visibility: {list.privacy}. First publication is explicit. Later
-            changes to a published list queue automatically.
+            {" "}
+            {t("Visibility:")} {t(list.privacy)}
+            {t(
+              ". First publication is explicit. Later changes to a published list queue automatically.",
+            )}{" "}
           </p>
           {social.configured ? (
             <button className="button primary" onClick={() => void publish()}>
               {list.privacy === "Private"
-                ? "Remove online publication"
-                : "Publish update"}
+                ? t("Remove online publication")
+                : t("Publish update")}
             </button>
           ) : (
             <p className="configuration-note">
-              Online sharing: Not configured. See Settings and
-              SOCIAL_ARCHITECTURE.md.
+              {" "}
+              {t(
+                "Online sharing: Not configured. See Settings and SOCIAL_ARCHITECTURE.md.",
+              )}{" "}
             </p>
           )}
           {link && (
             <div className="share-link">
-              <input readOnly aria-label="Share link" value={link} />
+              <input readOnly aria-label={t("Share link")} value={link} />
               <button
                 className="button"
                 onClick={() =>
@@ -513,8 +589,7 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                     .then(() => store.notify("Link copied."))
                 }
               >
-                <Copy size={14} />
-                Copy link
+                <Copy size={14} /> {t("Copy link")}{" "}
               </button>
               <a
                 className="button"
@@ -522,8 +597,7 @@ export default function Lists({ onOpen }: { onOpen: (e: Entry) => void }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                <ExternalLink size={14} />
-                Open public view
+                <ExternalLink size={14} /> {t("Open public view")}{" "}
               </a>
             </div>
           )}

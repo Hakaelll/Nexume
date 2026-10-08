@@ -78,6 +78,9 @@ for (const width of [960, 1440]) {
       });
     }
     await page.getByRole("button", { name: "Recommend", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Explore & shuffle", exact: true })
+      .click();
     await page.getByLabel("Choose from").selectOption("Sample catalog");
     await page
       .getByRole("button", { name: "Pick an anime", exact: true })

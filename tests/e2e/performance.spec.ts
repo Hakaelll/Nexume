@@ -38,6 +38,11 @@ for (const count of [10, 100, 500, 1000])
       /\b[1-9]\d* cases/,
     );
     const canvas = page.locator("canvas");
+    // Texture callbacks may wake the renderer; it must stop once they settle.
+    await page.waitForTimeout(3000);
+    const beforeIdle = await canvas.getAttribute("data-rendered-frames");
+    await page.waitForTimeout(700);
+    expect(await canvas.getAttribute("data-rendered-frames")).toBe(beforeIdle);
     const device = await canvas.evaluate((c) => {
       const gl = (c as HTMLCanvasElement).getContext("webgl2");
       const ext = gl?.getExtension("WEBGL_debug_renderer_info");

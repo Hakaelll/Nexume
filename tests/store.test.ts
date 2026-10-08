@@ -21,6 +21,23 @@ beforeEach(() => {
 });
 
 describe("batched additions and responsive preferences", () => {
+  it("returns a failed save without replacing data and continues the queue", async () => {
+    const original = useApp.getState().data;
+    vi.mocked(repository.save).mockRejectedValueOnce(
+      new Error("Disk unavailable"),
+    );
+    const failed = await useApp.getState().add(sample[0]);
+    expect(failed).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("Disk unavailable"),
+    });
+    expect(useApp.getState().data).toBe(original);
+    expect(useApp.getState().saving).toBe(false);
+    expect(await useApp.getState().add(sample[1])).toEqual({ ok: true });
+    expect(useApp.getState().data.entries.map((e) => e.anilistId)).toEqual([
+      sample[1].anilistId,
+    ]);
+  });
   it("collapses a burst of preferences into one write", async () => {
     const writes = Array.from({ length: 50 }, (_, i) =>
       useApp.getState().prefs({ scrollTop: i * 10 }),

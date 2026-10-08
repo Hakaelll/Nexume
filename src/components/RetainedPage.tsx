@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { PageActivity } from "../core/activity";
 
 // Preserve local UI state without leaving inactive controls in the document.
 export function RetainedPage({
@@ -42,7 +43,12 @@ export function RetainedPage({
   }, [active, container]);
   return (
     <div ref={host} className="route-panel" hidden={!active}>
-      {createPortal(children, container)}
+      {createPortal(
+        <PageActivity.Provider value={active}>
+          {children}
+        </PageActivity.Provider>,
+        container,
+      )}
     </div>
   );
 }

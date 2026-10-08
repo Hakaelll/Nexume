@@ -1,3 +1,5 @@
+import { t, useLanguage } from "../../core/i18n";
+import { useShallow } from "zustand/react/shallow";
 import { AvatarEditor } from "./AvatarEditor";
 import {
   loadAvatar,
@@ -14,7 +16,23 @@ import { social, publicLink } from "../../services/social/provider";
 import { serializeProfile } from "../../services/social/serialization";
 import { enqueue, flushQueue } from "../../services/social/sync";
 export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
-  const store = useApp();
+  useLanguage();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      add: state.add,
+      addMany: state.addMany,
+      edit: state.edit,
+      remove: state.remove,
+      episodes: state.episodes,
+      adjustEpisodes: state.adjustEpisodes,
+      complete: state.complete,
+      rewatch: state.rewatch,
+      notify: state.notify,
+    })),
+  );
   const { profile, entries } = store.data;
   const [avatarSource, setAvatarSource] = useState<HTMLImageElement | null>(
     null,
@@ -88,8 +106,9 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
         <span className="username">@{profile.username}</span>
         <p className="prose profile-bio">{profile.bio}</p>
         <p className="profile-counts">
-          {entries.length} anime <span>·</span> {reviews.length} reviews{" "}
-          <span>·</span> {store.data.lists.length} lists
+          {entries.length} {t("anime")} <span>·</span> {reviews.length}{" "}
+          {t("reviews")} <span>·</span> {store.data.lists.length}{" "}
+          {t("lists")}{" "}
         </p>
         <div className="profile-actions">
           <button
@@ -101,18 +120,16 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               setEditing(true);
             }}
           >
-            <Edit3 size={14} />
-            Edit profile
+            <Edit3 size={14} /> {t("Edit profile")}{" "}
           </button>
           <button className="button" onClick={() => setSharing(true)}>
-            <Share2 size={14} />
-            Share profile
+            <Share2 size={14} /> {t("Share profile")}{" "}
           </button>
         </div>
       </header>
       <section className="home-section">
         <div className="section-heading">
-          <h2>Favorites</h2>
+          <h2>{t("Favorites")}</h2>
           <button
             className="text-button"
             onClick={() => {
@@ -120,15 +137,15 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               setFavorites(true);
             }}
           >
-            Choose favorites
-            <Plus size={14} />
+            {" "}
+            {t("Choose favorites")} <Plus size={14} />
           </button>
         </div>
         <div className="profile-favorites">
           {picked.map((e) => (
             <AnimeCard key={e.localId} entry={e} onOpen={() => onOpen(e)} />
           ))}
-          {Array.from({ length: 6 - picked.length }, (_, i) => (
+          {Array.from({ length: picked.length < 6 ? 1 : 0 }, (_, i) => (
             <button
               className="favorite-slot"
               key={i}
@@ -136,7 +153,9 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                 setFavoriteQuery("");
                 setFavorites(true);
               }}
-              aria-label={`Choose profile favorite ${picked.length + i + 1}`}
+              aria-label={t("Choose profile favorite {value0}", {
+                value0: picked.length + i + 1,
+              })}
             >
               <Plus size={20} />
               <span>{String(picked.length + i + 1).padStart(2, "0")}</span>
@@ -147,7 +166,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
       {recent.length > 0 && (
         <section className="home-section">
           <div className="section-heading">
-            <h2>Recently watched</h2>
+            <h2>{t("Recently watched")}</h2>
           </div>
           <div className="poster-grid">
             {recent.map((e) => (
@@ -159,7 +178,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
       {rated.length > 0 && (
         <section className="home-section">
           <div className="section-heading">
-            <h2>Held in high regard.</h2>
+            <h2>{t("Held in high regard.")}</h2>
           </div>
           <div className="poster-grid">
             {rated.map((e) => (
@@ -170,13 +189,13 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
       )}
       <section className="home-section">
         <div className="section-heading">
-          <h2>Curated lists</h2>
+          <h2>{t("Curated lists")}</h2>
           <button
             className="text-button"
             onClick={() => void store.prefs({ section: "Lists" })}
           >
-            All lists
-            <ArrowUpRight size={14} />
+            {" "}
+            {t("All lists")} <ArrowUpRight size={14} />
           </button>
         </div>
         <div className="profile-lists">
@@ -187,7 +206,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             >
               <span>{l.title}</span>
               <small>
-                {l.entryIds.length} titles · {l.privacy}
+                {l.entryIds.length} {t("titles ·")} {l.privacy}
               </small>
               <ArrowUpRight size={16} />
             </button>
@@ -196,7 +215,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
       </section>
       <section className="home-section">
         <div className="section-heading">
-          <h2>In your words.</h2>
+          <h2>{t("In your words.")}</h2>
         </div>
         {reviews.length ? (
           reviews.map((e) => (
@@ -213,7 +232,8 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                   className="text-button"
                   onClick={() => setRevealed((ids) => [...ids, e.localId])}
                 >
-                  Reveal spoiler review
+                  {" "}
+                  {t("Reveal spoiler review")}{" "}
                 </button>
               ) : (
                 <p className="prose">
@@ -226,23 +246,27 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             </article>
           ))
         ) : (
-          <p className="prose muted">No reviews yet.</p>
+          <p className="prose muted">{t("No reviews yet.")}</p>
         )}
       </section>
       {editing && (
-        <Modal title="Your local profile" onClose={() => setEditing(false)}>
+        <Modal
+          title={t("Your local profile")}
+          onClose={() => setEditing(false)}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
               void store
                 .mutate((d) => ({ ...d, profile: draft }))
-                .then(() => {
-                  if (!useApp.getState().error) setEditing(false);
+                .then((result) => {
+                  if (result.ok) setEditing(false);
                 });
             }}
           >
             <label className="field">
-              Display name
+              {" "}
+              {t("Display name")}{" "}
               <input
                 required
                 maxLength={100}
@@ -253,7 +277,8 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               />
             </label>
             <label className="field">
-              Username
+              {" "}
+              {t("Username")}{" "}
               <input
                 required
                 pattern="[a-zA-Z0-9_-]{1,40}"
@@ -265,7 +290,8 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               />
             </label>
             <label className="field">
-              Bio
+              {" "}
+              {t("Bio")}{" "}
               <textarea
                 rows={3}
                 maxLength={2000}
@@ -277,12 +303,13 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
               {draft.avatar && !avatarSource && (
                 <Artwork
                   src={draft.avatar}
-                  title="Profile photo preview"
+                  title={t("Profile photo preview")}
                   eager
                 />
               )}
               <label className="field">
-                Upload profile photo
+                {" "}
+                {t("Upload profile photo")}{" "}
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -321,7 +348,8 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                     setAvatarSource(null);
                   }}
                 >
-                  Remove photo
+                  {" "}
+                  {t("Remove photo")}{" "}
                 </button>
               )}
             </div>
@@ -334,16 +362,18 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             )}
             {avatarError && <p role="alert">{avatarError}</p>}
             <label className="field">
-              Avatar URL
+              {" "}
+              {t("Avatar URL")}{" "}
               <input
                 type="url"
-                placeholder="https://…"
+                placeholder={t("https://…")}
                 value={draft.avatar.startsWith("data:") ? "" : draft.avatar}
                 onChange={(e) => setDraft({ ...draft, avatar: e.target.value })}
               />
             </label>
             <label className="field">
-              Profile visibility
+              {" "}
+              {t("Profile visibility")}{" "}
               <select
                 value={draft.privacy}
                 onChange={(e) =>
@@ -354,13 +384,16 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                 }
               >
                 {privacyValues.map((v) => (
-                  <option key={v}>{v}</option>
+                  <option key={v} value={v}>
+                    {t(v)}
+                  </option>
                 ))}
               </select>
             </label>
             <div className="form-actions">
               <button className="button primary" disabled={avatarBusy}>
-                Save profile
+                {" "}
+                {t("Save profile")}{" "}
               </button>
             </div>
           </form>
@@ -368,22 +401,23 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
       )}
       {favorites && (
         <Modal
-          title={`Choose favorites · ${picked.length}/6`}
+          title={t("Choose favorites · {value0}/6", { value0: picked.length })}
           onClose={() => setFavorites(false)}
           wide
         >
           <label className="field favorite-search">
-            Find an anime
+            {" "}
+            {t("Find an anime")}{" "}
             <input
               type="search"
               autoFocus
               value={favoriteQuery}
               onChange={(e) => setFavoriteQuery(e.target.value)}
-              placeholder="Search your library"
+              placeholder={t("Search your library")}
             />
           </label>
           {entries.length > 0 && !visibleFavorites.length && (
-            <p className="prose">No matching anime.</p>
+            <p className="prose">{t("No matching anime.")}</p>
           )}
           {entries.length ? (
             <div className="picker-list">
@@ -418,37 +452,48 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
             </div>
           ) : (
             <Empty
-              title="Start with your library."
-              text="Add anime before choosing your six favorites."
+              title={t("Start with your library.")}
+              text={t("Add anime before choosing your six favorites.")}
             />
           )}
           <button className="button full" onClick={() => setFavorites(false)}>
-            Done
+            {" "}
+            {t("Done")}{" "}
           </button>
         </Modal>
       )}
       {sharing && (
-        <Modal title="Share profile" onClose={() => setSharing(false)}>
+        <Modal title={t("Share profile")} onClose={() => setSharing(false)}>
           <p className="prose">
-            Your shared profile includes your bio, six chosen favorites and
-            public list links. Your private notes and viewing diary stay here.
+            {" "}
+            {t(
+              "Your shared profile includes your bio, six chosen favorites and public list links. Your private notes and viewing diary stay here.",
+            )}{" "}
           </p>
-          <p>Visibility: {profile.privacy}</p>
+          <p>
+            {t("Visibility:")} {profile.privacy}
+          </p>
           {social.configured ? (
             <button className="button primary" onClick={() => void publish()}>
               {profile.privacy === "Private"
-                ? "Remove online publication"
-                : "Publish profile"}
+                ? t("Remove online publication")
+                : t("Publish profile")}
             </button>
           ) : (
             <p className="configuration-note">
-              Online sharing: Not configured. Configure your optional Supabase
-              project to publish.
+              {" "}
+              {t(
+                "Online sharing: Not configured. Configure your optional Supabase project to publish.",
+              )}{" "}
             </p>
           )}
           {link && (
             <div className="share-link">
-              <input readOnly aria-label="Profile share link" value={link} />
+              <input
+                readOnly
+                aria-label={t("Profile share link")}
+                value={link}
+              />
               <button
                 className="button"
                 onClick={() =>
@@ -457,7 +502,8 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                     .then(() => store.notify("Link copied."))
                 }
               >
-                Copy link
+                {" "}
+                {t("Copy link")}{" "}
               </button>
               <a
                 href={link}
@@ -465,7 +511,8 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
                 rel="noreferrer"
                 className="button"
               >
-                Open public view
+                {" "}
+                {t("Open public view")}{" "}
               </a>
             </div>
           )}

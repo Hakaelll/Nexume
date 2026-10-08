@@ -1,9 +1,12 @@
+import { usePageActive } from "./activity";
 import { useEffect, useState } from "react";
 import { useApp } from "../app/store";
 import { anilist } from "../services/anilist/provider";
 // Refresh ongoing shows in one batch so cached next-airing dates do not become
 // an indefinite availability ceiling after the next episode is released.
 export function useRefreshEpisodes(active: boolean, now: number) {
+  const pageActive = usePageActive();
+  active = active && pageActive;
   const entries = useApp((state) => state.data.entries);
   const ids = JSON.stringify(
     entries
@@ -55,6 +58,8 @@ export function useRefreshEpisodes(active: boolean, now: number) {
   }, [active, ids, interval]);
 }
 export function useClock(active = true) {
+  const pageActive = usePageActive();
+  active = active && pageActive;
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!active) return;
@@ -107,6 +112,8 @@ export function useAiring(
   followedOnly = false,
   active = true,
 ) {
+  const pageActive = usePageActive();
+  active = active && pageActive;
   const entries = useApp((state) => state.data.entries);
   const adult = useApp((state) => state.data.preferences.adultContent);
   const following = entries.filter((e) =>

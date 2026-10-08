@@ -1,3 +1,5 @@
+import { t, useLanguage } from "../../core/i18n";
+import { useShallow } from "zustand/react/shallow";
 import { useState } from "react";
 import { Share2 } from "lucide-react";
 import { type Entry, id } from "../../domain/model";
@@ -7,7 +9,23 @@ import { social, publicLink } from "../../services/social/provider";
 import { serializeReview } from "../../services/social/serialization";
 import { enqueue, flushQueue } from "../../services/social/sync";
 export function ShareReview({ entry }: { entry: Entry }) {
-  const store = useApp();
+  useLanguage();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      add: state.add,
+      addMany: state.addMany,
+      edit: state.edit,
+      remove: state.remove,
+      episodes: state.episodes,
+      adjustEpisodes: state.adjustEpisodes,
+      complete: state.complete,
+      rewatch: state.rewatch,
+      notify: state.notify,
+    })),
+  );
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
   const publish = async () => {
@@ -39,33 +57,40 @@ export function ShareReview({ entry }: { entry: Entry }) {
   return (
     <>
       <button className="text-button" onClick={() => setOpen(true)}>
-        <Share2 size={13} />
-        Share review
+        <Share2 size={13} /> {t("Share review")}{" "}
       </button>
       {open && (
-        <Modal title="Share your words" onClose={() => setOpen(false)}>
+        <Modal title={t("Share your words")} onClose={() => setOpen(false)}>
           <p className="prose">
-            Publish this review, your rating and quick thought. Spoilers stay
-            hidden until the reader reveals them. Private notes are never
-            included.
+            {" "}
+            {t(
+              "Publish this review, your rating and quick thought. Spoilers stay hidden until the reader reveals them. Private notes are never included.",
+            )}{" "}
           </p>
           <p className="muted">
-            Visibility: {entry.reviewPrivacy}. Change it in the review editor.
+            {" "}
+            {t("Visibility:")} {entry.reviewPrivacy}
+            {t(". Change it in the review editor.")}{" "}
           </p>
           {social.configured ? (
             <button className="button primary" onClick={() => void publish()}>
               {entry.reviewPrivacy === "Private"
-                ? "Remove online review"
-                : "Publish review"}
+                ? t("Remove online review")
+                : t("Publish review")}
             </button>
           ) : (
             <p className="configuration-note">
-              Online sharing: Not configured.
+              {" "}
+              {t("Online sharing: Not configured.")}{" "}
             </p>
           )}
           {link && (
             <div className="share-link">
-              <input readOnly value={link} aria-label="Review share link" />
+              <input
+                readOnly
+                value={link}
+                aria-label={t("Review share link")}
+              />
               <button
                 className="button"
                 onClick={() =>
@@ -74,7 +99,8 @@ export function ShareReview({ entry }: { entry: Entry }) {
                     .then(() => store.notify("Link copied."))
                 }
               >
-                Copy link
+                {" "}
+                {t("Copy link")}{" "}
               </button>
               <a
                 className="button"
@@ -82,7 +108,8 @@ export function ShareReview({ entry }: { entry: Entry }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                Open public review
+                {" "}
+                {t("Open public review")}{" "}
               </a>
             </div>
           )}

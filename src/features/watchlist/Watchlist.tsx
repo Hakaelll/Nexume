@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../../core/i18n";
 import { openRecommend } from "../../app/session";
 import { useMemo, useState } from "react";
 import { BookmarkPlus, Play, Shuffle, Search } from "lucide-react";
@@ -11,6 +12,7 @@ export default function Watchlist({
   onOpen: (e: Entry) => void;
   onSearch: () => void;
 }) {
+  useLanguage();
   const libraryEntries = useApp((state) => state.data.entries);
   const edit = useApp((state) => state.edit);
   const [query, setQuery] = useState("");
@@ -45,42 +47,43 @@ export default function Watchlist({
   return (
     <div className="page watchlist-page">
       <PageTitle
-        title="Watchlist"
-        subtitle={`${planned.length} anime to watch`}
+        title={t("Watchlist")}
+        subtitle={t("{value0} anime to watch", { value0: planned.length })}
       >
         <button className="button primary" onClick={onSearch}>
-          <BookmarkPlus size={16} />
-          Add anime
+          <BookmarkPlus size={16} /> {t("Add anime")}{" "}
         </button>
       </PageTitle>
       <div className="watchlist-toolbar">
         <label className="library-search">
           <Search size={15} />
           <input
-            aria-label="Search Watchlist"
-            placeholder="Find an anime"
+            aria-label={t("Search Watchlist")}
+            placeholder={t("Find an anime")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
         <select
-          aria-label="Watchlist genre"
+          aria-label={t("Watchlist genre")}
           value={genre}
           onChange={(e) => setGenre(e.target.value)}
         >
-          <option value="">All genres</option>
+          <option value="">{t("All genres")}</option>
           {genres.map((g) => (
-            <option key={g}>{g}</option>
+            <option key={g} value={g}>
+              {t(g)}
+            </option>
           ))}
         </select>
         <select
-          aria-label="Sort Watchlist"
+          aria-label={t("Sort Watchlist")}
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
-          <option value="added">Recently added</option>
-          <option value="title">Title</option>
-          <option value="priority">Priority</option>
+          <option value="added">{t("Recently added")}</option>
+          <option value="title">{t("Title")}</option>
+          <option value="priority">{t("Priority")}</option>
         </select>
         <button
           className="text-button"
@@ -93,8 +96,7 @@ export default function Watchlist({
             })
           }
         >
-          <Shuffle size={15} />
-          Pick for me
+          <Shuffle size={15} /> {t("Pick for me")}{" "}
         </button>
       </div>
       {entries.length ? (
@@ -109,11 +111,12 @@ export default function Watchlist({
                     void edit(e.localId, { personalStatus: "Watching" })
                   }
                 >
-                  <Play size={13} />
-                  Start watching
+                  <Play size={13} /> {t("Start watching")}{" "}
                 </button>
                 <select
-                  aria-label={`Priority for ${e.preferredTitle}`}
+                  aria-label={t("Priority for {value0}", {
+                    value0: e.preferredTitle,
+                  })}
                   value={e.priority}
                   onChange={(event) =>
                     void edit(e.localId, {
@@ -121,10 +124,10 @@ export default function Watchlist({
                     })
                   }
                 >
-                  <option value="0">Normal</option>
-                  <option value="1">Soon</option>
-                  <option value="2">Next up</option>
-                  <option value="3">Top priority</option>
+                  <option value="0">{t("Normal")}</option>
+                  <option value="1">{t("Soon")}</option>
+                  <option value="2">{t("Next up")}</option>
+                  <option value="3">{t("Top priority")}</option>
                 </select>
               </div>
             </div>
@@ -132,13 +135,15 @@ export default function Watchlist({
         </div>
       ) : (
         <Empty
-          title={planned.length ? "No matches" : "Your Watchlist is empty"}
+          title={
+            planned.length ? t("No matches") : t("Your Watchlist is empty")
+          }
           text={
             planned.length
               ? "Try another filter."
               : "Save anime here to watch later."
           }
-          action="Add anime"
+          action={t("Add anime")}
           onAction={onSearch}
         />
       )}

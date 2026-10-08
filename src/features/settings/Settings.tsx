@@ -1,3 +1,5 @@
+import { t, useLanguage } from "../../core/i18n";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useState } from "react";
 import { Download, Upload, RefreshCw, LogOut, Check } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -15,7 +17,23 @@ import { flushQueue } from "../../services/social/sync";
 import { anilist } from "../../services/anilist/provider";
 import { version } from "../../../package.json";
 export default function Settings({ onSample }: { onSample: () => void }) {
-  const store = useApp();
+  useLanguage();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      add: state.add,
+      addMany: state.addMany,
+      edit: state.edit,
+      remove: state.remove,
+      episodes: state.episodes,
+      adjustEpisodes: state.adjustEpisodes,
+      complete: state.complete,
+      rewatch: state.rewatch,
+      notify: state.notify,
+    })),
+  );
   const p = store.data.preferences;
   const [incoming, setIncoming] = useState<AppData | null>(null);
   const [restoreMode, setRestoreMode] = useState<"merge" | "replace">("merge");
@@ -60,7 +78,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
         snapshot,
       );
       if (!saved) return;
-      await store.mutate((d) =>
+      const result = await store.mutate((d) =>
         restoreMode === "merge"
           ? mergeBackup(d, incoming)
           : {
@@ -69,7 +87,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
               preferences: { ...incoming.preferences, publications: [] },
             },
       );
-      if (!useApp.getState().error) {
+      if (result.ok) {
         setIncoming(null);
         store.notify("Collection restored.");
       }
@@ -97,7 +115,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
       const metadata = await anilist.byIds(
         store.data.entries.map((e) => e.anilistId),
       );
-      await store.mutate((d) => ({
+      const result = await store.mutate((d) => ({
         ...d,
         entries: d.entries.map((e) => {
           const m = metadata.find((m) => m.anilistId === e.anilistId);
@@ -116,7 +134,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
             : e;
         }),
       }));
-      store.notify(`Refreshed ${metadata.length} titles.`);
+      if (result.ok) store.notify(`Refreshed ${metadata.length} titles.`);
     } catch (e) {
       report(e);
     } finally {
@@ -125,14 +143,57 @@ export default function Settings({ onSample }: { onSample: () => void }) {
   };
   return (
     <div className="page settings-page">
-      <PageTitle title="Settings" />
+      <PageTitle title={t("Settings")} />
       <section className="settings-section">
         <div>
-          <h2>Collection & display</h2>
+          <h2>{t("Collection & display")}</h2>
         </div>
         <div className="settings-controls">
           <label className="setting-row">
-            <span>Graphics quality</span>
+            <span>{t("Theme")}</span>
+            <select
+              aria-label={t("Theme")}
+              value={p.theme}
+              onChange={(e) =>
+                void store.prefs({ theme: e.target.value as typeof p.theme })
+              }
+            >
+              <option value="light">{t("Light")}</option>
+              <option value="dark">{t("Dark")}</option>
+              <option value="system">{t("System")}</option>
+            </select>
+          </label>
+          <label className="setting-row">
+            <span>{t("Language")}</span>
+            <select
+              aria-label={t("Language")}
+              value={p.language}
+              onChange={(e) =>
+                void store.prefs({
+                  language: e.target.value as typeof p.language,
+                })
+              }
+            >
+              <option value="system">{t("System")}</option>
+              <option value="es">{t("Español")}</option>
+              <option value="en">{t("English")}</option>
+            </select>
+          </label>
+          <div className="setting-row">
+            <span>
+              {t("Hidden recommendations")}{" "}
+              <small>{p.hiddenRecommendations.length}</small>
+            </span>
+            <button
+              className="button"
+              disabled={!p.hiddenRecommendations.length}
+              onClick={() => void store.prefs({ hiddenRecommendations: [] })}
+            >
+              {t("Restore recommendations")}
+            </button>
+          </div>
+          <label className="setting-row">
+            <span>{t("Graphics quality")}</span>
             <select
               value={p.quality}
               onChange={(e) =>
@@ -142,19 +203,25 @@ export default function Settings({ onSample }: { onSample: () => void }) {
               }
             >
               {["High", "Balanced", "Low"].map((v) => (
-                <option key={v}>{v}</option>
+                <option key={v} value={v}>
+                  {t(v)}
+                </option>
               ))}
             </select>
           </label>
           <label className="setting-row">
             <span>
-              Animations
+              {" "}
+              {t("Animations")}{" "}
               <small>
-                Full animations also work when Windows reduces motion.
+                {" "}
+                {t(
+                  "Full animations also work when Windows reduces motion.",
+                )}{" "}
               </small>
             </span>
             <select
-              aria-label="Animations"
+              aria-label={t("Animations")}
               value={p.reducedMotion ? "reduced" : p.motionMode}
               onChange={(e) =>
                 void store.prefs({
@@ -163,15 +230,16 @@ export default function Settings({ onSample }: { onSample: () => void }) {
                 })
               }
             >
-              <option value="system">Follow system</option>
-              <option value="full">Full animations</option>
-              <option value="reduced">Reduced motion</option>
+              <option value="system">{t("Follow system")}</option>
+              <option value="full">{t("Full animations")}</option>
+              <option value="reduced">{t("Reduced motion")}</option>
             </select>
           </label>
           <label className="setting-row">
             <span>
-              Graphics diagnostics
-              <small>Frame time, draw calls and active resources.</small>
+              {" "}
+              {t("Graphics diagnostics")}{" "}
+              <small>{t("Frame time, draw calls and active resources.")}</small>
             </span>
             <input
               type="checkbox"
@@ -182,7 +250,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
             />
           </label>
           <label className="setting-row">
-            <span>Include adult anime in online results</span>
+            <span>{t("Include adult anime in online results")}</span>
             <input
               type="checkbox"
               checked={p.adultContent}
@@ -195,26 +263,34 @@ export default function Settings({ onSample }: { onSample: () => void }) {
       </section>
       <section className="settings-section">
         <div>
-          <h2>Data & backups</h2>
+          <h2>{t("Data & backups")}</h2>
           <p>
             {native
-              ? "Saved on this computer."
-              : "Browser preview · stored in this browser, separately from the Windows app."}
+              ? t("Saved on this computer.")
+              : t(
+                  "Browser preview · stored in this browser, separately from the Windows app.",
+                )}
           </p>
         </div>
         <div className="settings-controls">
           <button className="setting-action" onClick={() => void backup()}>
             <Download size={18} />
             <span>
-              Export Nexume backup
-              <small>Library, ratings, reviews, lists and profile.</small>
+              {" "}
+              {t("Export Nexume backup")}{" "}
+              <small>
+                {t("Library, ratings, reviews, lists and profile.")}
+              </small>
             </span>
           </button>
           <button className="setting-action" onClick={() => void load()}>
             <Upload size={18} />
             <span>
-              Restore a backup
-              <small>Preview its contents before merging or replacing.</small>
+              {" "}
+              {t("Restore a backup")}{" "}
+              <small>
+                {t("Preview its contents before merging or replacing.")}
+              </small>
             </span>
           </button>
           <button
@@ -227,7 +303,9 @@ export default function Settings({ onSample }: { onSample: () => void }) {
           >
             <Download size={18} />
             <span>
-              Export library as CSV<small>Portable tabular data.</small>
+              {" "}
+              {t("Export library as CSV")}
+              <small>{t("Portable tabular data.")}</small>
             </span>
           </button>
           <button
@@ -237,42 +315,48 @@ export default function Settings({ onSample }: { onSample: () => void }) {
           >
             <RefreshCw size={18} />
             <span>
-              Refresh cached metadata
+              {" "}
+              {t("Refresh cached metadata")}{" "}
               <small>
-                Updates artwork and schedules without changing your opinions.
+                {" "}
+                {t(
+                  "Updates artwork and schedules without changing your opinions.",
+                )}{" "}
               </small>
             </span>
           </button>
           <button className="setting-action" onClick={onSample}>
             <PlusSymbol />
             <span>
-              Load a sample collection
-              <small>Optional sample records for trying the app.</small>
+              {" "}
+              {t("Load a sample collection")}{" "}
+              <small>{t("Optional sample records for trying the app.")}</small>
             </span>
           </button>
         </div>
       </section>
       <section className="settings-section">
         <div>
-          <h2>Sharing</h2>
+          <h2>{t("Sharing")}</h2>
         </div>
         <div className="settings-controls">
           {!social.configured ? (
             <div className="configuration-note">
-              <h3>Online sharing: Not configured</h3>
+              <h3>{t("Online sharing: Not configured")}</h3>
               <details>
-                <summary>Setup</summary>
+                <summary>{t("Setup")}</summary>
                 <p>
-                  Configure Supabase and a public viewer URL as described in
-                  README.md.
+                  {" "}
+                  {t(
+                    "Configure Supabase and a public viewer URL as described in README.md.",
+                  )}{" "}
                 </p>
               </details>
             </div>
           ) : identity ? (
             <>
               <p>
-                <Check size={14} />
-                Signed in as {identity.email}
+                <Check size={14} /> {t("Signed in as")} {identity.email}
               </p>
               <button
                 className="button"
@@ -283,8 +367,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
                     .catch(report)
                 }
               >
-                <LogOut size={15} />
-                Sign out
+                <LogOut size={15} /> {t("Sign out")}{" "}
               </button>
             </>
           ) : (
@@ -295,7 +378,8 @@ export default function Settings({ onSample }: { onSample: () => void }) {
               }}
             >
               <label className="field">
-                Email
+                {" "}
+                {t("Email")}{" "}
                 <input
                   type="email"
                   autoComplete="email"
@@ -305,7 +389,8 @@ export default function Settings({ onSample }: { onSample: () => void }) {
                 />
               </label>
               <label className="field">
-                Password
+                {" "}
+                {t("Password")}{" "}
                 <input
                   type="password"
                   autoComplete="current-password"
@@ -322,10 +407,12 @@ export default function Settings({ onSample }: { onSample: () => void }) {
                   disabled={busy || !email || password.length < 8}
                   onClick={() => void auth(true)}
                 >
-                  Create account
+                  {" "}
+                  {t("Create account")}{" "}
                 </button>
                 <button className="button primary" disabled={busy}>
-                  Sign in
+                  {" "}
+                  {t("Sign in")}{" "}
                 </button>
               </div>
             </form>
@@ -333,10 +420,12 @@ export default function Settings({ onSample }: { onSample: () => void }) {
           {message && <p role="status">{message}</p>}
           {store.data.queue.length > 0 && (
             <div className="sync-status">
-              <h3>{store.data.queue.length} pending updates</h3>
+              <h3>
+                {store.data.queue.length} {t("pending updates")}
+              </h3>
               {store.data.queue.map((q) => (
                 <p key={q.id}>
-                  {q.kind} · {q.attempts} attempts{" "}
+                  {q.kind} · {q.attempts} {t("attempts")}{" "}
                   {q.error && <small>{q.error}</small>}
                 </p>
               ))}
@@ -345,7 +434,8 @@ export default function Settings({ onSample }: { onSample: () => void }) {
                 disabled={!navigator.onLine || !identity}
                 onClick={() => void flushQueue(true)}
               >
-                Retry pending sync
+                {" "}
+                {t("Retry pending sync")}{" "}
               </button>
             </div>
           )}
@@ -353,7 +443,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
       </section>
       <section className="settings-section">
         <div>
-          <h2>Keyboard shortcuts</h2>
+          <h2>{t("Keyboard shortcuts")}</h2>
         </div>
         <dl className="shortcut-list">
           {[
@@ -381,24 +471,27 @@ export default function Settings({ onSample }: { onSample: () => void }) {
         <img src="/brand/logo.png" alt="Nexume logo" />
         <div>
           <h2>
-            Nexume <small>{version}</small>
+            {" "}
+            {t("Nexume")} <small>{version}</small>
           </h2>
-          <span>Metadata by AniList</span>
+          <span>{t("Metadata by AniList")}</span>
         </div>
       </footer>
       {incoming && (
         <Modal
-          title="Restore your collection"
+          title={t("Restore your collection")}
           onClose={() => setIncoming(null)}
         >
           <p className="prose">
-            This backup contains {incoming.entries.length} anime,{" "}
-            {incoming.entries.filter((e) => e.review).length} reviews,{" "}
-            {incoming.lists.length} lists and {incoming.history.length} diary
-            events.
+            {" "}
+            {t("This backup contains")} {incoming.entries.length} {t("anime,")}{" "}
+            {incoming.entries.filter((e) => e.review).length} {t("reviews,")}{" "}
+            {incoming.lists.length} {t("lists and")} {incoming.history.length}{" "}
+            {t("diary events.")}{" "}
           </p>
           <label className="field">
-            Restore method
+            {" "}
+            {t("Restore method")}{" "}
             <select
               value={restoreMode}
               onChange={(e) =>
@@ -406,21 +499,28 @@ export default function Settings({ onSample }: { onSample: () => void }) {
               }
             >
               <option value="merge">
-                Merge — keep existing personal records
+                {" "}
+                {t("Merge — keep existing personal records")}{" "}
               </option>
-              <option value="replace">Replace this local collection</option>
+              <option value="replace">
+                {t("Replace this local collection")}
+              </option>
             </select>
           </label>
           <p className="muted">
-            First, save a backup of your current collection. Cancelling the save
-            cancels the restore. Online sessions are not imported.
+            {" "}
+            {t(
+              "First, save a backup of your current collection. Cancelling the save cancels the restore. Online sessions are not imported.",
+            )}{" "}
           </p>
           <div className="form-actions">
             <button className="button" onClick={() => setIncoming(null)}>
-              Cancel
+              {" "}
+              {t("Cancel")}{" "}
             </button>
             <button className="button primary" onClick={() => void restore()}>
-              Save backup & restore
+              {" "}
+              {t("Save backup & restore")}{" "}
             </button>
           </div>
         </Modal>
@@ -429,5 +529,6 @@ export default function Settings({ onSample }: { onSample: () => void }) {
   );
 }
 function PlusSymbol() {
+  useLanguage();
   return <span className="plus-symbol">+</span>;
 }

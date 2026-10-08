@@ -6,7 +6,7 @@ Nexume is a Windows desktop application that brings your anime collection, viewi
 
 Your collection is saved locally on your computer. No account is required to manage your library, and online discovery connects to AniList for anime metadata and airing schedules.
 
-[Download for Windows](https://github.com/Hakaelll/Nexume/releases) · [Release notes](docs/RELEASE-0.8.1.md) · [Development](#development)
+[Download for Windows](https://github.com/Hakaelll/Nexume/releases) · [Release notes](docs/RELEASE-0.9.0.md) · [Development](#development)
 
 ![Nexume Discover view with anime artwork and browsing controls](docs/images/gallery-discover.png)
 
@@ -24,6 +24,8 @@ Browse your anime in an interactive 3D collection, a poster grid, or a compact t
 - Customize your local profile with an avatar, a bio, and favorite anime.
 
 ### Decide what to watch next
+
+**For you** offers deterministic recommendations from your favorites, likes and ratings of at least 8/10. Hide proposals you do not want and restore them in Settings. Local search, light/dark/system themes and Spanish/English preferences work with your existing collection.
 
 **Home** brings ongoing titles into a Continue watching shelf and highlights anime with aired episodes left to watch. Your **Watchlist** keeps planned titles organized with genre filters and priorities.
 

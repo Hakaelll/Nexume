@@ -73,17 +73,20 @@ test("all-anime draws use catalog IDs, cancel safely and reveal a result", async
   await page.goto("/");
   await expect(page.locator(".splash")).toHaveCount(0);
   await page.getByRole("button", { name: "Recommend", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Explore & shuffle", exact: true })
+    .click();
   await page.getByLabel("Choose from").selectOption("AniList");
   await page
     .getByRole("button", { name: "Pick an anime", exact: true })
     .click();
-  await expect(
-    page.locator(".recommendation-result.is-revealed"),
-  ).toBeVisible({ timeout: 10000 });
+  await expect(page.locator(".recommendation-result.is-revealed")).toBeVisible({
+    timeout: 10000,
+  });
   await page.getByRole("button", { name: "Pick another", exact: true }).click();
-  await expect(
-    page.locator(".recommendation-result.is-revealed"),
-  ).toBeVisible({ timeout: 10000 });
+  await expect(page.locator(".recommendation-result.is-revealed")).toBeVisible({
+    timeout: 10000,
+  });
   expect(draws).toBe(2);
   await page.screenshot({ path: "test-results/gallery-random.png" });
 });

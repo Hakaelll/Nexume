@@ -21,6 +21,9 @@ test("filtered random selection, Watchlist actions, compact search and visual st
     (await page.locator(".topbar").boundingBox())!.height,
   ).toBeLessThanOrEqual(56);
   await page.getByRole("button", { name: "Recommend", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Explore & shuffle", exact: true })
+    .click();
   await page.getByLabel("Choose from").selectOption("Sample catalog");
   await page
     .getByRole("combobox", { name: "Genre", exact: true })
@@ -64,11 +67,14 @@ test("filtered random selection, Watchlist actions, compact search and visual st
   await page.getByRole("button", { name: "6 months", exact: true }).click();
   await expect(page.locator(".activity-chart circle")).toHaveCount(6);
   await page.screenshot({ path: "test-results/statistics.png" });
-  await page.getByLabel("Search anime catalog").fill("Cowboy Bebop");
-  await page.getByLabel("Search anime catalog").press("Enter");
+  await page.keyboard.press("Control+k");
+  await page.getByRole("dialog").getByRole("combobox").fill("Cowboy Bebop");
   await expect(page.getByRole("dialog")).toContainText("Cowboy Bebop");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Recommend", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Explore & shuffle", exact: true })
+    .click();
   await page.getByLabel("Choose from").selectOption("Sample catalog");
   await page.getByLabel("Released since").fill("2099");
   await expect(

@@ -17,6 +17,7 @@ import {
   id,
 } from "../domain/model";
 import { setEpisodes, completeEntry, event } from "../domain/rules";
+export type MutationResult = { ok: true } | { ok: false; error: string };
 type Store = {
   data: AppData;
   ready: boolean;
@@ -24,20 +25,20 @@ type Store = {
   notice: string;
   saving: boolean;
   init: () => Promise<void>;
-  mutate: (fn: (data: AppData) => AppData) => Promise<void>;
-  prefs: (p: Partial<Preferences>) => Promise<void>;
-  add: (anime: Anime) => Promise<void>;
-  addMany: (anime: Anime[]) => Promise<void>;
-  edit: (id: string, patch: Partial<Entry>) => Promise<void>;
-  episodes: (id: string, n: number) => Promise<void>;
-  adjustEpisodes: (id: string, delta: number) => Promise<void>;
-  complete: (id: string) => Promise<void>;
-  rewatch: (id: string) => Promise<void>;
-  remove: (id: string) => Promise<void>;
+  mutate: (fn: (data: AppData) => AppData) => Promise<MutationResult>;
+  prefs: (p: Partial<Preferences>) => Promise<MutationResult>;
+  add: (anime: Anime) => Promise<MutationResult>;
+  addMany: (anime: Anime[]) => Promise<MutationResult>;
+  edit: (id: string, patch: Partial<Entry>) => Promise<MutationResult>;
+  episodes: (id: string, n: number) => Promise<MutationResult>;
+  adjustEpisodes: (id: string, delta: number) => Promise<MutationResult>;
+  complete: (id: string) => Promise<MutationResult>;
+  rewatch: (id: string) => Promise<MutationResult>;
+  remove: (id: string) => Promise<MutationResult>;
   notify: (message: string) => void;
 };
 let chain: Promise<void> = Promise.resolve();
-let pendingPreferences: Promise<void> | null = null;
+let pendingPreferences: Promise<MutationResult> | null = null;
 let initPromise: Promise<void> | null = null;
 let preferenceRevision = 0;
 const preferenceChanges = new Map<keyof Preferences, number>();
@@ -66,7 +67,7 @@ export const useApp = create<Store>((set, get) => ({
     const job = chain.then(async () => {
       if (!get().ready) throw new Error("Your collection is not ready.");
       const next = fn(get().data);
-      if (next === get().data) return;
+      if (next === get().data) return { ok: true } as const;
       set({ saving: true });
       const previousRevision = preferenceRevision;
       const data = validateSnapshot(reconcilePublications(next));
@@ -84,21 +85,33 @@ export const useApp = create<Store>((set, get) => ({
         saving: false,
         error: "",
       });
+      return { ok: true } as const;
     });
-    chain = job.catch((e) => {
+    const result = job.catch((e) => {
+      const error = `Changes were not saved. ${e instanceof Error ? e.message : String(e)}`;
       set({
         saving: false,
-        error: `Changes were not saved. ${e instanceof Error ? e.message : String(e)}`,
+        error,
       });
+      return { ok: false, error } as const;
     });
-    return chain;
+    chain = result.then(() => {});
+    return result;
   },
   prefs: (p) => {
-    if (!get().ready) return Promise.resolve();
-    const preferences = validatePreferences({
-      ...get().data.preferences,
-      ...p,
-    });
+    if (!get().ready)
+      return Promise.resolve({
+        ok: false,
+        error: "Your collection is not ready.",
+      });
+    let preferences: Preferences;
+    try {
+      preferences = validatePreferences({ ...get().data.preferences, ...p });
+    } catch (e) {
+      const error = `Preferences were not saved. ${e instanceof Error ? e.message : String(e)}`;
+      set({ error });
+      return Promise.resolve({ ok: false, error });
+    }
     for (const key of Object.keys(p) as (keyof Preferences)[])
       preferenceChanges.set(key, ++preferenceRevision);
     set({ data: { ...get().data, preferences } });
@@ -107,12 +120,16 @@ export const useApp = create<Store>((set, get) => ({
     const job = chain.then(async () => {
       if (pendingPreferences === saved) pendingPreferences = null;
       await repository.savePreferences(get().data.preferences);
+      set({ error: "" });
+      return { ok: true } as const;
     });
-    const saved = job.catch((e) =>
-      set({ error: `Preferences were not saved. ${String(e)}` }),
-    );
+    const saved = job.catch((e) => {
+      const error = `Preferences were not saved. ${String(e)}`;
+      set({ error });
+      return { ok: false, error } as const;
+    });
     pendingPreferences = saved;
-    chain = saved;
+    chain = saved.then(() => {});
     return saved;
   },
   add: (anime) =>

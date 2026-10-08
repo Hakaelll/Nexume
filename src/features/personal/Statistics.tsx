@@ -1,3 +1,4 @@
+import { t, useLanguage, resolveLanguage } from "../../core/i18n";
 import { useState, useMemo, memo } from "react";
 import { Clock3, Clapperboard, Star, CheckCircle2 } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -19,6 +20,7 @@ function HorizontalChart({
   title: string;
   items: [string, number][];
 }) {
+  useLanguage();
   const maximum = Math.max(1, ...items.map((i) => i[1]));
   return (
     <section className="chart-panel">
@@ -41,7 +43,7 @@ function HorizontalChart({
           ))}
         </div>
       ) : (
-        <p className="chart-empty">No data yet</p>
+        <p className="chart-empty">{t("No data yet")}</p>
       )}
     </section>
   );
@@ -78,7 +80,10 @@ export default memo(function Statistics() {
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     return {
       key,
-      label: date.toLocaleDateString("en", { month: "short" }),
+      label: date.toLocaleDateString(
+        resolveLanguage(useApp.getState().data.preferences.language),
+        { month: "short" },
+      ),
       count: activityByMonth.get(key) ?? 0,
     };
   });
@@ -95,7 +100,7 @@ export default memo(function Statistics() {
   const maxRating = Math.max(1, ...stats.ratings.map((r) => r[1]));
   return (
     <div className="page statistics-page">
-      <PageTitle title="Statistics" />
+      <PageTitle title={t("Statistics")} />
       <div className="statistics-summary">
         {[
           [Clapperboard, stats.total, "Anime"],
@@ -117,7 +122,7 @@ export default memo(function Statistics() {
       </div>
       <div className="statistics-primary">
         <section className="chart-panel status-panel">
-          <h2>Your library</h2>
+          <h2>{t("Your library")}</h2>
           <div className="donut-wrap">
             <svg
               viewBox="0 0 190 190"
@@ -162,7 +167,8 @@ export default memo(function Statistics() {
                 {stats.total}
               </text>
               <text x="95" y="116" textAnchor="middle" className="donut-label">
-                anime
+                {" "}
+                {t("anime")}{" "}
               </text>
             </svg>
             <div className="chart-legend">
@@ -170,7 +176,7 @@ export default memo(function Statistics() {
                 <div key={d.status}>
                   <i style={{ background: d.color }} />
                   <span>
-                    {d.status === "Planning" ? "Watchlist" : d.status}
+                    {d.status === "Planning" ? t("Watchlist") : d.status}
                   </span>
                   <strong>{d.count}</strong>
                 </div>
@@ -181,9 +187,10 @@ export default memo(function Statistics() {
         <section className="chart-panel activity-panel">
           <div className="chart-heading">
             <div>
-              <h2>Viewing activity</h2>
+              <h2>{t("Viewing activity")}</h2>
               <p>
-                {stats.episodes} episodes tracked · {stats.rewatches} rewatches
+                {stats.episodes} {t("episodes tracked ·")} {stats.rewatches}{" "}
+                {t("rewatches")}{" "}
               </p>
             </div>
             <div className="chart-range">
@@ -193,7 +200,7 @@ export default memo(function Statistics() {
                   aria-pressed={range === n}
                   onClick={() => setRange(n)}
                 >
-                  {n} months
+                  {n} {t("months")}{" "}
                 </button>
               ))}
             </div>
@@ -235,10 +242,13 @@ export default memo(function Statistics() {
                   r="4"
                   fill="#537cbd"
                   tabIndex={0}
-                  aria-label={`${p.key}: ${p.count} episodes`}
+                  aria-label={t("{value0}: {value1} episodes", {
+                    value0: p.key,
+                    value1: p.count,
+                  })}
                 >
                   <title>
-                    {p.key}: {p.count} episodes
+                    {p.key}: {p.count} {t("episodes")}{" "}
                   </title>
                 </circle>
                 <text x={p.x} y="200" textAnchor="middle">
@@ -251,7 +261,7 @@ export default memo(function Statistics() {
       </div>
       <div className="statistics-secondary">
         <section className="chart-panel">
-          <h2>Your ratings</h2>
+          <h2>{t("Your ratings")}</h2>
           <div
             className="rating-histogram"
             role="img"
@@ -265,7 +275,10 @@ export default memo(function Statistics() {
                 <div className="histogram-track">
                   <i
                     style={{ height: `${(n / maxRating) * 100}%` }}
-                    title={`${rating} stars: ${n}`}
+                    title={t("{value0} stars: {value1}", {
+                      value0: rating,
+                      value1: n,
+                    })}
                   />
                 </div>
                 <span>{rating}</span>
@@ -273,24 +286,26 @@ export default memo(function Statistics() {
             ))}
           </div>
         </section>
-        <HorizontalChart title="Genres" items={stats.genres} />
+        <HorizontalChart title={t("Genres")} items={stats.genres} />
       </div>
       <div className="statistics-secondary">
-        <HorizontalChart title="Studios" items={stats.studios} />
-        <HorizontalChart title="Release decades" items={stats.decades} />
+        <HorizontalChart title={t("Studios")} items={stats.studios} />
+        <HorizontalChart title={t("Release decades")} items={stats.decades} />
       </div>
       <div className="statistics-secondary">
         <HorizontalChart
-          title="Completions by month"
+          title={t("Completions by month")}
           items={[...stats.months]
             .sort((a, b) => a[0].localeCompare(b[0]))
             .slice(-6)}
         />
-        <HorizontalChart title="Release seasons" items={stats.seasons} />
+        <HorizontalChart title={t("Release seasons")} items={stats.seasons} />
       </div>
       <p className="muted stats-note">
-        Hours use episode duration, or 24 minutes when unknown. Activity is
-        based on your diary.
+        {" "}
+        {t(
+          "Hours use episode duration, or 24 minutes when unknown. Activity is based on your diary.",
+        )}{" "}
       </p>
     </div>
   );

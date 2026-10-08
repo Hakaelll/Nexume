@@ -25,9 +25,7 @@
   background: #111;
   border-radius: 99px;
   pointer-events: none;
-  transition:
-    transform var(--motion-cover) var(--ease-cinema),
-    height var(--motion-ui);
+  transition: transform var(--motion-ui) var(--ease-cinema);
 }
 .nav-rail nav > button {
   position: relative;
@@ -89,8 +87,8 @@ html[data-detail-transition="true"]::view-transition-old(scene) {
   top: 12px;
   left: 12px;
   padding: 8px 12px;
-  background: #fff;
-  color: #111;
+  background: var(--panel);
+  color: var(--text);
   border-radius: 99px;
   display: flex;
   align-items: center;
@@ -100,7 +98,7 @@ html[data-detail-transition="true"]::view-transition-old(scene) {
   z-index: 3;
 }
 .progress-fill {
-  transition: width var(--motion-ui) var(--ease-cinema);
+  transition: transform var(--motion-ui) var(--ease-cinema);
 }
 .filters {
   transform-origin: top;
@@ -118,7 +116,7 @@ html[data-detail-transition="true"]::view-transition-old(scene) {
   height: 4px;
   margin-top: 24px;
   border-radius: 16px;
-  background: #e8e5e0;
+  background: var(--border);
 }
 
 /* A horizontal shelf keeps every in-progress title within reach. */
@@ -310,9 +308,9 @@ html[data-reduced-motion="true"]::view-transition-new(*) {
   min-width: 0;
   min-height: 430px;
   padding: 32px;
-  border: 1px solid #e8e5e0;
+  border: 1px solid var(--border);
   border-radius: 32px;
-  background: #fff;
+  background: var(--panel);
   display: flex;
   align-items: center;
 }
@@ -354,8 +352,8 @@ html[data-reduced-motion="true"]::view-transition-new(*) {
   height: 34px;
   display: grid;
   place-items: center;
-  color: #111;
-  background: #fff;
+  color: var(--text);
+  background: var(--panel);
   border-radius: 50%;
 }
 .spotlight-copy {
@@ -403,7 +401,7 @@ html[data-reduced-motion="true"]::view-transition-new(*) {
   height: 100%;
   border-radius: inherit;
   background: #ff2098;
-  transition: width var(--motion-progress) var(--ease-cinema);
+  transition: transform var(--motion-progress) var(--ease-cinema);
 }
 .spotlight-copy p {
   font-size: 13px;
@@ -543,8 +541,8 @@ html[data-reduced-motion="true"] .filmstrip-item {
   color: #fff;
 }
 .tonight-panel {
-  background: #fff;
-  border: 1px solid #e8e5e0;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 32px;
   padding: 28px;
   margin-bottom: 28px;
@@ -586,7 +584,7 @@ html[data-reduced-motion="true"] .filmstrip-item {
 .tonight-candidate {
   min-width: 0;
   padding: 16px;
-  background: #f6f2ee;
+  background: var(--canvas);
   border-radius: 20px;
   animation: cinema-panel var(--motion-cover) var(--ease-cinema) both;
 }

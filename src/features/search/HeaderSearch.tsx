@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../../core/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Search, ArrowUpRight, LoaderCircle } from "lucide-react";
 import { type Anime } from "../../domain/model";
@@ -16,7 +17,8 @@ export function HeaderSearch({
   onOpen: (anime: Anime) => void;
   onFullSearch: () => void;
 }) {
-  const { data } = useApp();
+  useLanguage();
+  const data = useApp((state) => state.data);
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState<{
     query: string;
@@ -41,10 +43,12 @@ export function HeaderSearch({
         )
         .map((entry) => entry.cachedMetadata)
     : [];
-  // Catalog relevance is authoritative; saved titles remain an offline fallback.
-  const items = (
-    results?.query === needle ? results.items : error ? local : []
-  ).slice(0, 6);
+  const remote = results?.query === needle ? results.items : [];
+  const localIds = new Set(local.map((a) => a.anilistId));
+  const items = [
+    ...local.slice(0, 3),
+    ...remote.filter((a) => !localIds.has(a.anilistId)),
+  ].slice(0, 6);
   const expanded = focused && !!needle;
   useEffect(() => {
     setResults(null);
@@ -52,6 +56,11 @@ export function HeaderSearch({
     setError("");
     setLoading(!!needle && focused);
     if (!needle || !focused) return;
+    if (!navigator.onLine) {
+      setLoading(false);
+      setError("You're offline.");
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(() => {
       void anilist
@@ -106,7 +115,7 @@ export function HeaderSearch({
     >
       <Search size={15} />
       <input
-        aria-label="Search anime catalog"
+        aria-label={t("Search anime catalog")}
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={expanded}
@@ -116,7 +125,7 @@ export function HeaderSearch({
             ? `header-anime-${items[active].anilistId}`
             : undefined
         }
-        placeholder="Search anime"
+        placeholder={t("Search anime")}
         value={query}
         autoComplete="off"
         onFocus={() => setFocused(true)}
@@ -146,20 +155,20 @@ export function HeaderSearch({
       />
       <button
         type="button"
-        aria-label="Open search"
+        aria-label={t("Open search")}
         onClick={() => {
           setFocused(false);
           onFullSearch();
         }}
       >
-        <kbd>Ctrl K</kbd>
+        <kbd>{t("Ctrl K")}</kbd>
       </button>
       {expanded && (
         <div className="header-suggestions">
           <div
             id="header-results"
             role="listbox"
-            aria-label="Search suggestions"
+            aria-label={t("Search suggestions")}
             aria-busy={loading}
           >
             {items.map((anime, index) => (
@@ -181,6 +190,11 @@ export function HeaderSearch({
                 <span>
                   <strong>{anime.english || anime.romaji}</strong>
                   <small>
+                    {localIds.has(anime.anilistId)
+                      ? t("Your library")
+                      : t("Catalog")}
+                  </small>
+                  <small>
                     {[
                       anime.year,
                       anime.format?.replaceAll("_", " "),
@@ -196,8 +210,8 @@ export function HeaderSearch({
           </div>
           {loading && (
             <p className="suggestion-status" role="status">
-              <LoaderCircle size={13} className="search-spinner" />
-              Searching…
+              <LoaderCircle size={13} className="search-spinner" />{" "}
+              {t("Searching…")}{" "}
             </p>
           )}
           {!loading && error && (
@@ -207,7 +221,8 @@ export function HeaderSearch({
           )}
           {!loading && !error && !items.length && (
             <p className="suggestion-status" role="status">
-              No anime found.
+              {" "}
+              {t("No anime found.")}{" "}
             </p>
           )}
           <button
@@ -218,7 +233,8 @@ export function HeaderSearch({
               onFullSearch();
             }}
           >
-            View all results <ArrowUpRight size={13} />
+            {" "}
+            {t("View all results")} <ArrowUpRight size={13} />
           </button>
         </div>
       )}

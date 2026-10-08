@@ -1,0 +1,54 @@
+:root {
+  color-scheme: light;
+  --canvas: #f6f2ee;
+  --panel: #ffffff;
+  --panel-soft: #eee8e2;
+  --text: #111111;
+  --text-secondary: #625d59;
+  --border: #d4cbc4;
+  --selection: #ff2e9533;
+  --accent: #ff2e95;
+  --paper: var(--canvas);
+  --ink: var(--text);
+  --fg: var(--text);
+  --bg: var(--canvas);
+  --surface: var(--panel);
+  --muted: var(--text-secondary);
+  --soft: var(--text-secondary);
+  --secondary: var(--text-secondary);
+  --line: var(--border);
+  --motion-press: 120ms;
+  --motion-menu: 180ms;
+  --motion-enter: 220ms;
+  --motion-exit: 160ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #181719;
+  --panel: #242226;
+  --panel-soft: #302c31;
+  --text: #f6f2ee;
+  --text-secondary: #bcb3bb;
+  --border: #635a64;
+}
+::selection {
+  background: var(--selection);
+  color: var(--text);
+}
+input,
+textarea {
+  caret-color: var(--accent);
+}
+* {
+  scrollbar-color: var(--border) var(--canvas);
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}

@@ -1,3 +1,6 @@
+import { usePageActive } from "../../core/activity";
+import { t, useLanguage, resolveLanguage } from "../../core/i18n";
+import { personalize } from "../../domain/personalized";
 import { Spotlight } from "./Spotlight";
 import { useReducedMotion } from "../../core/motion";
 import {
@@ -7,7 +10,7 @@ import {
 } from "../../domain/tonight";
 import { localDayRange, localTime, localTimeZone } from "../../core/localTime";
 import { useAiring, useClock, useRefreshEpisodes } from "../../core/airing";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -36,11 +39,43 @@ export function Home({
   onSample,
   onAnime,
 }: { onSample: () => void; onAnime: (a: Anime) => void } & Props) {
-  const { data, prefs } = useApp();
+  useLanguage();
+  const pageActive = usePageActive();
+  const data = useApp((state) => state.data);
+  const prefs = useApp((state) => state.prefs);
   const now = useClock(data.preferences.section === "Home");
   const reducedMotion = useReducedMotion();
   useRefreshEpisodes(data.preferences.section === "Home", now);
   const rail = useRef<HTMLDivElement>(null);
+  const [railBounds, setRailBounds] = useState({ start: true, end: true });
+  useEffect(() => {
+    const el = rail.current;
+    if (!el) return;
+    const update = () =>
+      setRailBounds({
+        start: el.scrollLeft <= 2,
+        end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 2,
+      });
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      observer.disconnect();
+    };
+  }, [data.entries, data.preferences.section, pageActive]);
+  const scrollRail = (direction: number) => {
+    const el = rail.current;
+    const card = el?.firstElementChild as HTMLElement | null;
+    if (!el || !card) return;
+    const step =
+      card.offsetWidth + parseFloat(getComputedStyle(el).columnGap || "0");
+    const target =
+      Math.round(el.scrollLeft / step) * step +
+      direction * step * Math.max(1, Math.floor(el.clientWidth / step));
+    el.scrollTo({ left: target, behavior: reducedMotion ? "auto" : "smooth" });
+  };
   const [spotlightId, setSpotlightId] = useState(
     () => homeSpotlight(data.entries)?.localId,
   );
@@ -54,7 +89,7 @@ export function Home({
     wasHome.current = active;
   }, [data.preferences.section, data.entries, spotlightId]);
   useEffect(() => {
-    if (data.preferences.section !== "Home") return;
+    if (!pageActive || data.preferences.section !== "Home") return;
     const timer = setInterval(() => {
       if (
         document.hidden ||
@@ -70,7 +105,7 @@ export function Home({
       );
     }, 30000);
     return () => clearInterval(timer);
-  }, [data.entries, data.preferences.section]);
+  }, [data.entries, data.preferences.section, pageActive]);
   const spotlight =
     data.entries.find(
       (e) =>
@@ -100,10 +135,13 @@ export function Home({
       ? upcoming.slice(0, 3)
       : airing.items.slice(-3).reverse();
   const airingCaption = inWindow.length
-    ? `Around now · ${localTime(Math.max(recentCutoff, today.getTime()))}–${localTime(windowEnd)}`
+    ? t("Around now · {from}–{to}", {
+        from: localTime(Math.max(recentCutoff, today.getTime())),
+        to: localTime(windowEnd),
+      })
     : upcoming.length
-      ? "Up next today"
-      : "Today’s latest emissions · schedule finished";
+      ? t("Up next today")
+      : t("Today’s latest emissions · schedule finished");
   const watching = data.entries
     .filter(
       (e) =>
@@ -114,7 +152,8 @@ export function Home({
   const [season, setSeason] = useState<Anime[]>([]);
   useEffect(() => {
     const c = new AbortController();
-    if (!navigator.onLine) return;
+    if (!pageActive || !navigator.onLine || data.preferences.section !== "Home")
+      return;
     anilist
       .search(
         { ...seasonNow(), adult: data.preferences.adultContent },
@@ -125,47 +164,49 @@ export function Home({
       })
       .catch(() => {});
     return () => c.abort();
-  }, [data.preferences.adultContent]);
-  const affinity = new Set(
-    data.entries
-      .filter(
-        (e) =>
-          ["Watching", "Rewatching"].includes(e.personalStatus) ||
-          (e.personalRating ?? 0) >= 8,
-      )
-      .flatMap((e) => e.cachedMetadata.genres),
+  }, [data.preferences.adultContent, data.preferences.section, pageActive]);
+  const recommendations = useMemo(
+    () =>
+      personalize(
+        season,
+        data.entries,
+        data.profile.favoriteIds,
+        data.preferences.hiddenRecommendations,
+        data.preferences.adultContent,
+      ).slice(0, 3),
+    [
+      season,
+      data.entries,
+      data.profile.favoriteIds,
+      data.preferences.hiddenRecommendations,
+      data.preferences.adultContent,
+    ],
   );
-  const recommendations = [...season]
-    .filter((a) => !data.entries.some((e) => e.anilistId === a.anilistId))
-    .sort(
-      (a, b) =>
-        b.genres.filter((g) => affinity.has(g)).length -
-          a.genres.filter((g) => affinity.has(g)).length ||
-        (b.averageScore ?? 0) - (a.averageScore ?? 0),
-    )
-    .slice(0, 3);
+  const affinity = recommendations.some((pick) => pick.personalized);
   return (
     <div className="page home-page">
       <PageTitle
-        title="Home"
-        subtitle={today.toLocaleDateString("en", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        })}
+        title={t("Home")}
+        subtitle={today.toLocaleDateString(
+          resolveLanguage(useApp.getState().data.preferences.language),
+          {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          },
+        )}
       />
       {!data.entries.length && (
         <section className="home-welcome">
           <div className="welcome-copy">
-            <h2>What are you watching?</h2>
+            <h2>{t("What are you watching?")}</h2>
             <div className="welcome-actions">
               <button className="button primary" onClick={onSearch}>
-                <Plus size={16} />
-                Add anime
+                <Plus size={16} /> {t("Add anime")}{" "}
               </button>
               <button className="text-button" onClick={onSample}>
-                Try a sample
-                <ArrowRight size={14} />
+                {" "}
+                {t("Try a sample")} <ArrowRight size={14} />
               </button>
             </div>
           </div>
@@ -183,18 +224,21 @@ export function Home({
         <section className="home-section today-section">
           <div className="section-heading">
             <h2>
-              Airing today{" "}
+              {" "}
+              {t("Airing today")}{" "}
               <span className="section-count">{airing.items.length}</span>
             </h2>
             <button
               className="text-button"
               onClick={() => void prefs({ section: "Calendar" })}
             >
-              Calendar
-              <ArrowUpRight size={14} />
+              {" "}
+              {t("Calendar")} <ArrowUpRight size={14} />
             </button>
           </div>
-          <p className="airing-timezone">Local time · {localTimeZone()}</p>
+          <p className="airing-timezone">
+            {t("Local time ·")} {localTimeZone()}
+          </p>
           {airing.items.length > 0 && (
             <p className="airing-timezone">{airingCaption}</p>
           )}
@@ -214,15 +258,20 @@ export function Home({
                     />
                     <span>
                       <small>
-                        {localTime(air.airingAt * 1000)} · EP {air.episode}
+                        {localTime(air.airingAt * 1000)} {t("· EP")}{" "}
+                        {air.episode}
                       </small>
                       <strong>{a.english ?? a.romaji}</strong>
                       <em>
                         {air.airingAt * 1000 <= now
                           ? air.airingAt * 1000 >= recentCutoff
-                            ? "Just aired"
-                            : "Aired today"
-                          : `In ${Math.ceil((air.airingAt * 1000 - now) / 60000)} min`}
+                            ? t("Just aired")
+                            : t("Aired today")
+                          : t("In {minutes} min", {
+                              minutes: Math.ceil(
+                                (air.airingAt * 1000 - now) / 60000,
+                              ),
+                            })}
                       </em>
                     </span>
                   </button>
@@ -232,7 +281,7 @@ export function Home({
           ) : (
             <p className="prose muted">
               {airing.loading
-                ? "Checking today’s schedule…"
+                ? t("Checking today’s schedule…")
                 : airing.error || "No episodes scheduled for today."}
             </p>
           )}
@@ -241,7 +290,8 @@ export function Home({
               className="text-button"
               onClick={() => void prefs({ section: "Calendar" })}
             >
-              View all {airing.items.length} emissions{" "}
+              {" "}
+              {t("View all")} {airing.items.length} {t("emissions")}{" "}
               <ArrowUpRight size={14} />
             </button>
           )}
@@ -249,29 +299,21 @@ export function Home({
       </div>
       <section className="home-section">
         <div className="section-heading">
-          <h2>Continue watching</h2>
+          <h2>{t("Continue watching")}</h2>
           <div className="continue-controls">
             <button
               className="icon-button"
-              aria-label="Scroll anime left"
-              onClick={() =>
-                rail.current?.scrollBy({
-                  left: -rail.current.clientWidth * 0.85,
-                  behavior: reducedMotion ? "auto" : "smooth",
-                })
-              }
+              aria-label={t("Scroll anime left")}
+              disabled={railBounds.start}
+              onClick={() => scrollRail(-1)}
             >
               <ChevronLeft size={20} />
             </button>
             <button
               className="icon-button"
-              aria-label="Scroll anime right"
-              onClick={() =>
-                rail.current?.scrollBy({
-                  left: rail.current.clientWidth * 0.85,
-                  behavior: reducedMotion ? "auto" : "smooth",
-                })
-              }
+              aria-label={t("Scroll anime right")}
+              disabled={railBounds.end}
+              onClick={() => scrollRail(1)}
             >
               <ChevronRight size={20} />
             </button>
@@ -286,8 +328,8 @@ export function Home({
               })
             }
           >
-            View all
-            <ArrowUpRight size={14} />
+            {" "}
+            {t("View all")} <ArrowUpRight size={14} />
           </button>
         </div>
         {watching.length ? (
@@ -296,7 +338,7 @@ export function Home({
             ref={rail}
             tabIndex={0}
             role="region"
-            aria-label="Continue watching anime"
+            aria-label={t("Continue watching anime")}
           >
             {watching.map((e) => (
               <AnimeCard
@@ -310,21 +352,21 @@ export function Home({
         ) : (
           <p className="prose muted">
             {watching.length
-              ? "Your current anime is ready above."
-              : "Mark an anime as Watching to keep your next episode here."}
+              ? t("Your current anime is ready above.")
+              : t("Mark an anime as Watching to keep your next episode here.")}
           </p>
         )}
       </section>
       {season.length > 0 && (
         <section className="home-section">
           <div className="section-heading">
-            <h2>This season</h2>
+            <h2>{t("This season")}</h2>
             <button
               className="text-button"
               onClick={() => void prefs({ section: "Discover" })}
             >
-              Discover
-              <ArrowUpRight size={14} />
+              {" "}
+              {t("Discover")} <ArrowUpRight size={14} />
             </button>
           </div>
           <div className="poster-grid">
@@ -341,22 +383,24 @@ export function Home({
       {recommendations.length > 0 && (
         <section className="home-section">
           <div className="section-heading">
-            <h2>{affinity.size ? "Picked for you" : "Worth a look"}</h2>
+            <h2>{affinity ? t("Picked for you") : t("Worth a look")}</h2>
             <button
               className="text-button"
               onClick={() => void prefs({ section: "Recommend" })}
             >
-              Find another
-              <ArrowUpRight size={14} />
+              {" "}
+              {t("Find another")} <ArrowUpRight size={14} />
             </button>
           </div>
           <p className="muted recommendation-reason">
-            {affinity.size
-              ? "Seasonal picks based on genres in your watching and highly rated anime."
-              : "A few highly rated titles from this season."}
+            {affinity
+              ? t(
+                  "Seasonal picks based on your favorites, likes and ratings of 8/10 or higher.",
+                )
+              : t("A few highly rated titles from this season.")}
           </p>
           <div className="home-recommendations">
-            {recommendations.map((a) => (
+            {recommendations.map(({ anime: a }) => (
               <AnimeCard
                 key={a.anilistId}
                 anime={a}
@@ -386,7 +430,7 @@ export function Home({
               />
             ))}
           </div>
-          <h2>Open collection</h2>
+          <h2>{t("Open collection")}</h2>
           <ArrowUpRight size={20} />
         </button>
       )}
@@ -395,7 +439,8 @@ export function Home({
 }
 
 export function Diary({ onOpen, onSearch }: Props) {
-  const { data } = useApp();
+  useLanguage();
+  const data = useApp((state) => state.data);
   const [kind, setKind] = useState("All");
   const events = [...data.history]
     .sort((a, b) => b.at.localeCompare(a.at))
@@ -403,8 +448,8 @@ export function Diary({ onOpen, onSearch }: Props) {
   return (
     <div className="page diary-page">
       <PageTitle
-        title="Diary"
-        subtitle="Your viewing history, one moment at a time"
+        title={t("Diary")}
+        subtitle={t("Your viewing history, one moment at a time")}
       />
       <div className="diary-summary">
         <span>
@@ -413,19 +458,19 @@ export function Diary({ onOpen, onSearch }: Props) {
               .filter((h) => h.kind === "episode")
               .reduce((n, h) => n + Math.max(0, h.episodeDelta), 0)}
           </strong>{" "}
-          episodes logged
+          {t("episodes logged")}{" "}
         </span>
         <span>
           <strong>
             {data.history.filter((h) => h.kind === "completed").length}
           </strong>{" "}
-          completions
+          {t("completions")}{" "}
         </span>
         <span>
           <strong>
             {data.history.filter((h) => h.kind === "review").length}
           </strong>{" "}
-          review updates
+          {t("review updates")}{" "}
         </span>
       </div>
       <div className="discover-tabs">
@@ -449,9 +494,9 @@ export function Diary({ onOpen, onSearch }: Props) {
       </div>
       {!events.length ? (
         <Empty
-          title="No activity yet"
-          text="Your progress and ratings will appear here."
-          action="Find an anime"
+          title={t("No activity yet")}
+          text={t("Your progress and ratings will appear here.")}
+          action={t("Find an anime")}
           onAction={onSearch}
         />
       ) : (
@@ -473,7 +518,12 @@ export function Diary({ onOpen, onSearch }: Props) {
                       </strong>
                       <span>
                         {date
-                          .toLocaleString("en", { month: "short" })
+                          .toLocaleString(
+                            resolveLanguage(
+                              useApp.getState().data.preferences.language,
+                            ),
+                            { month: "short" },
+                          )
                           .toUpperCase()}{" "}
                         {date.getFullYear()}
                       </span>
@@ -486,10 +536,15 @@ export function Diary({ onOpen, onSearch }: Props) {
                 <div>
                   <small className="eyebrow">
                     {h.kind.toUpperCase()} ·{" "}
-                    {date.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {date.toLocaleTimeString(
+                      resolveLanguage(
+                        useApp.getState().data.preferences.language,
+                      ),
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
                   </small>
                   <button className="diary-title" onClick={() => onOpen(e)}>
                     {e.preferredTitle}
@@ -504,8 +559,10 @@ export function Diary({ onOpen, onSearch }: Props) {
       )}
       {events.length > 500 && (
         <p className="muted">
-          Showing the most recent 500 events. Your backup contains the complete
-          diary.
+          {" "}
+          {t(
+            "Showing the most recent 500 events. Your backup contains the complete diary.",
+          )}{" "}
         </p>
       )}
     </div>

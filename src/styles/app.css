@@ -1,4 +1,10 @@
 :root {
+  --canvas: #000;
+  --panel: #111;
+  --panel-soft: #222;
+  --text: #fff;
+  --text-secondary: #999;
+  --border: #4d4d4d;
   font-family: "Space Grotesk", Inter, "Segoe UI", sans-serif;
   color: #fff;
   background: #000;
@@ -285,7 +291,7 @@ kbd {
   width: 2px;
   height: 18px;
   left: -10px;
-  background: #fff;
+  background: var(--panel);
 }
 .nav-rail nav > .settings-nav {
   margin-top: auto;
@@ -411,7 +417,7 @@ kbd {
 .section-heading h2 small {
   margin-left: 12px;
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
 }
 .poster-grid {
   display: grid;
@@ -447,7 +453,7 @@ kbd {
 }
 .cover-placeholder > span {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   letter-spacing: 4px;
 }
 .cover-placeholder strong {
@@ -670,7 +676,8 @@ kbd {
 .progress-track > div {
   height: 100%;
   background: #bcbcbc;
-  transition: width 0.3s;
+  transition: transform 0.22s;
+  transform-origin: left;
 }
 .inline-complete {
   display: flex;
@@ -783,7 +790,7 @@ kbd {
   border-top: 1px solid #292929;
   margin-top: 60px;
   padding-top: 25px;
-  color: #666;
+  color: var(--text-secondary);
 }
 .editorial-footer > span {
   font-size: 9px;
@@ -847,7 +854,7 @@ kbd {
 }
 .status-tabs small {
   margin-left: 7px;
-  color: #666;
+  color: var(--text-secondary);
 }
 .view-switch {
   display: flex;
@@ -951,7 +958,7 @@ kbd {
   padding: 15px 0;
   font-size: 8px;
   letter-spacing: 1.3px;
-  color: #666;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 .library-table {
@@ -1355,7 +1362,7 @@ kbd {
 }
 .field > input::placeholder,
 .field > textarea::placeholder {
-  color: #666;
+  color: var(--text-secondary);
 }
 .check-field {
   display: flex;
@@ -1955,7 +1962,7 @@ kbd {
   border: 1px solid #333;
   position: relative;
   align-self: start;
-  color: #666;
+  color: var(--text-secondary);
 }
 .favorite-slot span {
   position: absolute;
@@ -2397,15 +2404,15 @@ summary {
   }
 }
 html[data-reduced-motion="true"] *,
-  html[data-reduced-motion="true"] *:before,
-  html[data-reduced-motion="true"] *:after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
+html[data-reduced-motion="true"] *:before,
+html[data-reduced-motion="true"] *:after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
 html[data-reduced-motion="true"] .splash {
-    display: none;
-  }
+  display: none;
+}
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -3128,13 +3135,13 @@ input[type="range"] {
   }
 }
 html[data-reduced-motion="true"] .main-content,
-  html[data-reduced-motion="true"] .recommendation-result,
-  html[data-reduced-motion="true"] .recommendation-orbit {
-    animation: none !important;
-  }
+html[data-reduced-motion="true"] .recommendation-result,
+html[data-reduced-motion="true"] .recommendation-orbit {
+  animation: none !important;
+}
 html[data-reduced-motion="true"] .histogram-track i {
-    transition: none;
-  }
+  transition: none;
+}
 
 /* Search suggestions sit above the scrolling scene, within the compact header. */
 .topbar {
@@ -3297,9 +3304,9 @@ html[data-reduced-motion="true"] .histogram-track i {
   background: #9c86e00b;
 }
 html[data-reduced-motion="true"] .header-suggestions,
-  html[data-reduced-motion="true"] .search-spinner {
-    animation: none;
-  }
+html[data-reduced-motion="true"] .search-spinner {
+  animation: none;
+}
 .app-shell[data-reduced-motion="true"] .header-suggestions,
 .app-shell[data-reduced-motion="true"] .search-spinner {
   animation: none;
@@ -3326,15 +3333,28 @@ html[data-reduced-motion="true"] .header-suggestions,
   }
 }
 html[data-reduced-motion="true"]::view-transition-group(*),
-  html[data-reduced-motion="true"]::view-transition-old(*),
-  html[data-reduced-motion="true"]::view-transition-new(*) {
-    animation: none;
-  }
+html[data-reduced-motion="true"]::view-transition-old(*),
+html[data-reduced-motion="true"]::view-transition-new(*) {
+  animation: none;
+}
 
-.discover-page .poster-grid > div { display: flex; flex-direction: column; }
-.discover-page .anime-card { flex: 1; }
-.discover-page .card-title { min-height: 39px; }
+.discover-page .poster-grid > div {
+  display: flex;
+  flex-direction: column;
+}
+.discover-page .anime-card {
+  flex: 1;
+}
+.discover-page .card-title {
+  min-height: 39px;
+}
 /* Public/standalone views still honor the OS before an app preference exists. */
 @media (prefers-reduced-motion: reduce) {
-  html:not([data-reduced-motion]) *, html:not([data-reduced-motion]) *::before, html:not([data-reduced-motion]) *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+  html:not([data-reduced-motion]) *,
+  html:not([data-reduced-motion]) *::before,
+  html:not([data-reduced-motion]) *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

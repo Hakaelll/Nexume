@@ -1,3 +1,4 @@
+import { t, useLanguage, resolveLanguage } from "../../core/i18n";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { useApp } from "../../app/store";
@@ -11,7 +12,8 @@ export default function Calendar({
 }: {
   onOpen: (entry: Entry) => void;
 }) {
-  const { data } = useApp();
+  useLanguage();
+  const data = useApp((state) => state.data);
   const now = useClock(data.preferences.section === "Calendar"),
     today = new Date(now);
   const [mode, setMode] = useState<"week" | "month">("week");
@@ -34,40 +36,48 @@ export default function Calendar({
   return (
     <div className="page calendar-page">
       <PageTitle
-        title="Calendar"
-        subtitle={`Your upcoming episodes · ${localTimeZone()}`}
+        title={t("Calendar")}
+        subtitle={t("Your upcoming episodes · {value0}", {
+          value0: localTimeZone(),
+        })}
       />
       <div className="calendar-toolbar">
         <div className="calendar-period">
           <CalendarDays size={20} />
           <h2>
-            {cursor.toLocaleDateString("en", {
-              month: "long",
-              year: "numeric",
-            })}
+            {cursor.toLocaleDateString(
+              resolveLanguage(useApp.getState().data.preferences.language),
+              {
+                month: "long",
+                year: "numeric",
+              },
+            )}
           </h2>
-          <span>{items.length} episodes</span>
+          <span>
+            {items.length} {t("episodes")}
+          </span>
         </div>
         <div className="calendar-controls">
           <button
             className="button"
-            aria-label={`Previous ${mode}`}
+            aria-label={t("Previous {value0}", { value0: mode })}
             onClick={() => shift(-1)}
           >
             <ChevronLeft size={17} />
           </button>
           <button className="button" onClick={() => setCursor(new Date())}>
-            Today
+            {" "}
+            {t("Today")}{" "}
           </button>
           <button
             className="button"
-            aria-label={`Next ${mode}`}
+            aria-label={t("Next {value0}", { value0: mode })}
             onClick={() => shift(1)}
           >
             <ChevronRight size={17} />
           </button>
         </div>
-        <div className="view-switch" aria-label="Calendar view">
+        <div className="view-switch" aria-label={t("Calendar view")}>
           {(["week", "month"] as const).map((v) => (
             <button
               key={v}
@@ -75,7 +85,7 @@ export default function Calendar({
               aria-pressed={mode === v}
               onClick={() => setMode(v)}
             >
-              {v === "week" ? "Week" : "Month"}
+              {v === "week" ? t("Week") : t("Month")}
             </button>
           ))}
         </div>
@@ -87,7 +97,8 @@ export default function Calendar({
       )}
       {loading && (
         <p className="muted" role="status">
-          Updating schedule…
+          {" "}
+          {t("Updating schedule…")}{" "}
         </p>
       )}
       <div className={`calendar-grid ${mode}-view`}>
@@ -106,12 +117,21 @@ export default function Calendar({
             >
               <header>
                 <span>
-                  {day.toLocaleDateString("en", { weekday: "short" })}
+                  {day.toLocaleDateString(
+                    resolveLanguage(
+                      useApp.getState().data.preferences.language,
+                    ),
+                    { weekday: "short" },
+                  )}
                 </span>
                 <strong aria-current={isToday ? "date" : undefined}>
                   {day.getDate()}
                 </strong>
-                {events.length > 0 && <small>{events.length} ep.</small>}
+                {events.length > 0 && (
+                  <small>
+                    {events.length} {t("ep.")}
+                  </small>
+                )}
               </header>
               {events.length ? (
                 events.map((anime) => {
@@ -136,25 +156,31 @@ export default function Calendar({
                             anime.romaji}
                         </strong>
                         <small>
-                          EP {air.episode} · {localTime(air.airingAt * 1000)}
+                          {" "}
+                          {t("EP")} {air.episode} ·{" "}
+                          {localTime(air.airingAt * 1000)}
                         </small>
                         <em>
-                          {air.airingAt * 1000 < now ? "Aired" : "Upcoming"}
+                          {air.airingAt * 1000 < now
+                            ? t("Aired")
+                            : t("Upcoming")}
                         </em>
                       </span>
                     </button>
                   );
                 })
               ) : (
-                <p className="calendar-free">No episodes</p>
+                <p className="calendar-free">{t("No episodes")}</p>
               )}
             </section>
           );
         })}
       </div>
       <p className="calendar-note muted">
-        Schedules for your Watching, Rewatching and Watchlist anime. Dates may
-        change.
+        {" "}
+        {t(
+          "Schedules for your Watching, Rewatching and Watchlist anime. Dates may change.",
+        )}{" "}
       </p>
     </div>
   );

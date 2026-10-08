@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../../core/i18n";
 import { animeCover } from "../../domain/artwork";
 import {
   useMemo,
@@ -42,6 +43,7 @@ const LibraryCard = memo(function LibraryCard({
   onOpen: Props["onOpen"];
   onContext: Props["onContext"];
 }) {
+  useLanguage();
   const host = useRef<HTMLDivElement>(null);
   const restoreFocus = useRef(false);
   const [near, setNear] = useState(false);
@@ -93,7 +95,7 @@ const LibraryCard = memo(function LibraryCard({
           <button
             className="cover-button"
             onClick={() => onOpen(entry)}
-            aria-label={`Open ${title}`}
+            aria-label={t("Open {value0}", { value0: title })}
           >
             <div className="artwork">
               <div className="cover-placeholder">
@@ -105,13 +107,16 @@ const LibraryCard = memo(function LibraryCard({
             <span className="icon-button" />
           </div>
           <div className="card-title">
-            <button onClick={() => onOpen(entry)}>{title}</button>
+            <button onClick={() => onOpen(entry)} title={title}>
+              {title}
+            </button>
             <span>{entry.cachedMetadata.year ?? "TBA"}</span>
           </div>
           <div className="card-meta">
             <span className="library-rating-placeholder" aria-hidden="true" />
             <span>
-              {entry.watchedEpisodes}/{entry.totalEpisodes ?? "?"} ep
+              {entry.watchedEpisodes}/{entry.totalEpisodes ?? "?"}{" "}
+              {t("ep")}{" "}
             </span>
           </div>
         </article>
@@ -136,6 +141,7 @@ export default function Library({
   onContext,
   onQuick,
 }: Props) {
+  useLanguage();
   const data = useApp((state) => state.data);
   const prefs = useApp((state) => state.prefs);
   const p = data.preferences;
@@ -206,25 +212,28 @@ export default function Library({
     <div
       className={`library-page ${p.view === "Collection" ? "immersive" : ""}`}
     >
-      <PageTitle title="Library" subtitle={`${data.entries.length} anime`}>
+      <PageTitle
+        title={t("Library")}
+        subtitle={t("{value0} anime", { value0: data.entries.length })}
+      >
         <button className="button" onClick={onSearch}>
-          <Plus size={15} /> Add anime
+          <Plus size={15} /> {t("Add anime")}{" "}
         </button>
       </PageTitle>
       <div className="library-toolbar">
-        <div className="status-tabs" aria-label="Library status">
+        <div className="status-tabs" aria-label={t("Library status")}>
           {["All", ...statuses, "Favorites"].map((s) => (
             <button
               key={s}
               className={p.filter === s ? "active" : ""}
               onClick={() => void prefs({ filter: s, selectedId: "" })}
             >
-              {s}
+              {t(s)}
               {s === "All" && <small>{data.entries.length}</small>}
             </button>
           ))}
         </div>
-        <div className="view-switch" aria-label="Library view">
+        <div className="view-switch" aria-label={t("Library view")}>
           {(
             [
               ["Collection", Orbit],
@@ -248,8 +257,8 @@ export default function Library({
         <label className="library-search">
           <Search size={15} />
           <input
-            aria-label="Search your library"
-            placeholder="Find in your collection"
+            aria-label={t("Search your library")}
+            placeholder={t("Find in your collection")}
             value={p.search}
             onChange={(e) => void prefs({ search: e.target.value })}
           />
@@ -260,23 +269,22 @@ export default function Library({
             onClick={() => setFilters(!filters)}
             aria-expanded={filters}
           >
-            <SlidersHorizontal size={14} />
-            Filters
+            <SlidersHorizontal size={14} /> {t("Filters")}{" "}
           </button>
           <select
-            aria-label="Sort library"
+            aria-label={t("Sort library")}
             value={p.sort}
             onChange={(e) => void prefs({ sort: e.target.value })}
           >
-            <option value="added">Date added</option>
-            <option value="title">Title</option>
-            <option value="rating">Your rating</option>
-            <option value="year">Release year</option>
-            <option value="watched">Last watched</option>
+            <option value="added">{t("Date added")}</option>
+            <option value="title">{t("Title")}</option>
+            <option value="rating">{t("Your rating")}</option>
+            <option value="year">{t("Release year")}</option>
+            <option value="watched">{t("Last watched")}</option>
           </select>
           <button
             className="icon-button"
-            aria-label="Reverse sort order"
+            aria-label={t("Reverse sort order")}
             onClick={() => void prefs({ descending: !p.descending })}
           >
             {p.descending ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
@@ -286,7 +294,7 @@ export default function Library({
       {filters && (
         <div className="filters">
           <SelectField
-            label="Year"
+            label={t("Year")}
             value={p.year}
             onChange={(year) => void prefs({ year })}
             options={options((e) =>
@@ -294,13 +302,13 @@ export default function Library({
             )}
           />
           <SelectField
-            label="Genre"
+            label={t("Genre")}
             value={p.genre}
             onChange={(genre) => void prefs({ genre })}
             options={options((e) => e.cachedMetadata.genres)}
           />
           <SelectField
-            label="Format"
+            label={t("Format")}
             value={p.format}
             onChange={(format) => void prefs({ format })}
             options={options((e) =>
@@ -308,32 +316,32 @@ export default function Library({
             )}
           />
           <SelectField
-            label="Studio"
+            label={t("Studio")}
             value={p.studio}
             onChange={(studio) => void prefs({ studio })}
             options={options((e) => e.cachedMetadata.studios)}
           />
           <SelectField
-            label="Season"
+            label={t("Season")}
             value={p.season}
             onChange={(season) => void prefs({ season })}
             options={["WINTER", "SPRING", "SUMMER", "FALL"]}
           />
           <SelectField
-            label="Personal tag"
+            label={t("Personal tag")}
             value={p.tag}
             onChange={(tag) => void prefs({ tag })}
             options={options((e) => e.personalTags)}
           />
           <label className="select-field">
-            <span>Minimum stars</span>
+            <span>{t("Minimum stars")}</span>
             <select
               value={p.minRating}
               onChange={(e) =>
                 void prefs({ minRating: Number(e.target.value) })
               }
             >
-              <option value="0">Any</option>
+              <option value="0">{t("Any")}</option>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <option key={n} value={n}>
                   {n / 2}
@@ -357,13 +365,15 @@ export default function Library({
               })
             }
           >
-            Reset
+            {" "}
+            {t("Reset")}{" "}
           </button>
           {p.view === "Grid" && (
             <label className="select-field">
-              Cover size
+              {" "}
+              {t("Cover size")}{" "}
               <input
-                aria-label="Cover size"
+                aria-label={t("Cover size")}
                 type="range"
                 min="130"
                 max="260"
@@ -376,7 +386,7 @@ export default function Library({
           )}
           {p.view === "List" && (
             <fieldset className="column-settings">
-              <legend>Columns</legend>
+              <legend>{t("Columns")}</legend>
               {[
                 "status",
                 "episodes",
@@ -409,19 +419,22 @@ export default function Library({
           {!data.entries.length && <SampleCovers />}
           <Empty
             title={
-              data.entries.length ? "No titles match." : "Your library is empty"
+              data.entries.length
+                ? t("No titles match.")
+                : t("Your library is empty")
             }
             text={
               data.entries.length
                 ? "Try another search or adjust your filters."
                 : "Add anime or try the sample collection."
             }
-            action="Search anime"
+            action={t("Search anime")}
             onAction={onSearch}
           />
           {!data.entries.length && (
             <button className="text-button" onClick={onSample}>
-              Try a sample
+              {" "}
+              {t("Try a sample")}{" "}
             </button>
           )}
         </div>
@@ -472,7 +485,7 @@ export default function Library({
               <thead>
                 <tr>
                   <th>
-                    <button onClick={() => sort("title")}>Title</button>
+                    <button onClick={() => sort("title")}>{t("Title")}</button>
                   </th>
                   {p.columns.map((c) => (
                     <th key={c}>
@@ -529,7 +542,7 @@ export default function Library({
                             }
                           />
                         ) : c === "status" ? (
-                          entry.personalStatus
+                          t(entry.personalStatus)
                         ) : c === "episodes" ? (
                           `${entry.watchedEpisodes} / ${entry.totalEpisodes ?? "?"}`
                         ) : c === "community" ? (
@@ -549,7 +562,9 @@ export default function Library({
         </div>
       )}
       <div className="library-footer">
-        <span>{entries.length} TITLES IN VIEW</span>
+        <span>
+          {entries.length} {t("TITLES IN VIEW")}
+        </span>
       </div>
     </div>
   );

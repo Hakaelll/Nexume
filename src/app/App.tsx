@@ -1,3 +1,5 @@
+import { t, useLanguage } from "../core/i18n";
+import { useAppearance } from "../core/appearance";
 import { RetainedPage } from "../components/RetainedPage";
 import { useReducedMotion } from "../core/motion";
 import {
@@ -49,7 +51,10 @@ import { Home, Diary } from "../features/personal/Personal";
 import Detail from "../features/anime-detail/Detail";
 import { anilist } from "../services/anilist/provider";
 import { addSample, sampleEntries } from "../core/sample";
-import { flushQueue } from "../services/social/sync";
+const flushQueue = async () => {
+  if (useApp.getState().data.queue.length && !document.hidden)
+    await (await import("../services/social/sync")).flushQueue();
+};
 const Library = lazy(() => import("../features/library/Library"));
 const Lists = lazy(() => import("../features/lists/Lists"));
 const Profile = lazy(() => import("../features/profile/Profile"));
@@ -71,6 +76,8 @@ const sections = [
   ["Settings", SettingsIcon],
 ] as const;
 export default function App() {
+  useLanguage();
+  useAppearance();
   const store = useApp(
     useShallow((state) => ({
       data: state.data,
@@ -300,8 +307,8 @@ export default function App() {
     setSampleBusy(true);
     try {
       const entries = await sampleEntries();
-      await store.mutate((d) => addSample(d, entries));
-      if (!useApp.getState().error) {
+      const result = await store.mutate((d) => addSample(d, entries));
+      if (result.ok) {
         setSample(false);
         store.notify("Sample collection added.");
       }
@@ -335,11 +342,12 @@ export default function App() {
         <img src="/brand/logo.png" alt="Nexume" />
         {store.error && (
           <div role="alert">
-            <p>{store.error}</p>
+            <p>{t(store.error)}</p>
             <button className="button" onClick={() => void store.init()}>
-              Retry opening collection
+              {" "}
+              {t("Retry opening collection")}{" "}
             </button>
-            <p>Your saved data has not been replaced.</p>
+            <p>{t("Your saved data has not been replaced.")}</p>
           </div>
         )}
       </div>
@@ -347,29 +355,30 @@ export default function App() {
   return (
     <>
       <a className="skip-link" href="#main">
-        Skip to content
+        {" "}
+        {t("Skip to content")}{" "}
       </a>
       <aside className="nav-rail">
         <button
           className="brand"
-          aria-label="Nexume Home"
+          aria-label={t("Nexume Home")}
           onClick={() => go("Home")}
         >
           <img src="/brand/logo.png" alt="" />
-          <span className="rail-wordmark">Nexume</span>
+          <span className="rail-wordmark">{t("Nexume")}</span>
         </button>
-        <nav aria-label="Main navigation">
+        <nav aria-label={t("Main navigation")}>
           <NavIndicator section={section} />
           {sections.map(([name, Icon]) => (
             <button
               key={name}
               className={`${section === name ? "active" : ""} ${name === "Settings" ? "settings-nav" : ""}`}
-              aria-label={name}
+              aria-label={t(name)}
               aria-current={section === name ? "page" : undefined}
               onClick={() => go(name)}
             >
               <Icon size={20} strokeWidth={1.3} />
-              <span className="nav-tooltip">{name}</span>
+              <span className="nav-tooltip">{t(name)}</span>
               {name === "Library" && (
                 <small className="nav-count">{store.data.entries.length}</small>
               )}
@@ -378,7 +387,7 @@ export default function App() {
         </nav>
         <button
           className="rail-profile"
-          aria-label="Your profile"
+          aria-label={t("Your profile")}
           aria-current={section === "Profile" && !detail ? "page" : undefined}
           onClick={() => go("Profile")}
         >
@@ -400,13 +409,13 @@ export default function App() {
           <div className="topbar-right">
             {offline ? (
               <span className="connection">
-                <WifiOff size={12} />
-                Offline
+                <WifiOff size={12} /> {t("Offline")}{" "}
               </span>
             ) : null}
             {store.data.queue.length > 0 && (
               <button className="text-button" onClick={() => go("Settings")}>
-                Pending sync
+                {" "}
+                {t("Pending sync")}{" "}
               </button>
             )}
             <HeaderSearch
@@ -433,14 +442,16 @@ export default function App() {
           <ErrorBoundary>
             <Suspense
               fallback={
-                <div className="scene-loading">Opening your collection…</div>
+                <div className="scene-loading">
+                  {t("Opening your collection…")}
+                </div>
               }
             >
               {detail && (
                 <Detail
                   key={detail.anilistId}
                   anime={detail}
-                  backLabel={`Back to ${section}`}
+                  backLabel={t("Back to {value0}", { value0: t(section) })}
                   onBack={() => setDetail(null)}
                 />
               )}
@@ -455,7 +466,11 @@ export default function App() {
                             aria-hidden="true"
                           />
                           <span>
-                            Opening {panel === "Stats" ? "Statistics" : panel}…
+                            {t("Opening {section}…", {
+                              section: t(
+                                panel === "Stats" ? "Statistics" : panel,
+                              ),
+                            })}
                           </span>
                         </div>
                       }
@@ -507,10 +522,10 @@ export default function App() {
       </div>
       {store.error && (
         <div className="save-error" role="alert">
-          <span>{store.error}</span>
+          <span>{t(store.error)}</span>
           <button
             className="icon-button"
-            aria-label="Dismiss error"
+            aria-label={t("Dismiss error")}
             onClick={() => useApp.setState({ error: "" })}
           >
             <X size={15} />
@@ -519,7 +534,7 @@ export default function App() {
       )}
       {store.notice && (
         <div className="toast" role="status">
-          {store.notice}
+          {t(store.notice)}
         </div>
       )}
       <SavingStatus />
@@ -534,26 +549,29 @@ export default function App() {
         />
       )}{" "}
       {quick && (
-        <Modal title="Quick view" onClose={() => setQuick(null)} wide>
+        <Modal title={t("Quick view")} onClose={() => setQuick(null)} wide>
           <Detail anime={quick} quick onBack={() => setQuick(null)} />
         </Modal>
       )}
       {sample && (
-        <Modal title="Sample collection" onClose={() => setSample(false)}>
+        <Modal title={t("Sample collection")} onClose={() => setSample(false)}>
           <p className="prose">
-            12 anime with example progress and ratings. Your existing entries
-            are kept.
+            {" "}
+            {t(
+              "12 anime with example progress and ratings. Your existing entries are kept.",
+            )}{" "}
           </p>
           <div className="form-actions">
             <button className="button" onClick={() => setSample(false)}>
-              Cancel
+              {" "}
+              {t("Cancel")}{" "}
             </button>
             <button
               className="button primary"
               disabled={sampleBusy}
               onClick={() => void loadSample()}
             >
-              {sampleBusy ? "Adding…" : "Add sample collection"}
+              {sampleBusy ? t("Adding…") : t("Add sample collection")}
             </button>
           </div>
         </Modal>
@@ -562,7 +580,9 @@ export default function App() {
         <div
           className="context-menu"
           role="menu"
-          aria-label={`Actions for ${contextEntry.preferredTitle}`}
+          aria-label={t("Actions for {value0}", {
+            value0: contextEntry.preferredTitle,
+          })}
           style={{ left: context.x, top: Math.max(8, context.y) }}
           onKeyDown={(e) => {
             const buttons = Array.from(
@@ -581,18 +601,17 @@ export default function App() {
           }}
         >
           <button role="menuitem" autoFocus onClick={() => open(contextEntry)}>
-            <ArrowUpRight size={14} />
-            Open
+            <ArrowUpRight size={14} /> {t("Open")}{" "}
           </button>
           <button
             role="menuitem"
             onClick={() => void store.adjustEpisodes(contextEntry.localId, 1)}
           >
-            <Plus size={14} />
-            +1 episode
+            <Plus size={14} /> {t("+1 episode")}{" "}
           </button>
           <label>
-            Status
+            {" "}
+            {t("Status")}{" "}
             <select
               value={contextEntry.personalStatus}
               onChange={(e) =>
@@ -602,13 +621,14 @@ export default function App() {
               }
             >
               {statuses.map((s) => (
-                <option key={s}>{s}</option>
+                <option key={s} value={s}>
+                  {t(s)}
+                </option>
               ))}
             </select>
           </label>
           <button role="menuitem" onClick={() => setRating(contextEntry)}>
-            <Star size={14} />
-            Rate
+            <Star size={14} /> {t("Rate")}{" "}
           </button>
           <button
             role="menuitem"
@@ -619,11 +639,10 @@ export default function App() {
             }
           >
             <Heart size={14} />
-            {contextEntry.liked ? "Unlike" : "Like"}
+            {contextEntry.liked ? t("Unlike") : t("Like")}
           </button>
           <button role="menuitem" onClick={() => setChooseList(contextEntry)}>
-            <Layers size={14} />
-            Add to list
+            <Layers size={14} /> {t("Add to list")}{" "}
           </button>
           <button
             role="menuitem"
@@ -634,55 +653,55 @@ export default function App() {
             }
           >
             <Star size={14} />
-            {contextEntry.favorite ? "Remove favorite" : "Favorite"}
+            {contextEntry.favorite ? t("Remove favorite") : t("Favorite")}
           </button>
           <button role="menuitem" onClick={() => open(contextEntry)}>
-            <Edit3 size={14} />
-            Edit review
+            <Edit3 size={14} /> {t("Edit review")}{" "}
           </button>
           <button
             role="menuitem"
             disabled={offline}
             onClick={() => void refresh(contextEntry)}
           >
-            <RefreshCw size={14} />
-            Refresh metadata
+            <RefreshCw size={14} /> {t("Refresh metadata")}{" "}
           </button>
           <button role="menuitem" onClick={() => setRemove(contextEntry)}>
-            <Trash2 size={14} />
-            Remove from library
+            <Trash2 size={14} /> {t("Remove from library")}{" "}
           </button>
         </div>
       )}
       {remove && (
         <Modal
-          title={`Remove ${remove.preferredTitle}?`}
+          title={t("Remove {value0}?", { value0: remove.preferredTitle })}
           onClose={() => setRemove(null)}
         >
           <p className="prose">
-            This removes its progress, reviews and diary events from this
-            collection and its lists. Export a backup first if you want to keep
-            a copy.
+            {" "}
+            {t(
+              "This removes its progress, reviews and diary events from this collection and its lists. Export a backup first if you want to keep a copy.",
+            )}{" "}
           </p>
           <div className="form-actions">
             <button className="button" onClick={() => setRemove(null)}>
-              Keep anime
+              {" "}
+              {t("Keep anime")}{" "}
             </button>
             <button
               className="button"
               onClick={() =>
-                void store.remove(remove.localId).then(() => {
-                  if (!useApp.getState().error) setRemove(null);
+                void store.remove(remove.localId).then((result) => {
+                  if (result.ok) setRemove(null);
                 })
               }
             >
-              Remove from library
+              {" "}
+              {t("Remove from library")}{" "}
             </button>
           </div>
         </Modal>
       )}
       {chooseList && (
-        <Modal title="Add to a list" onClose={() => setChooseList(null)}>
+        <Modal title={t("Add to a list")} onClose={() => setChooseList(null)}>
           {store.data.lists.length ? (
             store.data.lists.map((l) => (
               <button
@@ -706,20 +725,22 @@ export default function App() {
                           : list,
                       ),
                     }))
-                    .then(() => setChooseList(null))
+                    .then((result) => {
+                      if (result.ok) setChooseList(null);
+                    })
                 }
               >
                 {l.title}
               </button>
             ))
           ) : (
-            <p>Create a list in Lists first.</p>
+            <p>{t("Create a list in Lists first.")}</p>
           )}
         </Modal>
       )}
       {rating && (
         <Modal
-          title={`Rate ${rating.preferredTitle}`}
+          title={t("Rate {value0}", { value0: rating.preferredTitle })}
           onClose={() => setRating(null)}
         >
           <Stars
@@ -742,10 +763,12 @@ export default function App() {
   );
 }
 function SavingStatus() {
+  useLanguage();
   const saving = useApp((state) => state.saving);
   return saving ? (
     <span className="saving-status" role="status">
-      Saving…
+      {" "}
+      {t("Saving…")}{" "}
     </span>
   ) : null;
 }
@@ -760,7 +783,7 @@ class ErrorBoundary extends Component<
   render() {
     return this.state.error ? (
       <div className="empty">
-        <h2>This view couldn't open.</h2>
+        <h2>{t("This view couldn't open.")}</h2>
         <p>{this.state.error}</p>
         <button
           className="button"
@@ -769,7 +792,8 @@ class ErrorBoundary extends Component<
             void useApp.getState().prefs({ section: "Library", view: "Grid" });
           }}
         >
-          Open Library in Grid
+          {" "}
+          {t("Open Library in Grid")}{" "}
         </button>
       </div>
     ) : (

@@ -1,3 +1,7 @@
+import { usePageActive } from "../../core/activity";
+import { t, useLanguage } from "../../core/i18n";
+import { useShallow } from "zustand/react/shallow";
+import { ForYou } from "./ForYou";
 import { useSession } from "../../app/session";
 import { evaluateTonight } from "../../domain/tonight";
 import { useReducedMotion } from "../../core/motion";
@@ -34,12 +38,31 @@ export default function Recommend({
 }: {
   onOpen: (anime: Anime) => void;
 }) {
+  useLanguage();
+  const pageActive = usePageActive();
   const reducedMotion = useReducedMotion();
-  const store = useApp();
+  const store = useApp(
+    useShallow((state) => ({
+      data: state.data,
+      saving: state.saving,
+      prefs: state.prefs,
+      mutate: state.mutate,
+      add: state.add,
+      addMany: state.addMany,
+      edit: state.edit,
+      remove: state.remove,
+      episodes: state.episodes,
+      adjustEpisodes: state.adjustEpisodes,
+      complete: state.complete,
+      rewatch: state.rewatch,
+      notify: state.notify,
+    })),
+  );
   const now = useClock(store.data.preferences.section === "Recommend");
   useRefreshEpisodes(store.data.preferences.section === "Recommend", now);
   const context = useSession((state) => state.recommend);
   const [guided, setGuided] = useState(context?.guided ?? false);
+  const [personalized, setPersonalized] = useState(!context);
   const [intent, setIntent] = useState<"start" | "continue">(
     context?.intent ?? "start",
   );
@@ -94,6 +117,9 @@ export default function Recommend({
     setError("");
     setCatalog([]);
     if (
+      !pageActive ||
+      personalized ||
+      store.data.preferences.section !== "Recommend" ||
       source === "Library" ||
       source === "Watchlist" ||
       source === "AniList"
@@ -137,7 +163,16 @@ export default function Recommend({
       active = false;
       controller.abort();
     };
-  }, [source, genre, format, retry, store.data.preferences.adultContent]);
+  }, [
+    source,
+    genre,
+    format,
+    retry,
+    store.data.preferences.adultContent,
+    store.data.preferences.section,
+    personalized,
+    pageActive,
+  ]);
   const catalogPool = useMemo(
     () =>
       filterRecommendations(
@@ -169,6 +204,7 @@ export default function Recommend({
   );
   useEffect(() => {
     if (!context) return;
+    setPersonalized(false);
     setGuided(context.guided);
     setIntent(context.intent);
     setSource(context.source);
@@ -230,6 +266,15 @@ export default function Recommend({
   const pool = guided
     ? tonight.candidates.map((c) => c.entry.cachedMetadata)
     : catalogPool;
+  useEffect(() => {
+    if (pageActive) return;
+    generation.current++;
+    drawController.current?.abort();
+    if (timer.current) clearTimeout(timer.current);
+    pendingWinner.current = null;
+    setSpinning(false);
+    setReel([]);
+  }, [pageActive]);
   const revealWinner = () => {
     if (!pendingWinner.current) return;
     if (timer.current) clearTimeout(timer.current);
@@ -275,6 +320,8 @@ export default function Recommend({
     intent,
     minutes,
     customMinutes,
+    personalized,
+    store.data.preferences.section,
     store.data.preferences.adultContent,
   ]);
   const spin = async () => {
@@ -365,7 +412,8 @@ export default function Recommend({
   const filters = (
     <aside className="recommendation-filters">
       <label className="field">
-        Choose from
+        {" "}
+        {t("Choose from")}{" "}
         <select
           disabled={guided}
           value={
@@ -375,48 +423,56 @@ export default function Recommend({
         >
           {["Watchlist", "Library", "AniList", "Sample catalog"].map((s) => (
             <option key={s} value={s}>
-              {s === "AniList" ? "All anime · AniList" : s}
+              {s === "AniList" ? t("All anime · AniList") : t(s)}
             </option>
           ))}
         </select>
       </label>
       <label className="field">
-        Genre
+        {" "}
+        {t("Genre")}{" "}
         <select value={genre} onChange={(e) => setGenre(e.target.value)}>
-          <option value="">Any genre</option>
+          <option value="">{t("Any genre")}</option>
           {genres.map((g) => (
-            <option key={g}>{g}</option>
+            <option key={g} value={g}>
+              {t(g)}
+            </option>
           ))}
         </select>
       </label>
       <label className="field">
-        Format
+        {" "}
+        {t("Format")}{" "}
         <select value={format} onChange={(e) => setFormat(e.target.value)}>
-          <option value="">Any format</option>
+          <option value="">{t("Any format")}</option>
           {["TV", "MOVIE", "OVA", "ONA", "SPECIAL", "TV_SHORT"].map((f) => (
-            <option key={f}>{f}</option>
+            <option key={f} value={f}>
+              {t(f)}
+            </option>
           ))}
         </select>
       </label>
       <div className="filter-pair">
         <label className="field">
-          Released since
+          {" "}
+          {t("Released since")}{" "}
           <input
             type="number"
             min="1900"
             max="2100"
-            placeholder="Any year"
+            placeholder={t("Any year")}
             value={minYear}
             onChange={(e) => setMinYear(e.target.value)}
           />
         </label>
         <label className="field">
-          Max episodes
+          {" "}
+          {t("Max episodes")}{" "}
           <input
             type="number"
             min="1"
             max="10000"
-            placeholder="Any length"
+            placeholder={t("Any length")}
             value={maxEpisodes}
             onChange={(e) => setMaxEpisodes(e.target.value)}
           />
@@ -431,14 +487,13 @@ export default function Recommend({
           setMaxEpisodes("");
         }}
       >
-        <RotateCcw size={13} />
-        Reset filters
+        <RotateCcw size={13} /> {t("Reset filters")}{" "}
       </button>
       <p className="muted candidate-count">
         {!guided && source === "AniList"
-          ? "AniList · Online"
+          ? t("AniList · Online")
           : loading
-            ? "Loading…"
+            ? t("Loading…")
             : `${pool.length} matching anime`}
       </p>
       {error && (
@@ -451,7 +506,8 @@ export default function Recommend({
             }
             disabled={spinning}
           >
-            Retry
+            {" "}
+            {t("Retry")}{" "}
           </button>
         </div>
       )}
@@ -459,40 +515,59 @@ export default function Recommend({
   );
   return (
     <div className={`page recommendation-page ${guided ? "is-guided" : ""}`}>
-      <PageTitle title="Recommend" />
+      <PageTitle title={t("Recommend")} />
       <div
         className="tonight-mode"
         role="group"
-        aria-label="Recommendation mode"
+        aria-label={t("Recommendation mode")}
       >
         <button
           className="button"
-          aria-pressed={!guided}
-          onClick={() => setGuided(false)}
+          aria-pressed={personalized}
+          onClick={() => setPersonalized(true)}
         >
-          Explore & shuffle
+          {t("For you")}
         </button>
         <button
           className="button"
-          aria-pressed={guided}
+          aria-pressed={!guided && !personalized}
           onClick={() => {
+            setPersonalized(false);
+            setGuided(false);
+          }}
+        >
+          {" "}
+          {t("Explore & shuffle")}{" "}
+        </button>
+        <button
+          className="button"
+          aria-pressed={guided && !personalized}
+          onClick={() => {
+            setPersonalized(false);
             setGuided(true);
             setSource(intent === "start" ? "Watchlist" : "Library");
           }}
         >
-          What fits tonight?
+          {" "}
+          {t("What fits tonight?")}{" "}
         </button>
       </div>
-      {guided && (
-        <section className="tonight-panel" aria-label="Plan tonight">
+      {personalized && <ForYou onOpen={onOpen} />}
+      {!personalized && guided && (
+        <section className="tonight-panel" aria-label={t("Plan tonight")}>
           <div>
-            <p className="eyebrow">A little time. A good story.</p>
-            <h2>What fits tonight?</h2>
-            <p>All the anime in your collection that fit your time tonight.</p>
+            <p className="eyebrow">{t("A little time. A good story.")}</p>
+            <h2>{t("What fits tonight?")}</h2>
+            <p>
+              {t(
+                "All the anime in your collection that fit your time tonight.",
+              )}
+            </p>
           </div>
           <div className="tonight-controls">
             <label className="field">
-              I want to
+              {" "}
+              {t("I want to")}{" "}
               <select
                 value={intent}
                 onChange={(e) => {
@@ -502,26 +577,28 @@ export default function Recommend({
                   );
                 }}
               >
-                <option value="continue">Continue an anime</option>
-                <option value="start">Start something new</option>
+                <option value="continue">{t("Continue an anime")}</option>
+                <option value="start">{t("Start something new")}</option>
               </select>
             </label>
             <label className="field">
-              Time available
+              {" "}
+              {t("Time available")}{" "}
               <select
                 value={minutes}
                 onChange={(e) => setMinutes(e.target.value)}
               >
-                <option value="25">25 minutes</option>
-                <option value="50">50 minutes</option>
-                <option value="90">90 minutes</option>
-                <option value="custom">Custom duration</option>
-                <option value="any">No time limit</option>
+                <option value="25">{t("25 minutes")}</option>
+                <option value="50">{t("50 minutes")}</option>
+                <option value="90">{t("90 minutes")}</option>
+                <option value="custom">{t("Custom duration")}</option>
+                <option value="any">{t("No time limit")}</option>
               </select>
             </label>
             {minutes === "custom" && (
               <label className="field">
-                Minutes
+                {" "}
+                {t("Minutes")}{" "}
                 <input
                   type="number"
                   min="1"
@@ -534,12 +611,14 @@ export default function Recommend({
           </div>
           {filters}
           {budget !== null && (!Number.isFinite(budget) || budget <= 0) && (
-            <p role="alert">Enter a duration greater than zero.</p>
+            <p role="alert">{t("Enter a duration greater than zero.")}</p>
           )}
           {tonight.unknownDuration > 0 && (
             <p className="muted">
-              {tonight.unknownDuration} anime excluded because their duration is
-              unknown. Choose No time limit to include them.
+              {tonight.unknownDuration}{" "}
+              {t(
+                "anime excluded because their duration is unknown. Choose No time limit to include them.",
+              )}{" "}
             </p>
           )}
           <div className="tonight-draw-controls">
@@ -550,28 +629,31 @@ export default function Recommend({
             >
               <Shuffle size={17} />
               {spinning
-                ? "Choosing…"
+                ? t("Choosing…")
                 : winner
-                  ? "Pick another"
-                  : "Pick an anime"}
+                  ? t("Pick another")
+                  : t("Pick an anime")}
             </button>
             {spinning && (
               <>
-                <span role="status">Finding tonight’s story…</span>
+                <span role="status">{t("Finding tonight’s story…")}</span>
                 <button className="button" onClick={revealWinner}>
-                  Skip animation
+                  {" "}
+                  {t("Skip animation")}{" "}
                 </button>
               </>
             )}
           </div>
-          <p className="muted">{tonight.candidates.length} matching anime</p>
+          <p className="muted">
+            {tonight.candidates.length} {t("matching anime")}
+          </p>
           <div
             className="tonight-candidates"
             aria-busy={spinning}
             ref={candidatesRef}
             tabIndex={0}
             role="region"
-            aria-label="Tonight candidates"
+            aria-label={t("Tonight candidates")}
           >
             {tonight.candidates.map((c) => (
               <article
@@ -582,7 +664,9 @@ export default function Recommend({
                 <button
                   className="tonight-cover"
                   onClick={() => onOpen(c.entry.cachedMetadata)}
-                  aria-label={`Open ${c.entry.preferredTitle}`}
+                  aria-label={t("Open {value0}", {
+                    value0: c.entry.preferredTitle,
+                  })}
                 >
                   <Artwork
                     src={animeCover(c.entry.cachedMetadata, c.entry.coverImage)}
@@ -592,12 +676,12 @@ export default function Recommend({
                 <div>
                   <h3>{c.entry.preferredTitle}</h3>
                   <p>
-                    {c.entry.cachedMetadata.duration ?? "?"} min
+                    {c.entry.cachedMetadata.duration ?? "?"} {t("min")}{" "}
                     {c.entry.cachedMetadata.format === "MOVIE"
-                      ? " · Movie"
-                      : " / episode"}{" "}
+                      ? t(" · Movie")
+                      : t(" / episode")}{" "}
                     · {c.entry.watchedEpisodes}/{c.entry.totalEpisodes ?? "?"}{" "}
-                    ep
+                    {t("ep")}{" "}
                   </p>
                   <p>
                     {
@@ -609,7 +693,7 @@ export default function Recommend({
                   </p>
                   {c.reasons.map((reason) => (
                     <p className="tonight-reason" key={reason}>
-                      {reason}
+                      {t(reason)}
                     </p>
                   ))}
                   <div className="welcome-actions">
@@ -617,7 +701,8 @@ export default function Recommend({
                       className="button"
                       onClick={() => onOpen(c.entry.cachedMetadata)}
                     >
-                      Open anime
+                      {" "}
+                      {t("Open anime")}{" "}
                     </button>
                     {c.entry.personalStatus === "Planning" && (
                       <button
@@ -629,7 +714,8 @@ export default function Recommend({
                           })
                         }
                       >
-                        Start watching
+                        {" "}
+                        {t("Start watching")}{" "}
                       </button>
                     )}
                   </div>
@@ -639,12 +725,16 @@ export default function Recommend({
           </div>
           {!tonight.candidates.length && (
             <div className="tonight-empty">
-              <h3>No anime fits these filters</h3>
+              <h3>{t("No anime fits these filters")}</h3>
               <p>
-                Allow more time or clear your filters to find another story.
+                {" "}
+                {t(
+                  "Allow more time or clear your filters to find another story.",
+                )}{" "}
               </p>
               <button className="button" onClick={() => setMinutes("any")}>
-                No time limit
+                {" "}
+                {t("No time limit")}{" "}
               </button>
               <button
                 className="text-button"
@@ -655,7 +745,8 @@ export default function Recommend({
                   setMaxEpisodes("");
                 }}
               >
-                Clear filters
+                {" "}
+                {t("Clear filters")}{" "}
               </button>
             </div>
           )}
@@ -672,7 +763,7 @@ export default function Recommend({
               <div
                 className="recommendation-roulette"
                 role="status"
-                aria-label="Drawing an anime"
+                aria-label={t("Drawing an anime")}
               >
                 <div className="roulette-pointer" aria-hidden="true" />
                 <div className="roulette-window" aria-hidden="true">
@@ -709,13 +800,14 @@ export default function Recommend({
                     className="button skip-animation"
                     onClick={revealWinner}
                   >
-                    Skip animation
+                    {" "}
+                    {t("Skip animation")}{" "}
                   </button>
                 )}
                 <p className="roulette-caption">
                   {reel.length
-                    ? "Finding your next watch"
-                    : "Exploring the catalog"}
+                    ? t("Finding your next watch")
+                    : t("Exploring the catalog")}
                 </p>
               </div>
             ) : shown ? (
@@ -735,11 +827,13 @@ export default function Recommend({
                   aria-live={spinning ? "off" : "polite"}
                 >
                   <h2>
-                    {spinning ? "Choosing…" : (shown.english ?? shown.romaji)}
+                    {spinning
+                      ? t("Choosing…")
+                      : (shown.english ?? shown.romaji)}
                   </h2>
                   <p>
                     {shown.year ?? "—"} · {shown.format ?? "Anime"} ·{" "}
-                    {shown.episodes ?? "?"} episodes
+                    {shown.episodes ?? "?"} {t("episodes")}{" "}
                   </p>
                   {guided && (
                     <p className="tonight-synopsis">{shown.description}</p>
@@ -749,7 +843,7 @@ export default function Recommend({
                       .find((c) => c.entry.anilistId === shown.anilistId)
                       ?.reasons.map((reason) => (
                         <p key={reason} className="tonight-reason">
-                          {reason}
+                          {t(reason)}
                         </p>
                       ))}
                   {winner && (
@@ -764,8 +858,8 @@ export default function Recommend({
                           className="button"
                           onClick={() => onOpen(shown)}
                         >
-                          View anime
-                          <ArrowUpRight size={14} />
+                          {" "}
+                          {t("View anime")} <ArrowUpRight size={14} />
                         </button>
                         {existing?.personalStatus === "Planning" && (
                           <button
@@ -777,7 +871,8 @@ export default function Recommend({
                               })
                             }
                           >
-                            Start watching
+                            {" "}
+                            {t("Start watching")}{" "}
                           </button>
                         )}
                         <button
@@ -786,7 +881,9 @@ export default function Recommend({
                           onClick={() => void store.add(shown)}
                         >
                           <BookmarkPlus size={15} />
-                          {existing ? "In your library" : "Add to Watchlist"}
+                          {existing
+                            ? t("In your library")
+                            : t("Add to Watchlist")}
                         </button>
                       </div>
                     </>
@@ -800,9 +897,9 @@ export default function Recommend({
                     "Exploring the catalog…"
                   ) : pool.length || (!guided && source === "AniList") ? (
                     <>
-                      What to
-                      <br />
-                      <em>watch?</em>
+                      {" "}
+                      {t("What to")} <br />
+                      <em>{t("watch?")}</em>
                     </>
                   ) : loading ? (
                     "Finding anime…"
@@ -825,10 +922,12 @@ export default function Recommend({
                 )}
                 {!pool.length &&
                   (guided || source !== "AniList") &&
-                  !loading && <p>Try different filters or another source.</p>}
+                  !loading && (
+                    <p>{t("Try different filters or another source.")}</p>
+                  )}
               </div>
             )}
-            {!guided && (
+            {!personalized && !guided && (
               <button
                 className="button primary recommendation-spin"
                 onClick={() => void spin()}
@@ -840,10 +939,10 @@ export default function Recommend({
               >
                 <Shuffle size={17} />
                 {spinning
-                  ? "Choosing…"
+                  ? t("Choosing…")
                   : winner
-                    ? "Pick another"
-                    : "Pick an anime"}
+                    ? t("Pick another")
+                    : t("Pick an anime")}
               </button>
             )}
           </section>

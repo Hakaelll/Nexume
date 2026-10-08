@@ -149,6 +149,12 @@ export const historySchema = z.object({
 });
 export type DiaryEvent = z.infer<typeof historySchema>;
 const preferencesBaseSchema = z.object({
+  theme: z.enum(["light", "dark", "system"]).default("light"),
+  language: z.enum(["es", "en", "system"]).default("system"),
+  hiddenRecommendations: z
+    .array(z.number().int().positive())
+    .max(10000)
+    .default([]),
   section: z
     .enum([
       "Home",

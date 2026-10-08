@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../core/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Star, X } from "lucide-react";
 import { whenNearViewport } from "../core/viewport";
@@ -49,6 +50,7 @@ export function Artwork({
           alt={title}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
+          fetchPriority={eager ? "high" : "auto"}
           onError={() => {
             // A cached native asset can become unavailable after cache eviction.
             attempted.current.add(url);
@@ -76,22 +78,23 @@ export function Stars({
   onChange?: (value: number | null) => void;
   label?: string;
 }) {
+  useLanguage();
   const [hover, setHover] = useState<number | null>(null);
   const shown = hover ?? value ?? 0;
   return (
     <div
       className={`rating ${onChange ? "editable" : ""}`}
-      aria-label={`${label}: ${value === null ? "not rated" : `${value / 2} out of 5 stars`}`}
+      aria-label={`${label}: ${value === null ? t("Not rated") : `${value / 2} out of 5 stars`}`}
     >
       <div
         className="stars"
         role={onChange ? "slider" : undefined}
         tabIndex={onChange ? 0 : undefined}
-        aria-label={onChange ? label : undefined}
+        aria-label={onChange ? t(label) : undefined}
         aria-valuemin={onChange ? 0.5 : undefined}
         aria-valuemax={onChange ? 5 : undefined}
         aria-valuenow={onChange ? (value ?? 1) / 2 : undefined}
-        aria-valuetext={value === null ? "Not rated" : `${value / 2} stars`}
+        aria-valuetext={value === null ? t("Not rated") : `${value / 2} stars`}
         onKeyDown={(e) => {
           if (!onChange) return;
           if (
@@ -145,7 +148,9 @@ export function Stars({
                 <button
                   key={half}
                   tabIndex={-1}
-                  aria-label={`Rate ${(i * 2 + half) / 2} stars`}
+                  aria-label={t("Rate {value0} stars", {
+                    value0: (i * 2 + half) / 2,
+                  })}
                   className={`star-hit half-${half}`}
                   onMouseEnter={() => setHover(i * 2 + half)}
                   onClick={() => onChange(i * 2 + half)}
@@ -160,7 +165,7 @@ export function Stars({
       {onChange && value !== null && (
         <button
           className="icon-button rating-clear"
-          aria-label="Clear rating"
+          aria-label={t("Clear rating")}
           onClick={() => onChange(null)}
         >
           <X size={12} />

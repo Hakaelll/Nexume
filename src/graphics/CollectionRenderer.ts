@@ -73,10 +73,10 @@ export class CollectionRenderer {
     this.config = config;
     this.renderer = new THREE.WebGLRenderer({
       antialias: config.quality !== "Low",
-      alpha: false,
+      alpha: true,
       powerPreference: "high-performance",
     });
-    this.renderer.setClearColor(0xf6f2ee);
+    this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setPixelRatio(
       Math.min(
@@ -176,6 +176,8 @@ export class CollectionRenderer {
       (e.clientX - r.left) / r.width - 0.5,
       (e.clientY - r.top) / r.height - 0.5,
     );
+    this.last = 0;
+    this.schedule();
   };
   private placeholder(title: string) {
     const canvas = document.createElement("canvas");
@@ -348,17 +350,23 @@ export class CollectionRenderer {
   private animate = (time: number) => {
     this.frame = 0;
     if (this.disposed || document.hidden || !this.visible) return;
-    const dt = this.last ? (time - this.last) / 1000 : 1 / 60;
+    const dt = this.last ? Math.min((time - this.last) / 1000, 0.05) : 1 / 60;
     this.last = time;
     const ease = this.config.reducedMotion ? 1 : interpolation(dt);
+    let moving = false;
     for (const o of this.objects.values()) {
       const offset = o.index - this.config.selected;
       const pose = casePose(offset);
-      const float = this.config.reducedMotion
-        ? 0
-        : Math.sin(time * 0.00035 + o.index) * 0.015;
+      if (
+        o.group.position.distanceTo(
+          this.targetVector.set(pose.x, pose.y, pose.z),
+        ) > 0.001 ||
+        Math.abs(o.group.rotation.y - pose.rotation) > 0.001 ||
+        Math.abs(o.group.scale.x - pose.scale) > 0.001
+      )
+        moving = true;
       o.group.position.lerp(
-        this.targetVector.set(pose.x, pose.y + float, pose.z),
+        this.targetVector.set(pose.x, pose.y, pose.z),
         ease,
       );
       o.group.rotation.y = THREE.MathUtils.lerp(
@@ -374,6 +382,15 @@ export class CollectionRenderer {
         offset === 0 ? 1 : Math.max(0.42, 0.82 - Math.abs(offset) * 0.035);
       o.front.material.color.setRGB(brightness, brightness, brightness);
     }
+    const targetX = this.config.reducedMotion ? 0 : this.parallax.x * 0.12;
+    const targetY = this.config.reducedMotion
+      ? 0.05
+      : 0.05 - this.parallax.y * 0.07;
+    if (
+      Math.abs(this.camera.position.x - targetX) > 0.001 ||
+      Math.abs(this.camera.position.y - targetY) > 0.001
+    )
+      moving = true;
     this.camera.position.x = THREE.MathUtils.lerp(
       this.camera.position.x,
       this.config.reducedMotion ? 0 : this.parallax.x * 0.12,
@@ -386,6 +403,9 @@ export class CollectionRenderer {
     );
     this.camera.lookAt(0, 0, 0);
     this.renderer.render(this.scene, this.camera);
+    this.renderer.domElement.dataset.renderedFrames = String(
+      Number(this.renderer.domElement.dataset.renderedFrames ?? 0) + 1,
+    );
     if (this.config.onMetrics && time - this.lastMetrics > 1000) {
       this.config.onMetrics({
         frameMs: dt * 1000,
@@ -406,7 +426,7 @@ export class CollectionRenderer {
       });
       this.lastMetrics = time;
     }
-    if (!this.config.reducedMotion) this.schedule();
+    if (!this.config.reducedMotion && moving) this.schedule();
   };
   dispose() {
     this.disposed = true;

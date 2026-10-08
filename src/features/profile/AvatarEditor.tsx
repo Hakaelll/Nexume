@@ -1,3 +1,4 @@
+import { t, useLanguage } from "../../core/i18n";
 import { useEffect, useRef } from "react";
 import { centeredCrop, type AvatarCrop } from "./avatar";
 
@@ -10,6 +11,7 @@ export function AvatarEditor({
   crop: AvatarCrop;
   onChange: (patch: Partial<AvatarCrop>) => void;
 }) {
+  useLanguage();
   const canvas = useRef<HTMLCanvasElement>(null);
   const drag = useRef<{
     x: number;
@@ -36,10 +38,12 @@ export function AvatarEditor({
   }, [image, width, height]);
   return (
     <div className="avatar-crop-controls avatar-editor">
-      <p>Frame your photo</p>
+      <p>{t("Frame your photo")}</p>
       <small id="avatar-drag-help">
-        Drag the circle to choose your photo. Use the arrow keys for fine
-        adjustments.
+        {" "}
+        {t(
+          "Drag the circle to choose your photo. Use the arrow keys for fine adjustments.",
+        )}{" "}
       </small>
       <div
         className="avatar-image-stage"
@@ -48,11 +52,15 @@ export function AvatarEditor({
           width: `min(100%, ${(320 * width) / height}px)`,
         }}
       >
-        <canvas ref={canvas} role="img" aria-label="Complete uploaded photo" />
+        <canvas
+          ref={canvas}
+          role="img"
+          aria-label={t("Complete uploaded photo")}
+        />
         <button
           type="button"
           className="avatar-crop-circle"
-          aria-label="Move photo selection"
+          aria-label={t("Move photo selection")}
           aria-describedby="avatar-drag-help"
           style={{
             left: `${(left / width) * 100}%`,
@@ -134,9 +142,10 @@ export function AvatarEditor({
         </button>
       </div>
       <label className="field">
-        Zoom
+        {" "}
+        {t("Zoom")}{" "}
         <input
-          aria-label="Zoom"
+          aria-label={t("Zoom")}
           type="range"
           min="1"
           max="3"
@@ -151,7 +160,8 @@ export function AvatarEditor({
         className="text-button"
         onClick={() => onChange(centeredCrop)}
       >
-        Center photo
+        {" "}
+        {t("Center photo")}{" "}
       </button>
     </div>
   );

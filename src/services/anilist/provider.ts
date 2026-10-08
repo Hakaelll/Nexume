@@ -145,11 +145,61 @@ const delay = (ms: number, signal?: AbortSignal) =>
     signal?.addEventListener("abort", abort, { once: true });
   });
 export class AniListMetadataProvider implements AnimeMetadataProvider {
+  private pending = new Map<
+    string,
+    { controller: AbortController; promise: Promise<SearchPage>; users: number }
+  >();
   private cache = new Map<string, { at: number; data: SearchPage }>();
   private nextRequest = 0;
   private gate: Promise<void> = Promise.resolve();
   constructor(private transport: typeof fetch = (...args) => fetch(...args)) {}
-  private async request(
+  private request(
+    query: string,
+    variables: Record<string, unknown>,
+    signal?: AbortSignal,
+  ): Promise<SearchPage> {
+    if (signal?.aborted)
+      return Promise.reject(new DOMException("Cancelled", "AbortError"));
+    const key = JSON.stringify([query, variables]);
+    let request = this.pending.get(key);
+    if (!request) {
+      const controller = new AbortController();
+      request = {
+        controller,
+        promise: this.requestUnshared(query, variables, controller.signal),
+        users: 0,
+      };
+      this.pending.set(key, request);
+    }
+    const shared = request;
+    shared.users++;
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const finish = () => {
+        if (done) return false;
+        done = true;
+        signal?.removeEventListener("abort", abort);
+        if (--shared.users === 0) {
+          if (this.pending.get(key) === shared) this.pending.delete(key);
+          shared.controller.abort();
+        }
+        return true;
+      };
+      const abort = () => {
+        if (finish()) reject(new DOMException("Cancelled", "AbortError"));
+      };
+      signal?.addEventListener("abort", abort, { once: true });
+      shared.promise.then(
+        (data) => {
+          if (finish()) resolve(data);
+        },
+        (error: unknown) => {
+          if (finish()) reject(error);
+        },
+      );
+    });
+  }
+  private async requestUnshared(
     query: string,
     variables: Record<string, unknown>,
     signal?: AbortSignal,
