@@ -1,9 +1,10 @@
 import { t, useLanguage } from "../../core/i18n";
 import { openRecommend } from "../../app/session";
 import { useMemo, useState } from "react";
-import { BookmarkPlus, Play, Shuffle, Search } from "lucide-react";
+import { BookmarkPlus, Shuffle, Search } from "lucide-react";
+import { DeferredAnimeCard } from "../../components/DeferredAnimeCard";
 import { useApp } from "../../app/store";
-import { AnimeCard, Empty, PageTitle } from "../../components/ui";
+import { Empty, PageTitle } from "../../components/ui";
 import type { Entry } from "../../domain/model";
 export default function Watchlist({
   onOpen,
@@ -14,7 +15,6 @@ export default function Watchlist({
 }) {
   useLanguage();
   const libraryEntries = useApp((state) => state.data.entries);
-  const edit = useApp((state) => state.edit);
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
   const [sort, setSort] = useState("added");
@@ -102,35 +102,12 @@ export default function Watchlist({
       {entries.length ? (
         <div className="poster-grid watchlist-grid">
           {entries.map((e) => (
-            <div key={e.localId}>
-              <AnimeCard entry={e} onOpen={() => onOpen(e)} />
-              <div className="watchlist-actions">
-                <button
-                  className="button"
-                  onClick={() =>
-                    void edit(e.localId, { personalStatus: "Watching" })
-                  }
-                >
-                  <Play size={13} /> {t("Start watching")}{" "}
-                </button>
-                <select
-                  aria-label={t("Priority for {value0}", {
-                    value0: e.preferredTitle,
-                  })}
-                  value={e.priority}
-                  onChange={(event) =>
-                    void edit(e.localId, {
-                      priority: Number(event.target.value) as Entry["priority"],
-                    })
-                  }
-                >
-                  <option value="0">{t("Normal")}</option>
-                  <option value="1">{t("Soon")}</option>
-                  <option value="2">{t("Next up")}</option>
-                  <option value="3">{t("Top priority")}</option>
-                </select>
-              </div>
-            </div>
+            <DeferredAnimeCard
+              key={e.localId}
+              entry={e}
+              variant="watchlist"
+              onOpen={onOpen}
+            />
           ))}
         </div>
       ) : (

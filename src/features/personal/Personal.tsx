@@ -2,6 +2,7 @@ import { usePageActive } from "../../core/activity";
 import { t, useLanguage, resolveLanguage } from "../../core/i18n";
 import { personalize } from "../../domain/personalized";
 import { Spotlight } from "./Spotlight";
+import { DeferredAnimeCard } from "../../components/DeferredAnimeCard";
 import { useReducedMotion } from "../../core/motion";
 import {
   recentFirst,
@@ -341,11 +342,11 @@ export function Home({
             aria-label={t("Continue watching anime")}
           >
             {watching.map((e) => (
-              <AnimeCard
+              <DeferredAnimeCard
                 entry={e}
-                tracking
+                variant="tracking"
                 key={e.localId}
-                onOpen={() => onOpen(e)}
+                onOpen={onOpen}
               />
             ))}
           </div>

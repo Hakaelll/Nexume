@@ -1,15 +1,6 @@
 import { t, useLanguage } from "../../core/i18n";
 import { animeCover } from "../../domain/artwork";
-import {
-  useMemo,
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  lazy,
-  Suspense,
-  memo,
-} from "react";
+import { useMemo, useState, useEffect, useRef, lazy, Suspense } from "react";
 import {
   LayoutGrid,
   List,
@@ -21,11 +12,10 @@ import {
   Plus,
 } from "lucide-react";
 import { useApp } from "../../app/store";
-import { watchNearViewport } from "../../core/viewport";
+import { DeferredAnimeCard } from "../../components/DeferredAnimeCard";
 import { filterEntries } from "../../domain/rules";
 import { statuses, type Entry } from "../../domain/model";
 import {
-  AnimeCard,
   Artwork,
   Empty,
   PageTitle,
@@ -34,96 +24,7 @@ import {
   SampleCovers,
 } from "../../components/ui";
 const Collection = lazy(() => import("./Collection"));
-const LibraryCard = memo(function LibraryCard({
-  entry,
-  onOpen,
-  onContext,
-}: {
-  entry: Entry;
-  onOpen: Props["onOpen"];
-  onContext: Props["onContext"];
-}) {
-  useLanguage();
-  const host = useRef<HTMLDivElement>(null);
-  const restoreFocus = useRef(false);
-  const [near, setNear] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const loaded = near || pinned || focused;
-  useEffect(() => {
-    if (!host.current) return;
-    return watchNearViewport(host.current, (visible) => {
-      if (visible)
-        restoreFocus.current = !!host.current?.contains(document.activeElement);
-      setNear(visible);
-    });
-  }, []);
-  useLayoutEffect(() => {
-    if (loaded && restoreFocus.current) {
-      host.current
-        ?.querySelector<HTMLButtonElement>(".cover-button")
-        ?.focus({ preventScroll: true });
-      restoreFocus.current = false;
-    }
-  }, [loaded]);
-  const title = entry.preferredTitle;
-  return (
-    <div
-      ref={host}
-      className="library-card-slot"
-      onFocusCapture={() => {
-        if (loaded) setFocused(true);
-      }}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget))
-          setFocused(false);
-      }}
-    >
-      {loaded ? (
-        <AnimeCard
-          entry={entry}
-          onOpen={() => onOpen(entry)}
-          onContext={(event) => onContext(event, entry)}
-          onInteractionChange={setPinned}
-        />
-      ) : (
-        <article
-          className="anime-card"
-          data-anime-id={entry.anilistId}
-          onContextMenu={(event) => onContext(event, entry)}
-        >
-          <button
-            className="cover-button"
-            onClick={() => onOpen(entry)}
-            aria-label={t("Open {value0}", { value0: title })}
-          >
-            <div className="artwork">
-              <div className="cover-placeholder">
-                <strong>{title}</strong>
-              </div>
-            </div>
-          </button>
-          <div className="card-actions" aria-hidden="true">
-            <span className="icon-button" />
-          </div>
-          <div className="card-title">
-            <button onClick={() => onOpen(entry)} title={title}>
-              {title}
-            </button>
-            <span>{entry.cachedMetadata.year ?? "TBA"}</span>
-          </div>
-          <div className="card-meta">
-            <span className="library-rating-placeholder" aria-hidden="true" />
-            <span>
-              {entry.watchedEpisodes}/{entry.totalEpisodes ?? "?"}{" "}
-              {t("ep")}{" "}
-            </span>
-          </div>
-        </article>
-      )}
-    </div>
-  );
-});
+
 interface Props {
   onOpen: (e: Entry) => void;
   onSearch: () => void;
@@ -472,7 +373,7 @@ export default function Library({
               }}
             >
               {entries.map((entry) => (
-                <LibraryCard
+                <DeferredAnimeCard
                   key={entry.localId}
                   entry={entry}
                   onOpen={onOpen}

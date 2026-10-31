@@ -1120,7 +1120,7 @@ p {
   padding-inline: 14px 8px;
 }
 .header-search:focus-within {
-  outline: 1px solid #414040;
+  outline: 2px solid var(--focus);
 }
 .header-search kbd {
   background: var(--paper);
@@ -1209,7 +1209,7 @@ textarea {
 }
 input[type="checkbox"],
 input[type="range"] {
-  accent-color: #414040;
+  accent-color: var(--accent);
 }
 .artwork,
 .cover-button,
@@ -1260,7 +1260,7 @@ input[type="range"] {
   background: var(--border);
 }
 .progress-track > div {
-  background: #414040;
+  background: var(--text);
 }
 /* Real cover artwork provides the playful tile composition without extra copy. */
 .home-welcome {
@@ -1345,6 +1345,13 @@ input[type="range"] {
 .discover-tabs button.active {
   background: var(--paper);
   color: var(--text);
+}
+html[data-theme="dark"] .discover-tabs {
+  background: var(--panel-soft);
+}
+html[data-theme="dark"] .discover-tabs button.active {
+  background: var(--selected-bg);
+  color: var(--selected-text);
 }
 .view-switch {
   border-color: var(--border);

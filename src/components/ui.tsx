@@ -23,20 +23,33 @@ export function Artwork(props: React.ComponentProps<typeof DisplayArtwork>) {
 export function Progress({
   entry,
   compact = false,
+  onBusyChange,
 }: {
   entry: Entry;
   compact?: boolean;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   useLanguage();
   const store = useApp.getState();
   const [draft, setDraft] = useState(String(entry.watchedEpisodes));
+  const pending = useRef(0);
+  const save = async (operation: () => Promise<unknown>) => {
+    pending.current++;
+    onBusyChange?.(true);
+    try {
+      await operation();
+    } finally {
+      if (--pending.current === 0) onBusyChange?.(false);
+    }
+  };
   useEffect(
     () => setDraft(String(entry.watchedEpisodes)),
     [entry.watchedEpisodes],
   );
   const update = () => {
     const n = Number(draft);
-    if (Number.isInteger(n) && n >= 0) void store.episodes(entry.localId, n);
+    if (Number.isInteger(n) && n >= 0)
+      void save(() => store.episodes(entry.localId, n));
     else setDraft(String(entry.watchedEpisodes));
   };
   const full =
@@ -58,7 +71,9 @@ export function Progress({
               value0: entry.preferredTitle,
             })}
             disabled={entry.watchedEpisodes === 0}
-            onClick={() => void store.adjustEpisodes(entry.localId, -1)}
+            onClick={() =>
+              void save(() => store.adjustEpisodes(entry.localId, -1))
+            }
           >
             <Minus size={14} />
           </button>
@@ -86,7 +101,9 @@ export function Progress({
               entry.totalEpisodes !== null &&
               entry.watchedEpisodes >= entry.totalEpisodes
             }
-            onClick={() => void store.adjustEpisodes(entry.localId, 1)}
+            onClick={() =>
+              void save(() => store.adjustEpisodes(entry.localId, 1))
+            }
           >
             <Plus size={16} />
           </button>
@@ -284,10 +301,11 @@ export function AnimeCard({
     ) ?? suppliedEntry;
   const [ratingOpen, setRatingOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [progressBusy, setProgressBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   useEffect(() => {
-    onInteractionChange?.(busy || ratingOpen || !!feedback);
-  }, [busy, ratingOpen, feedback, onInteractionChange]);
+    onInteractionChange?.(busy || progressBusy || ratingOpen || !!feedback);
+  }, [busy, progressBusy, ratingOpen, feedback, onInteractionChange]);
   useEffect(() => {
     if (!feedback) return;
     const timer = setTimeout(() => setFeedback(""), 2000);
@@ -422,9 +440,14 @@ export function AnimeCard({
               entry.totalEpisodes !== null &&
               entry.watchedEpisodes >= entry.totalEpisodes
             }
-            onClick={() =>
-              void useApp.getState().adjustEpisodes(entry.localId, 1)
-            }
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await store.adjustEpisodes(entry.localId, 1);
+              } finally {
+                setBusy(false);
+              }
+            }}
           >
             <Plus size={15} />
           </button>
@@ -438,16 +461,12 @@ export function AnimeCard({
       </div>
       {entry ? (
         tracking ? (
-          <Progress entry={entry} compact />
+          <Progress entry={entry} compact onBusyChange={setProgressBusy} />
         ) : (
           <div className="card-meta">
             <Stars
               value={entry.personalRating}
-              onChange={(value) =>
-                void useApp
-                  .getState()
-                  .edit(entry.localId, { personalRating: value })
-              }
+              onChange={(value) => void act({ personalRating: value })}
             />
             <span>
               {entry.watchedEpisodes}/{entry.totalEpisodes ?? "?"}{" "}
