@@ -12,7 +12,7 @@ The October 2026 improvement brief preserves the six supplied screenshots as vis
 - For you ranks local affinity from favorites, likes and ratings of at least 8/10. New proposals exclude saved, hidden and disallowed adult titles; ties are deterministic. Hidden IDs can be restored in Settings.
 - What fits tonight retains the existing duration and aired-episode evaluator. Random discovery remains a separate mode.
 - Search shows local matches immediately, including offline. AniList results are identified separately.
-- Preserve Windows, existing backups, local storage and privacy. No new platforms, paid AI, account synchronization or automatic installer publication.
+- Preserve Windows, existing backups, local storage and privacy. No new platforms, paid AI or account synchronization. Publish installers only at the user's explicit request.
 
 ## Verification boundary
 

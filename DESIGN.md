@@ -7,11 +7,14 @@ The six October 7 screenshots and PRODUCT.md define the incumbent visual world. 
 `tokens.css` defines canvas, panel, soft panel, text, secondary text, border, accent, focus and movement values for light and charcoal dark themes. Structural and Playful rules consume these aliases; `workspace.css` contains responsive refinements shared by both themes. The standalone public viewer retains its own styling.
 
 - Light: canvas #f6f2ee, panel #ffffff, text #111111.
-- Dark: canvas #181719, panel #242226, text #f6f2ee.
+- Dark: neutral canvas #181818, panel #242424, raised panel #303030, text #f4f4f4 and secondary text #b8b8b8. Decorative borders use #414141; controls use a stronger border.
 - Magenta #ff2e95 is shared across themes. Image banners keep white text and a dark scrim.
 - Headings scale with available width. Covers reserve aspect ratios. Grid titles have three lines and a complete accessible title.
 - Home retains two wide columns where space permits, then stacks. Its compact protagonist includes a real banner when available.
+- Header, pages, Library and detail share a centered 1840px maximum including 40px desktop gutters. Header alignment accounts for the actual scrolling gutter; narrow windows retain their smaller gutters. Long prose stays within 70ch.
+- Native controls inherit the resolved color scheme. Magenta buttons use #111111 text in both themes; selected navigation icons inherit their label color. Progress fills remain distinct from their tracks.
 - Collection allocates height from the viewport while preserving navigation and thumbnails. Profile shows existing favorites and one compact add slot, up to six favorites.
+- Collection reserves separate rows for heading, canvas, progress, filmstrip and hints, with a 760px maximum scene height and scrolling in short windows. Deferred Library, Home and Watchlist cards preserve focus, pending operations and placeholder geometry.
 
 ## Interaction and motion
 

@@ -1,0 +1,1101 @@
+{
+  "environment": "Production frontend, Edge headless, QHD 100%, local covers, isolated contexts, reduced motion. Load includes automation overhead; navigation measures dispatch to the next frame containing the detail title. Browser persistence is verified. These are not native WebView2 or GPU timings.",
+  "rows": [
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 0,
+      "version": "previous",
+      "loadMs": 1227.384399999999,
+      "navigationMs": 32.10000002384186,
+      "heapMiB": 8.117774963378906,
+      "fullCards": 100,
+      "nodes": 4178,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 0,
+      "version": "current",
+      "loadMs": 1193.849900000001,
+      "navigationMs": 19.69999998807907,
+      "heapMiB": 5.70465087890625,
+      "fullCards": 8,
+      "nodes": 1883,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 1,
+      "version": "current",
+      "loadMs": 1122.9565999999977,
+      "navigationMs": 18.69999998807907,
+      "heapMiB": 5.701728820800781,
+      "fullCards": 8,
+      "nodes": 1883,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 1,
+      "version": "previous",
+      "loadMs": 1226.4938000000002,
+      "navigationMs": 36.10000002384186,
+      "heapMiB": 8.126327514648438,
+      "fullCards": 100,
+      "nodes": 4178,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 2,
+      "version": "previous",
+      "loadMs": 1192.0944000000018,
+      "navigationMs": 25.19999998807907,
+      "heapMiB": 8.120758056640625,
+      "fullCards": 100,
+      "nodes": 4178,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 2,
+      "version": "current",
+      "loadMs": 1127.0178000000014,
+      "navigationMs": 18.100000023841858,
+      "heapMiB": 5.705039978027344,
+      "fullCards": 8,
+      "nodes": 1883,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 3,
+      "version": "current",
+      "loadMs": 1146.422000000006,
+      "navigationMs": 19.30000001192093,
+      "heapMiB": 5.706306457519531,
+      "fullCards": 8,
+      "nodes": 1883,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 3,
+      "version": "previous",
+      "loadMs": 1183.6191000000035,
+      "navigationMs": 29.69999998807907,
+      "heapMiB": 8.124992370605469,
+      "fullCards": 100,
+      "nodes": 4178,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 4,
+      "version": "previous",
+      "loadMs": 1200.953800000003,
+      "navigationMs": 27.899999976158142,
+      "heapMiB": 8.119869232177734,
+      "fullCards": 100,
+      "nodes": 4178,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "round": 4,
+      "version": "current",
+      "loadMs": 1170.4013999999952,
+      "navigationMs": 17,
+      "heapMiB": 5.704669952392578,
+      "fullCards": 8,
+      "nodes": 1883,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 0,
+      "version": "previous",
+      "loadMs": 1069.760000000002,
+      "navigationMs": 42.89999997615814,
+      "heapMiB": 11.278472900390625,
+      "fullCards": 100,
+      "nodes": 8727,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 0,
+      "version": "current",
+      "loadMs": 1049.8727999999974,
+      "navigationMs": 23.69999998807907,
+      "heapMiB": 6.304290771484375,
+      "fullCards": 21,
+      "nodes": 3033,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 1,
+      "version": "current",
+      "loadMs": 1094.9017000000022,
+      "navigationMs": 34.90000003576279,
+      "heapMiB": 6.304412841796875,
+      "fullCards": 21,
+      "nodes": 3033,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 1,
+      "version": "previous",
+      "loadMs": 1151.8007999999973,
+      "navigationMs": 83.30000001192093,
+      "heapMiB": 11.277359008789062,
+      "fullCards": 100,
+      "nodes": 8727,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 2,
+      "version": "previous",
+      "loadMs": 1300.1912999999986,
+      "navigationMs": 76,
+      "heapMiB": 11.277091979980469,
+      "fullCards": 100,
+      "nodes": 8727,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 2,
+      "version": "current",
+      "loadMs": 1487.4289999999964,
+      "navigationMs": 42.10000002384186,
+      "heapMiB": 6.304046630859375,
+      "fullCards": 21,
+      "nodes": 3033,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 3,
+      "version": "current",
+      "loadMs": 1191.3977000000014,
+      "navigationMs": 35.89999997615814,
+      "heapMiB": 6.3018951416015625,
+      "fullCards": 21,
+      "nodes": 3033,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 3,
+      "version": "previous",
+      "loadMs": 1235.3279000000039,
+      "navigationMs": 63.80000001192093,
+      "heapMiB": 11.27023696899414,
+      "fullCards": 100,
+      "nodes": 8727,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 4,
+      "version": "previous",
+      "loadMs": 1375.3128999999972,
+      "navigationMs": 68.59999996423721,
+      "heapMiB": 11.27718734741211,
+      "fullCards": 100,
+      "nodes": 8727,
+      "errors": 0
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "round": 4,
+      "version": "current",
+      "loadMs": 1094.3493999999992,
+      "navigationMs": 23.399999976158142,
+      "heapMiB": 6.302886962890625,
+      "fullCards": 21,
+      "nodes": 3033,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 0,
+      "version": "previous",
+      "loadMs": 1034.9740999999922,
+      "navigationMs": 64.80000001192093,
+      "heapMiB": 21.647586822509766,
+      "fullCards": 500,
+      "nodes": 20578,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 0,
+      "version": "current",
+      "loadMs": 1337.1791999999987,
+      "navigationMs": 42,
+      "heapMiB": 9.249382019042969,
+      "fullCards": 8,
+      "nodes": 8283,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 1,
+      "version": "current",
+      "loadMs": 987.8767999999982,
+      "navigationMs": 25.5,
+      "heapMiB": 9.254104614257812,
+      "fullCards": 8,
+      "nodes": 8283,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 1,
+      "version": "previous",
+      "loadMs": 948.0705000000016,
+      "navigationMs": 65.90000003576279,
+      "heapMiB": 21.63817596435547,
+      "fullCards": 500,
+      "nodes": 20578,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 2,
+      "version": "previous",
+      "loadMs": 920.0445000000036,
+      "navigationMs": 111.30000001192093,
+      "heapMiB": 21.643970489501953,
+      "fullCards": 500,
+      "nodes": 20578,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 2,
+      "version": "current",
+      "loadMs": 943.801099999997,
+      "navigationMs": 30.100000023841858,
+      "heapMiB": 9.246517181396484,
+      "fullCards": 8,
+      "nodes": 8283,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 3,
+      "version": "current",
+      "loadMs": 898.9789000000019,
+      "navigationMs": 20.69999998807907,
+      "heapMiB": 9.249786376953125,
+      "fullCards": 8,
+      "nodes": 8283,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 3,
+      "version": "previous",
+      "loadMs": 902.7917999999918,
+      "navigationMs": 79.90000003576279,
+      "heapMiB": 21.64779281616211,
+      "fullCards": 500,
+      "nodes": 20578,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 4,
+      "version": "previous",
+      "loadMs": 1103.1895000000077,
+      "navigationMs": 66.60000002384186,
+      "heapMiB": 21.644115447998047,
+      "fullCards": 500,
+      "nodes": 20578,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "round": 4,
+      "version": "current",
+      "loadMs": 999.1777000000002,
+      "navigationMs": 26.30000001192093,
+      "heapMiB": 9.246055603027344,
+      "fullCards": 8,
+      "nodes": 8283,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 0,
+      "version": "previous",
+      "loadMs": 1280.5700999999972,
+      "navigationMs": 99.90000003576279,
+      "heapMiB": 37.33626937866211,
+      "fullCards": 500,
+      "nodes": 43527,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 0,
+      "version": "current",
+      "loadMs": 1119.7854999999981,
+      "navigationMs": 24.69999998807907,
+      "heapMiB": 9.706916809082031,
+      "fullCards": 21,
+      "nodes": 9033,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 1,
+      "version": "current",
+      "loadMs": 1144.6854999999923,
+      "navigationMs": 22.099999964237213,
+      "heapMiB": 9.705642700195312,
+      "fullCards": 21,
+      "nodes": 9033,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 1,
+      "version": "previous",
+      "loadMs": 1313.1578000000009,
+      "navigationMs": 92.29999995231628,
+      "heapMiB": 37.3372917175293,
+      "fullCards": 500,
+      "nodes": 43527,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 2,
+      "version": "previous",
+      "loadMs": 1299.7016000000003,
+      "navigationMs": 94.80000001192093,
+      "heapMiB": 37.294612884521484,
+      "fullCards": 500,
+      "nodes": 43527,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 2,
+      "version": "current",
+      "loadMs": 1086.1129000000074,
+      "navigationMs": 21,
+      "heapMiB": 9.69942855834961,
+      "fullCards": 21,
+      "nodes": 9033,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 3,
+      "version": "current",
+      "loadMs": 1061.3652000000002,
+      "navigationMs": 20.399999976158142,
+      "heapMiB": 9.700843811035156,
+      "fullCards": 21,
+      "nodes": 9033,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 3,
+      "version": "previous",
+      "loadMs": 1287.346399999995,
+      "navigationMs": 96.70000004768372,
+      "heapMiB": 37.294921875,
+      "fullCards": 500,
+      "nodes": 43527,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 4,
+      "version": "previous",
+      "loadMs": 1331.4984000000113,
+      "navigationMs": 91.79999995231628,
+      "heapMiB": 37.338871002197266,
+      "fullCards": 500,
+      "nodes": 43527,
+      "errors": 0
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "round": 4,
+      "version": "current",
+      "loadMs": 1100.3410999999905,
+      "navigationMs": 22.30000001192093,
+      "heapMiB": 9.700450897216797,
+      "fullCards": 21,
+      "nodes": 9033,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 0,
+      "version": "previous",
+      "loadMs": 1368.978700000007,
+      "navigationMs": 110.09999996423721,
+      "heapMiB": 38.427528381347656,
+      "fullCards": 1000,
+      "nodes": 41078,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 0,
+      "version": "current",
+      "loadMs": 997.4729000000079,
+      "navigationMs": 25.399999976158142,
+      "heapMiB": 13.682453155517578,
+      "fullCards": 8,
+      "nodes": 16283,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 1,
+      "version": "current",
+      "loadMs": 999.4193999999989,
+      "navigationMs": 27.899999976158142,
+      "heapMiB": 13.666915893554688,
+      "fullCards": 8,
+      "nodes": 16283,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 1,
+      "version": "previous",
+      "loadMs": 1364.5973999999987,
+      "navigationMs": 129.60000002384186,
+      "heapMiB": 38.42764663696289,
+      "fullCards": 1000,
+      "nodes": 41078,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 2,
+      "version": "previous",
+      "loadMs": 1515.9671999999991,
+      "navigationMs": 116.59999996423721,
+      "heapMiB": 38.42624282836914,
+      "fullCards": 1000,
+      "nodes": 41078,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 2,
+      "version": "current",
+      "loadMs": 940.5803000000014,
+      "navigationMs": 26.400000035762787,
+      "heapMiB": 13.668651580810547,
+      "fullCards": 8,
+      "nodes": 16283,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 3,
+      "version": "current",
+      "loadMs": 901.3424000000086,
+      "navigationMs": 33.89999997615814,
+      "heapMiB": 13.678226470947266,
+      "fullCards": 8,
+      "nodes": 16283,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 3,
+      "version": "previous",
+      "loadMs": 1403.3015000000014,
+      "navigationMs": 98.39999997615814,
+      "heapMiB": 38.42601776123047,
+      "fullCards": 1000,
+      "nodes": 41078,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 4,
+      "version": "previous",
+      "loadMs": 1347.499800000005,
+      "navigationMs": 122.20000004768372,
+      "heapMiB": 38.430145263671875,
+      "fullCards": 1000,
+      "nodes": 41078,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "round": 4,
+      "version": "current",
+      "loadMs": 966.9306999999972,
+      "navigationMs": 34.30000001192093,
+      "heapMiB": 13.684154510498047,
+      "fullCards": 8,
+      "nodes": 16283,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 0,
+      "version": "previous",
+      "loadMs": 1648.360400000005,
+      "navigationMs": 225,
+      "heapMiB": 69.61870956420898,
+      "fullCards": 1000,
+      "nodes": 87027,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 0,
+      "version": "current",
+      "loadMs": 1209.9257000000216,
+      "navigationMs": 29.100000023841858,
+      "heapMiB": 14.042984008789062,
+      "fullCards": 21,
+      "nodes": 16533,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 1,
+      "version": "current",
+      "loadMs": 1176.7685000000056,
+      "navigationMs": 24,
+      "heapMiB": 14.043220520019531,
+      "fullCards": 21,
+      "nodes": 16533,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 1,
+      "version": "previous",
+      "loadMs": 1687.0702000000165,
+      "navigationMs": 237.5,
+      "heapMiB": 69.619140625,
+      "fullCards": 1000,
+      "nodes": 87027,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 2,
+      "version": "previous",
+      "loadMs": 1703.2934000000241,
+      "navigationMs": 245.10000002384186,
+      "heapMiB": 69.61740112304688,
+      "fullCards": 1000,
+      "nodes": 87027,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 2,
+      "version": "current",
+      "loadMs": 1166.155300000013,
+      "navigationMs": 24.69999998807907,
+      "heapMiB": 14.048038482666016,
+      "fullCards": 21,
+      "nodes": 16533,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 3,
+      "version": "current",
+      "loadMs": 1166.6245000000054,
+      "navigationMs": 25,
+      "heapMiB": 14.04043960571289,
+      "fullCards": 21,
+      "nodes": 16533,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 3,
+      "version": "previous",
+      "loadMs": 1528.1074999999837,
+      "navigationMs": 230.60000002384186,
+      "heapMiB": 69.39952087402344,
+      "fullCards": 1000,
+      "nodes": 87027,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 4,
+      "version": "previous",
+      "loadMs": 1778.9934000000067,
+      "navigationMs": 239.60000002384186,
+      "heapMiB": 69.61833572387695,
+      "fullCards": 1000,
+      "nodes": 87027,
+      "errors": 0
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "round": 4,
+      "version": "current",
+      "loadMs": 1331.0323999999964,
+      "navigationMs": 32.89999997615814,
+      "heapMiB": 14.0394287109375,
+      "fullCards": 21,
+      "nodes": 16533,
+      "errors": 0
+    }
+  ],
+  "summary": [
+    {
+      "count": 100,
+      "section": "Home",
+      "version": "previous",
+      "samples": 5,
+      "loadMs": {
+        "median": 1200.953800000003,
+        "min": 1183.6191000000035,
+        "max": 1227.384399999999
+      },
+      "navigationMs": {
+        "median": 29.69999998807907,
+        "min": 25.19999998807907,
+        "max": 36.10000002384186
+      },
+      "heapMiB": {
+        "median": 8.120758056640625,
+        "min": 8.117774963378906,
+        "max": 8.126327514648438
+      },
+      "fullCards": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "nodes": {
+        "median": 4178,
+        "min": 4178,
+        "max": 4178
+      }
+    },
+    {
+      "count": 100,
+      "section": "Home",
+      "version": "current",
+      "samples": 5,
+      "loadMs": {
+        "median": 1146.422000000006,
+        "min": 1122.9565999999977,
+        "max": 1193.849900000001
+      },
+      "navigationMs": {
+        "median": 18.69999998807907,
+        "min": 17,
+        "max": 19.69999998807907
+      },
+      "heapMiB": {
+        "median": 5.704669952392578,
+        "min": 5.701728820800781,
+        "max": 5.706306457519531
+      },
+      "fullCards": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "nodes": {
+        "median": 1883,
+        "min": 1883,
+        "max": 1883
+      }
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "version": "previous",
+      "samples": 5,
+      "loadMs": {
+        "median": 1235.3279000000039,
+        "min": 1069.760000000002,
+        "max": 1375.3128999999972
+      },
+      "navigationMs": {
+        "median": 68.59999996423721,
+        "min": 42.89999997615814,
+        "max": 83.30000001192093
+      },
+      "heapMiB": {
+        "median": 11.27718734741211,
+        "min": 11.27023696899414,
+        "max": 11.278472900390625
+      },
+      "fullCards": {
+        "median": 100,
+        "min": 100,
+        "max": 100
+      },
+      "nodes": {
+        "median": 8727,
+        "min": 8727,
+        "max": 8727
+      }
+    },
+    {
+      "count": 100,
+      "section": "Watchlist",
+      "version": "current",
+      "samples": 5,
+      "loadMs": {
+        "median": 1094.9017000000022,
+        "min": 1049.8727999999974,
+        "max": 1487.4289999999964
+      },
+      "navigationMs": {
+        "median": 34.90000003576279,
+        "min": 23.399999976158142,
+        "max": 42.10000002384186
+      },
+      "heapMiB": {
+        "median": 6.304046630859375,
+        "min": 6.3018951416015625,
+        "max": 6.304412841796875
+      },
+      "fullCards": {
+        "median": 21,
+        "min": 21,
+        "max": 21
+      },
+      "nodes": {
+        "median": 3033,
+        "min": 3033,
+        "max": 3033
+      }
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "version": "previous",
+      "samples": 5,
+      "loadMs": {
+        "median": 948.0705000000016,
+        "min": 902.7917999999918,
+        "max": 1103.1895000000077
+      },
+      "navigationMs": {
+        "median": 66.60000002384186,
+        "min": 64.80000001192093,
+        "max": 111.30000001192093
+      },
+      "heapMiB": {
+        "median": 21.644115447998047,
+        "min": 21.63817596435547,
+        "max": 21.64779281616211
+      },
+      "fullCards": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "nodes": {
+        "median": 20578,
+        "min": 20578,
+        "max": 20578
+      }
+    },
+    {
+      "count": 500,
+      "section": "Home",
+      "version": "current",
+      "samples": 5,
+      "loadMs": {
+        "median": 987.8767999999982,
+        "min": 898.9789000000019,
+        "max": 1337.1791999999987
+      },
+      "navigationMs": {
+        "median": 26.30000001192093,
+        "min": 20.69999998807907,
+        "max": 42
+      },
+      "heapMiB": {
+        "median": 9.249382019042969,
+        "min": 9.246055603027344,
+        "max": 9.254104614257812
+      },
+      "fullCards": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "nodes": {
+        "median": 8283,
+        "min": 8283,
+        "max": 8283
+      }
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "version": "previous",
+      "samples": 5,
+      "loadMs": {
+        "median": 1299.7016000000003,
+        "min": 1280.5700999999972,
+        "max": 1331.4984000000113
+      },
+      "navigationMs": {
+        "median": 94.80000001192093,
+        "min": 91.79999995231628,
+        "max": 99.90000003576279
+      },
+      "heapMiB": {
+        "median": 37.33626937866211,
+        "min": 37.294612884521484,
+        "max": 37.338871002197266
+      },
+      "fullCards": {
+        "median": 500,
+        "min": 500,
+        "max": 500
+      },
+      "nodes": {
+        "median": 43527,
+        "min": 43527,
+        "max": 43527
+      }
+    },
+    {
+      "count": 500,
+      "section": "Watchlist",
+      "version": "current",
+      "samples": 5,
+      "loadMs": {
+        "median": 1100.3410999999905,
+        "min": 1061.3652000000002,
+        "max": 1144.6854999999923
+      },
+      "navigationMs": {
+        "median": 22.099999964237213,
+        "min": 20.399999976158142,
+        "max": 24.69999998807907
+      },
+      "heapMiB": {
+        "median": 9.700843811035156,
+        "min": 9.69942855834961,
+        "max": 9.706916809082031
+      },
+      "fullCards": {
+        "median": 21,
+        "min": 21,
+        "max": 21
+      },
+      "nodes": {
+        "median": 9033,
+        "min": 9033,
+        "max": 9033
+      }
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "version": "previous",
+      "samples": 5,
+      "loadMs": {
+        "median": 1368.978700000007,
+        "min": 1347.499800000005,
+        "max": 1515.9671999999991
+      },
+      "navigationMs": {
+        "median": 116.59999996423721,
+        "min": 98.39999997615814,
+        "max": 129.60000002384186
+      },
+      "heapMiB": {
+        "median": 38.427528381347656,
+        "min": 38.42601776123047,
+        "max": 38.430145263671875
+      },
+      "fullCards": {
+        "median": 1000,
+        "min": 1000,
+        "max": 1000
+      },
+      "nodes": {
+        "median": 41078,
+        "min": 41078,
+        "max": 41078
+      }
+    },
+    {
+      "count": 1000,
+      "section": "Home",
+      "version": "current",
+      "samples": 5,
+      "loadMs": {
+        "median": 966.9306999999972,
+        "min": 901.3424000000086,
+        "max": 999.4193999999989
+      },
+      "navigationMs": {
+        "median": 27.899999976158142,
+        "min": 25.399999976158142,
+        "max": 34.30000001192093
+      },
+      "heapMiB": {
+        "median": 13.678226470947266,
+        "min": 13.666915893554688,
+        "max": 13.684154510498047
+      },
+      "fullCards": {
+        "median": 8,
+        "min": 8,
+        "max": 8
+      },
+      "nodes": {
+        "median": 16283,
+        "min": 16283,
+        "max": 16283
+      }
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "version": "previous",
+      "samples": 5,
+      "loadMs": {
+        "median": 1687.0702000000165,
+        "min": 1528.1074999999837,
+        "max": 1778.9934000000067
+      },
+      "navigationMs": {
+        "median": 237.5,
+        "min": 225,
+        "max": 245.10000002384186
+      },
+      "heapMiB": {
+        "median": 69.61833572387695,
+        "min": 69.39952087402344,
+        "max": 69.619140625
+      },
+      "fullCards": {
+        "median": 1000,
+        "min": 1000,
+        "max": 1000
+      },
+      "nodes": {
+        "median": 87027,
+        "min": 87027,
+        "max": 87027
+      }
+    },
+    {
+      "count": 1000,
+      "section": "Watchlist",
+      "version": "current",
+      "samples": 5,
+      "loadMs": {
+        "median": 1176.7685000000056,
+        "min": 1166.155300000013,
+        "max": 1331.0323999999964
+      },
+      "navigationMs": {
+        "median": 25,
+        "min": 24,
+        "max": 32.89999997615814
+      },
+      "heapMiB": {
+        "median": 14.042984008789062,
+        "min": 14.0394287109375,
+        "max": 14.048038482666016
+      },
+      "fullCards": {
+        "median": 21,
+        "min": 21,
+        "max": 21
+      },
+      "nodes": {
+        "median": 16533,
+        "min": 16533,
+        "max": 16533
+      }
+    }
+  ],
+  "baselineCommit": "114b689b92f670e19090a0d4feb0bf0253a4a03f",
+  "currentCodeCommit": "5c2cdec"
+}
