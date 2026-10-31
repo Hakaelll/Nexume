@@ -196,7 +196,7 @@ h2 {
 kbd {
   background: transparent;
   color: var(--soft);
-  border: 1px solid #b3b3b3;
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   font-family: Inter, Arial, sans-serif;
 }
@@ -225,7 +225,7 @@ kbd {
 }
 .header-suggestions .suggestion-more {
   color: var(--ink);
-  border-color: #b3b3b3;
+  border-color: var(--control-border);
 }
 /* Shared controls inherit the paper/ink section that contains them. */
 a,
@@ -284,8 +284,8 @@ textarea,
 .detail-actions select {
   background: var(--bg);
   color: var(--fg);
-  border-color: #9f9f9f;
-  color-scheme: light;
+  border-color: var(--control-border);
+  color-scheme: inherit;
 }
 input::placeholder,
 textarea::placeholder {
@@ -296,7 +296,7 @@ input[type="range"] {
   accent-color: var(--ink);
 }
 input[type="date"] {
-  color-scheme: light;
+  color-scheme: inherit;
 }
 button:focus-visible,
 a:focus-visible,
@@ -333,7 +333,7 @@ select:focus-visible,
 .cover-placeholder {
   color: var(--fg);
   background: var(--bg);
-  border: 1px solid #9f9f9f;
+  border: 1px solid var(--control-border);
 }
 .cover-placeholder strong {
   font-family: Inter, Arial, sans-serif;
@@ -350,7 +350,7 @@ select:focus-visible,
   color: var(--paper);
   background: var(--ink);
   border-radius: 12px;
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
 }
 .card-actions {
   display: flex;
@@ -400,7 +400,7 @@ select:focus-visible,
 .stepper .plus {
   background: var(--bg);
   color: var(--fg);
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
 }
 .inline-complete {
   color: var(--fg);
@@ -466,7 +466,7 @@ select:focus-visible,
 .discover-tabs,
 .view-switch {
   background: none;
-  border: 1px solid #9f9f9f;
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   padding: 4px;
   gap: 4px;
@@ -498,7 +498,7 @@ select:focus-visible,
 .column-settings,
 .detail-editorial,
 .detail-ratings .community {
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
 }
 .filters-panel {
   background: var(--paper);
@@ -511,7 +511,7 @@ select:focus-visible,
 .library-table td,
 .table-title {
   color: var(--ink);
-  border-color: #b3b3b3;
+  border-color: var(--control-border);
 }
 .library-table tbody tr:hover td {
   background: var(--paper);
@@ -520,7 +520,7 @@ select:focus-visible,
 }
 .discover-page .add-discovery {
   background: none;
-  border: 1px solid #9f9f9f;
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   color: var(--ink);
 }
@@ -679,7 +679,7 @@ select:focus-visible,
 }
 .genre-chips span {
   color: var(--fg);
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
 }
 .recommendation-copy .welcome-actions {
   flex-wrap: wrap;
@@ -731,7 +731,7 @@ select:focus-visible,
 .statistics-summary > div {
   background: var(--paper);
   color: var(--ink);
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
   border-radius: 12px;
   box-shadow: none;
   backdrop-filter: none;
@@ -764,7 +764,7 @@ select:focus-visible,
 }
 .chart-panel,
 .stat-card {
-  border: 1px solid #9f9f9f;
+  border: 1px solid var(--control-border);
 }
 .statistics-page {
   filter: none;
@@ -796,7 +796,7 @@ select:focus-visible,
   background: var(--ink);
 }
 .horizontal-chart > div > div {
-  background: #eee;
+  background: var(--chart-track);
 }
 .diary-event,
 .calendar-day,
@@ -807,7 +807,7 @@ select:focus-visible,
 .account-card,
 .stats-summary > div {
   color: var(--ink);
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
   background: var(--paper);
   box-shadow: none;
 }
@@ -826,7 +826,7 @@ select:focus-visible,
 .spoiler-button,
 .check-field {
   color: var(--fg);
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
 }
 ::-webkit-scrollbar-track {
   background: var(--paper);
@@ -927,7 +927,7 @@ html[data-reduced-motion="true"] .recommendation-result > .artwork {
   filter: none;
 }
 .chart-range {
-  border-color: #9f9f9f;
+  border-color: var(--control-border);
   border-radius: 12px;
 }
 .chart-range button[aria-pressed="true"] {
@@ -973,7 +973,7 @@ html[data-reduced-motion="true"] .recommendation-result > .artwork {
   --rail: 208px;
   --accent: #ff2e95;
   --accent-light: #ff2e95;
-  --soft: #62605f;
+  --soft: var(--text-secondary);
   --muted: #62605f;
   --line: #e2dcd6;
   --card-shadow: 0 32px 80px #00000038, 0 2px 8px #00000014;
@@ -1015,7 +1015,7 @@ p {
   line-height: 1.6;
 }
 .page {
-  max-width: 1264px;
+  max-width: var(--workspace-max);
   margin-inline: auto;
   padding: 36px 32px 64px;
 }
@@ -1087,7 +1087,7 @@ p {
 }
 .nav-rail nav > button.active > svg,
 .nav-rail nav > button.active .nav-count {
-  color: #fff;
+  color: inherit;
 }
 .nav-rail nav > button:hover {
   background: var(--border);
@@ -1099,7 +1099,7 @@ p {
   text-decoration: none;
 }
 .rail-profile {
-  border: 1px solid #c3c1bf;
+  border: 1px solid var(--control-border);
   border-radius: 16px;
   width: 44px;
   height: 44px;
@@ -1142,7 +1142,7 @@ p {
 .header-suggestions [role="option"]:focus-visible {
   background: var(--paper);
   color: var(--ink);
-  --soft: #62605f;
+  --soft: var(--text-secondary);
 }
 .header-suggestions .suggestion-more {
   border-color: var(--border);
@@ -1164,7 +1164,7 @@ kbd,
 }
 .button {
   padding: 12px 24px;
-  border-color: #c3c1bf;
+  border-color: var(--control-border);
   font-weight: 500;
   font-size: 13px;
   background: transparent;
@@ -1173,11 +1173,11 @@ kbd,
 .button.primary {
   background: #ff2e95;
   border-color: #ff2e95;
-  color: var(--text);
+  color: var(--on-accent);
   font-weight: 600;
 }
 .button.primary:hover:not(:disabled) {
-  color: var(--text);
+  color: var(--on-accent);
   background: #ff2e95;
   border-color: #111;
 }
@@ -1186,9 +1186,9 @@ kbd,
   stroke-width: 1.7;
 }
 .button:hover:not(:disabled) {
-  background: #111;
-  color: #fff;
-  border-color: #111;
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  border-color: var(--control-border);
 }
 .icon-button:hover:not(:disabled),
 .icon-button.selected {
@@ -1202,7 +1202,7 @@ input,
 select,
 textarea {
   background: var(--paper);
-  border-color: #c3c1bf;
+  border-color: var(--control-border);
 }
 textarea {
   border-radius: 24px;
@@ -1264,9 +1264,9 @@ input[type="range"] {
 }
 /* Real cover artwork provides the playful tile composition without extra copy. */
 .home-welcome {
-  --fg: #111;
-  --bg: #f6f2ee;
-  --soft: #62605f;
+  --fg: var(--text);
+  --bg: var(--canvas);
+  --soft: var(--text-secondary);
   color: var(--text);
   background: transparent;
   display: flex;
@@ -1356,13 +1356,13 @@ input[type="range"] {
 }
 .library-table th {
   background: var(--paper);
-  border-color: #c3c1bf;
+  border-color: var(--control-border);
 }
 .library-table td {
   border-color: var(--border);
 }
 .discover-page .add-discovery {
-  border-color: #c3c1bf;
+  border-color: var(--control-border);
   border-radius: 99px;
 }
 .detail-body {
@@ -1415,9 +1415,9 @@ input[type="range"] {
   border-color: var(--border);
 }
 .recommendation-stage {
-  --fg: #111;
-  --bg: #f6f2ee;
-  --soft: #62605f;
+  --fg: var(--text);
+  --bg: var(--canvas);
+  --soft: var(--text-secondary);
   margin: 0;
   padding: 48px 32px;
   min-height: 490px;
@@ -1509,7 +1509,7 @@ input[type="range"] {
   min-height: 46px;
 }
 .recommendation-stage .button.primary {
-  color: var(--text);
+  color: var(--on-accent);
 }
 /* White panels on oat, with elevation reserved for cards. */
 .modal,
@@ -1663,9 +1663,9 @@ input[type="range"] {
 }
 /* Collection and roulette refinements */
 .collection-stage {
-  --fg: #111;
-  --bg: #f6f2ee;
-  --soft: #62605f;
+  --fg: var(--text);
+  --bg: var(--canvas);
+  --soft: var(--text-secondary);
   background: var(--canvas);
   color: var(--text);
   border-radius: 24px;
@@ -1862,8 +1862,10 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   background: var(--panel);
   color: var(--text);
 }
-.detail-hero .detail-cover .button.primary {
+.detail-hero .detail-cover .button.primary,
+.detail-hero .detail-cover .button.primary:hover:not(:disabled) {
   background: var(--accent);
+  color: var(--on-accent);
 }
 .detail-hero .progress-control {
   color: #fff;
@@ -2024,7 +2026,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
 }
 .avatar-crop-controls {
   padding: 18px;
-  border: 1px solid #e6dfd9;
+  border: 1px solid var(--border);
   border-radius: 20px;
   background: var(--canvas);
   margin-bottom: 20px;
@@ -2070,7 +2072,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
 }
 .calendar-period > span {
   font-size: 12px;
-  color: #73706d;
+  color: var(--text-secondary);
 }
 .calendar-controls {
   display: flex;
@@ -2088,7 +2090,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
 .calendar-day {
   min-width: 0;
   background: var(--panel);
-  border: 1px solid #e8e1da;
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 12px;
   min-height: 280px;
@@ -2099,7 +2101,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   align-items: flex-start;
   gap: 8px;
   padding-bottom: 16px;
-  color: #76716b;
+  color: var(--text-secondary);
 }
 .calendar-day > header > span {
   font-size: 11px;
@@ -2116,19 +2118,19 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   font-weight: 600;
 }
 .calendar-day.today {
-  border-color: #e385b3;
-  background: #fff8fc;
+  border-color: var(--accent);
+  background: var(--panel-soft);
 }
 .calendar-day.today header strong {
   border-radius: 50%;
-  background: #ff2e95;
-  color: var(--text);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 .calendar-day > header small {
   font-size: 10px;
 }
 .calendar-day.outside-month {
-  background: #eee9e4;
+  background: var(--canvas);
 }
 .calendar-episode {
   width: 100%;
@@ -2164,23 +2166,23 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
 .calendar-episode em {
   font-size: 10px;
   font-style: normal;
-  color: #418677;
+  color: var(--success);
 }
 .calendar-free {
-  color: #91877e;
+  color: var(--text-secondary);
   font-size: 11px;
   margin-top: 18px;
 }
 .month-view {
   gap: 0;
-  border: 1px solid #e3dcd5;
+  border: 1px solid var(--border);
   border-radius: 24px;
   overflow: hidden;
 }
 .month-view .calendar-day {
   border: 0;
-  border-right: 1px solid #e3dcd5;
-  border-bottom: 1px solid #e3dcd5;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   border-radius: 0;
   min-height: 145px;
   padding: 10px;
@@ -2225,7 +2227,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   background: var(--panel);
   padding: 24px;
   border-radius: 28px;
-  border: 1px solid #e8e1da;
+  border: 1px solid var(--border);
 }
 .section-count {
   display: inline-grid;
@@ -2233,7 +2235,8 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   min-width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #f7e8f0;
+  background: var(--panel-soft);
+  color: var(--text);
   font-size: 13px;
   margin-left: 8px;
   vertical-align: middle;
@@ -2292,7 +2295,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
 .diary-summary > span {
   flex: 1;
   background: var(--panel);
-  border: 1px solid #e8e1da;
+  border: 1px solid var(--border);
   padding: 18px 24px;
   border-radius: 22px;
   color: var(--text-secondary);
@@ -2309,7 +2312,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   flex-wrap: wrap;
 }
 .diary-page .diary-event {
-  border: 1px solid #e8e1da;
+  border: 1px solid var(--border);
   background: var(--panel);
   border-radius: 24px;
   margin: 12px 0;
@@ -2320,7 +2323,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   border-left-color: #c66b9c;
 }
 .diary-page .diary-event[data-kind="completed"] {
-  border-left-color: #418677;
+  border-left-color: var(--success);
 }
 .diary-page .diary-event[data-kind="review"] {
   border-left-color: #c39135;
@@ -2395,7 +2398,7 @@ html[data-reduced-motion="true"] .roulette-track.is-loading {
   overflow: hidden;
   border-radius: 8px;
   flex-shrink: 0;
-  background: #e6dfd9;
+  background: var(--panel-soft);
 }
 .avatar-image-stage canvas {
   display: block;

@@ -116,6 +116,19 @@ export default function App() {
     [reducedMotion],
   );
   const content = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const main = content.current;
+    if (!main) return;
+    const update = () =>
+      main.parentElement?.style.setProperty(
+        "--workspace-scrollbar",
+        `${main.offsetWidth - main.clientWidth}px`,
+      );
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(main);
+    return () => observer.disconnect();
+  }, [store.ready]);
   const returnFocus = useRef<HTMLElement | null>(null);
   const originCover = useRef<HTMLElement | null>(null);
   const scrollPositions = useRef(new Map<string, number>());

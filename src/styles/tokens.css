@@ -6,6 +6,18 @@
   --text: #111111;
   --text-secondary: #625d59;
   --border: #d4cbc4;
+  --control-border: #958a82;
+  --hover: var(--panel-soft);
+  --selected-bg: var(--text);
+  --selected-text: var(--canvas);
+  --on-accent: #111111;
+  --focus: var(--accent);
+  --success: #246c5a;
+  --danger: #a52b3b;
+  --warning: #805700;
+  --chart-track: var(--panel-soft);
+  --workspace-max: 1840px;
+  --workspace-gutter: 40px;
   --selection: #ff2e9533;
   --accent: #ff2e95;
   --paper: var(--canvas);
@@ -25,12 +37,16 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #181719;
-  --panel: #242226;
-  --panel-soft: #302c31;
-  --text: #f6f2ee;
-  --text-secondary: #bcb3bb;
-  --border: #635a64;
+  --canvas: #181818;
+  --panel: #242424;
+  --panel-soft: #303030;
+  --text: #f4f4f4;
+  --text-secondary: #b8b8b8;
+  --border: #414141;
+  --control-border: #777777;
+  --success: #7acfb7;
+  --danger: #ff8999;
+  --warning: #e4be70;
 }
 ::selection {
   background: var(--selection);
@@ -49,6 +65,6 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 4px;
 }

@@ -13,7 +13,10 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 1420",
+    command:
+      process.env.NEXUME_E2E_PREVIEW === "1"
+        ? "node node_modules/vite/bin/vite.js preview --configLoader native --host 127.0.0.1 --port 1420"
+        : "node node_modules/vite/bin/vite.js --configLoader native --host 127.0.0.1 --port 1420",
     url: "http://127.0.0.1:1420",
     reuseExistingServer: true,
     timeout: 30000,

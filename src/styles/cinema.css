@@ -379,7 +379,7 @@ html[data-reduced-motion="true"]::view-transition-new(*) {
   height: 7px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #ff2098;
+  background: var(--accent);
   box-shadow: 0 0 0 4px #ff209818;
 }
 .spotlight-progress-caption {
@@ -394,13 +394,13 @@ html[data-reduced-motion="true"]::view-transition-new(*) {
   height: 5px;
   overflow: hidden;
   border-radius: 8px;
-  background: #1111;
+  background: var(--panel-soft);
 }
 .spotlight-progress-track > span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #ff2098;
+  background: var(--accent);
   transition: transform var(--motion-progress) var(--ease-cinema);
 }
 .spotlight-copy p {
@@ -461,7 +461,7 @@ html[data-reduced-motion="true"]::view-transition-new(*) {
     transform var(--motion-ui);
 }
 .filmstrip-item[aria-pressed="true"] {
-  border-color: #111;
+  border-color: var(--accent);
   opacity: 1;
   transform: translateY(-3px);
 }
