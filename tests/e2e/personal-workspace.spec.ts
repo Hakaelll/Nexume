@@ -12,7 +12,8 @@ test("calendar modes, today episodes, favorite search, avatar framing and discov
 }) => {
   const data = emptyData();
   data.preferences.reducedMotion = true;
-  const today = new Date();
+  const today = new Date("2026-10-15T12:00:00Z");
+  await page.clock.setFixedTime(today);
   today.setHours(18, 0, 0, 0);
   data.entries = sample.slice(0, 4).map((a) => ({
     ...createEntry(mapAnime(a)),
@@ -201,7 +202,7 @@ test("full animation override works when Windows requests reduced motion", async
 test("Home uses the computer's local day and time", async ({ browser }) => {
   const context = await browser.newContext({
     timezoneId: "America/Los_Angeles",
-    locale: "en-US",
+    locale: "en-GB",
   });
   const page = await context.newPage();
   try {
@@ -237,7 +238,7 @@ test("Home uses the computer's local day and time", async ({ browser }) => {
       });
     });
     await page.goto("/");
-    await expect(page.locator(".today-airing-card")).toContainText("04:00");
+    await expect(page.locator(".today-airing-card")).toContainText("16:00");
     await expect(page.locator(".airing-timezone").first()).toContainText(
       "America/Los_Angeles",
     );

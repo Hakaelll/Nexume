@@ -52,13 +52,19 @@ test("relevant search, paper collection, banner, roulette landing and uploaded a
     page
       .getByRole("listbox", { name: "Search suggestions" })
       .getByRole("option"),
-  ).toHaveCount(1);
+  ).toHaveCount(2);
   await expect(
     page
       .getByRole("listbox", { name: "Search suggestions" })
       .getByRole("option")
       .first(),
   ).toContainText("Cowboy Bebop");
+  await expect(
+    page
+      .getByRole("listbox", { name: "Search suggestions" })
+      .getByRole("option")
+      .nth(1),
+  ).toContainText("Neon Genesis Evangelion");
   await page
     .getByRole("listbox", { name: "Search suggestions" })
     .getByRole("option")
