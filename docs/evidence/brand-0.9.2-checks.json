@@ -1,0 +1,48 @@
+{
+  "phase": "after",
+  "errors": [],
+  "results": [
+    {
+      "theme": "light",
+      "width": 960,
+      "imageWidth": 24,
+      "visible": true,
+      "overflow": 0
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "imageWidth": 27,
+      "visible": true,
+      "overflow": 0
+    },
+    {
+      "theme": "light",
+      "width": 1920,
+      "imageWidth": 27,
+      "visible": true,
+      "overflow": 0
+    },
+    {
+      "theme": "dark",
+      "width": 960,
+      "imageWidth": 24,
+      "visible": true,
+      "overflow": 0
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "imageWidth": 27,
+      "visible": true,
+      "overflow": 0
+    },
+    {
+      "theme": "dark",
+      "width": 1920,
+      "imageWidth": 27,
+      "visible": true,
+      "overflow": 0
+    }
+  ]
+}

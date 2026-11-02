@@ -2,6 +2,8 @@
 
 The six October 7 screenshots and PRODUCT.md define the incumbent visual world. Preserve Inter, italic headings, warm light canvas, magenta actions and colorful covers. Primary surfaces are Operate; Collection adds an Experience surface while retaining tracking controls.
 
+The brand mark is an octagonal ouroboros in magenta #ff2e95, representing an anime collection that can be revisited. `public/brand/logo.svg` is the canonical source for the interface and generated assets. Preserve the bite, diamond eye, proportions, and colors in both themes without CSS inversion. Keep the existing italic Inter wordmark. Windows icons and the favicon use the same mark on an ink #111111 rounded square.
+
 ## Semantic styling
 
 `tokens.css` defines canvas, panel, soft panel, text, secondary text, border, accent, focus and movement values for light and charcoal dark themes. Structural and Playful rules consume these aliases; `workspace.css` contains responsive refinements shared by both themes. The standalone public viewer retains its own styling.

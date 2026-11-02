@@ -468,7 +468,7 @@ export default function Settings({ onSample }: { onSample: () => void }) {
         </dl>
       </section>
       <footer className="about">
-        <img src="/brand/logo.png" alt="Nexume logo" />
+        <img src="/brand/logo.svg" alt="Nexume logo" />
         <div>
           <h2>
             {" "}

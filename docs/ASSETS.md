@@ -1,7 +1,9 @@
 # Assets and attribution
 
-- `public/brand/logo.png`: the exact user-provided Nexume emblem. The original file is preserved. CSS inverts it for the dark interface; Tauri derives standard executable/installer icon sizes from the source. No generated replacement logo is used.
-- `src-tauri/icons`: generated Windows packaging icons. Mobile icon directories produced by Tauri's general icon utility are ignored and are not application targets.
+- `public/brand/logo.svg`: the canonical Nexume mark, a geometric ouroboros created for the application at the user's request. It uses the existing magenta identity and has no font or external image dependency. The original emblem remains in Git history.
+- `public/brand/logo.png`: the generated 1024px transparent version of the mark. The interface uses the SVG to keep the edges sharp at different display scales.
+- `public/brand/app-icon.svg`: the generated favicon and Windows icon source, with the same mark on a rounded ink background. Both themes preserve the original colors without CSS inversion.
+- `src-tauri/icons`: generated Windows packaging icons. `pnpm brand:icons` regenerates and verifies the PNG dimensions, alpha channels, and multi-resolution ICO from `logo.svg`, using the installed Tauri CLI. `src-tauri/build.rs` tracks `icons/icon.ico` so incremental builds refresh the executable's icon resource. Intermediate platform files stay in the ignored `.tools/brand/generated-icons` directory. Windows remains the application target.
 - Space Grotesk: locally bundled via `@fontsource/space-grotesk`, SIL Open Font License. Georgia is a system serif fallback, not a redistributed font.
 - Lucide icons: ISC licensed, through `lucide-react`.
 - Normal metadata and artwork provider: AniList GraphQL, with source URLs preserved in cached metadata.

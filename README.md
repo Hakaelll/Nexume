@@ -1,3 +1,5 @@
+<img src="public/brand/logo.svg" width="64" height="64" alt="Nexume ouroboros logo" />
+
 # Nexume
 
 **Your anime, remembered.**
@@ -6,7 +8,7 @@ Nexume is a Windows desktop application that brings your anime collection, viewi
 
 Your collection is saved locally on your computer. No account is required to manage your library, and online discovery connects to AniList for anime metadata and airing schedules.
 
-[Download for Windows](https://github.com/Hakaelll/Nexume/releases) · [Release notes](docs/RELEASE-0.9.1.md) · [Development](#development)
+[Download for Windows](https://github.com/Hakaelll/Nexume/releases) · [Release notes](docs/RELEASE-0.9.2.md) · [Development](#development)
 
 ![Nexume Discover view with anime artwork and browsing controls](docs/images/gallery-discover.png)
 

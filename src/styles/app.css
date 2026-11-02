@@ -259,7 +259,7 @@ kbd {
   width: 39px;
   height: 39px;
   object-fit: contain;
-  filter: invert(1);
+  filter: none;
 }
 .nav-rail nav {
   width: 100%;
@@ -1912,7 +1912,7 @@ kbd {
 }
 .profile-avatar > img {
   width: 100%;
-  filter: invert(1);
+  filter: none;
 }
 .profile-avatar .artwork {
   width: 100%;
@@ -2096,7 +2096,7 @@ kbd {
 }
 .about img {
   width: 62px;
-  filter: invert(1);
+  filter: none;
 }
 .about h2 {
   font-size: 20px;
@@ -2202,7 +2202,7 @@ kbd {
 .startup > img,
 .splash > img {
   width: 105px;
-  filter: invert(1);
+  filter: none;
 }
 .startup > div {
   max-width: 650px;
@@ -2244,7 +2244,7 @@ summary {
 }
 .viewer-brand img {
   width: 48px;
-  filter: invert(1);
+  filter: none;
 }
 .viewer-heading {
   padding: 55px 0;

@@ -80,7 +80,7 @@ function Viewer() {
   return (
     <div className="public-viewer">
       <header className="viewer-brand">
-        <img src="/brand/logo.png" alt="Nexume" />
+        <img src="/brand/logo.svg" alt="Nexume" />
         <span>NEXUME</span>
       </header>
       {error ? (

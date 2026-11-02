@@ -352,7 +352,7 @@ export default function App() {
   if (!store.ready)
     return (
       <div className="startup">
-        <img src="/brand/logo.png" alt="Nexume" />
+        <img src="/brand/logo.svg" alt="Nexume" />
         {store.error && (
           <div role="alert">
             <p>{t(store.error)}</p>
@@ -377,7 +377,7 @@ export default function App() {
           aria-label={t("Nexume Home")}
           onClick={() => go("Home")}
         >
-          <img src="/brand/logo.png" alt="" />
+          <img src="/brand/logo.svg" alt="" />
           <span className="rail-wordmark">{t("Nexume")}</span>
         </button>
         <nav aria-label={t("Main navigation")}>
@@ -769,7 +769,7 @@ export default function App() {
       )}
       {splash && (
         <div className="splash" aria-hidden="true">
-          <img src="/brand/logo.png" alt="" />
+          <img src="/brand/logo.svg" alt="" />
         </div>
       )}
     </>

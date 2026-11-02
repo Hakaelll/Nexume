@@ -98,7 +98,7 @@ export default function Profile({ onOpen }: { onOpen: (e: Entry) => void }) {
           {profile.avatar ? (
             <Artwork src={profile.avatar} title={profile.displayName} />
           ) : (
-            <img src="/brand/logo.png" alt="Nexume emblem" />
+            <img src="/brand/logo.svg" alt="Nexume emblem" />
           )}
         </div>
 
